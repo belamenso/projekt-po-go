@@ -35,7 +35,8 @@ się w nieskończoność
 
 ## Kierunek
 
-*Bartosz*:
+*Bartosz 26.04 18:00*:
+
 Chciałbym, żeby rdzeń aplikacji (logika gry, stan gry...) były w całości odizolowane od UI, serwera itd, po prostu niech
 w środku będą czyste dane, czyli klasy z public final polami takimi jak plansza pionków, itd, bez żadnych metod robiących
 modyfikacje in place. I statyczne metody w tych klasach biorące stan planszy, opis ruchu i zwracające kolejny stan planszy.
@@ -43,7 +44,7 @@ To są małe struktury danych, więc to nie będzie przeszkadzało, a łatwiej t
 zrobić błędy w zarządzaniu stanem jeśli nie masz stanu itd. Myślę, że jak tak zrobimy rdzeń kodu opisujący samą grę, to później
 będzie prościej.
 
-*Bartosz*:
+*Bartosz* 26.04 22:50:
 
 Z uwagi na to, że logika gry jest napisana funkcyjnie i robienie takich rzeczy teraz jest bardzo proste,
 proponuję dodać sztuczki ze stanem aplikacji, to jest
