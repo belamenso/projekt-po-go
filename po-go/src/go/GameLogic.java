@@ -75,5 +75,19 @@ public enum GameLogic {
 
         return group.liberties != 0;
     }
-}
 
+    public ArrayList<Pair<Integer, Integer>> captured(Board board) {
+        boolean[][] seen = boolMatrix(board);
+        for (int i = 0; i < board.getSize(); i++) {
+            for (int j = 0; j < board.getSize(); j++) {
+                if (board.get(i, j).isPresent() && !seen[i][j]) {
+                    CollectRet group = collect(board, i, j, seen);
+                    // TODO czy zawsze tylko jedna grupa na raz jest złapana?
+                    if (group.liberties == 0)
+                        return group.group;
+                }
+            }
+        }
+        return new ArrayList<>();
+    }
+}
