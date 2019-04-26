@@ -50,6 +50,7 @@ proponuję dodać sztuczki ze stanem aplikacji, to jest
 * cofanie ruchów (w multiplayerze może cofanie do 5 sekund po wykonaniu?)
 * w GUI można dodać podgląd ruchu, który chce się zrobić (w sensie, np. kamienie, które znikają jeśli wykonasz ruch
 w miejsce gdzie masz krusor myszy są półprzezroczyste)
+* podgląd historii rozgrywki (możesz sobie sliderem przesunąć i pokaże ci jak gra się rozwijała od początku do końca) <- **to będzie super fajne**
 
 Do pokojów na serwerze powinno się też móc wchodzić jako spektator, może nawet kiedy ciągle oczekuje się na 2giego gracza.
 
