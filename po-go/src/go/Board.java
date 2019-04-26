@@ -42,6 +42,19 @@ public class Board {
         return board[i][j];
     }
 
-
+    @Override
+    public boolean equals(Object o) {
+        if (o == null) return false;
+        if (!(o instanceof Board)) return false;
+        Board other = (Board) o;
+        if (other.getSize() != getSize()) return false;
+        for (int i = 0; i < getSize(); i++) {
+            for (int j = 0; j < getSize(); j++) {
+                if (!board[i][j].equals(other.board[i][j]))
+                    return false;
+            }
+        }
+        return true;
+    }
 }
 
