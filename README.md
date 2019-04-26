@@ -43,6 +43,16 @@ To są małe struktury danych, więc to nie będzie przeszkadzało, a łatwiej t
 zrobić błędy w zarządzaniu stanem jeśli nie masz stanu itd. Myślę, że jak tak zrobimy rdzeń kodu opisujący samą grę, to później
 będzie prościej.
 
+*Bartosz*:
+
+Z uwagi na to, że logika gry jest napisana funkcyjnie i robienie takich rzeczy teraz jest bardzo proste,
+proponuję dodać sztuczki ze stanem aplikacji, to jest
+* cofanie ruchów (w multiplayerze może cofanie do 5 sekund po wykonaniu?)
+* w GUI można dodać podgląd ruchu, który chce się zrobić (w sensie, np. kamienie, które znikają jeśli wykonasz ruch
+w miejsce gdzie masz krusor myszy są półprzezroczyste)
+
+Do pokojów na serwerze powinno się też móc wchodzić jako spektator, może nawet kiedy ciągle oczekuje się na 2giego gracza.
+
 ## Myślenie na pryszłość
 Jakie decyzje projektowe podjąć teraz, żeby później łatwo było dodawać funkcjonalność i żeby to się ładnie zeszło?
 
