@@ -32,6 +32,7 @@ się w nieskończoność
 |---|---|---|
 | Bartosz | definicja podstawowych struktur danych (plansza, kamyki, stan gry) | W TRAKCIE |
 | Bartosz | funkcje implementujące podstawową logikę gry | W TRAKCIE |
+| Rafał | projekt serwera | W TRAKCIE |
 
 ## Kierunek
 
