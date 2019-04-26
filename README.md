@@ -3,6 +3,7 @@
 ## TODO
 * w jednym ruchu można pojmać 2+ grup kamieni (OGS ko 1), zmienić logikę na ten wypadek
 * OGS ko 2 -> przypadek brzegowy, czasem można wejść w pozycję samobójczą, jeśli natychmiast nią zabijasz i już w niej nie jesteś, zmienić logikę
+* ogólnie [online-go.com](/online-go.com) to lepsza wersja tego, co budujemy, warto brać od nich pomysły
 
 ## Zasady gry
 * [turorial 1](https://www.youtube.com/watch?v=5PTXdR8hLlQ)
