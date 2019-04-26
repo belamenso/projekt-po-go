@@ -27,26 +27,27 @@ public enum GameLogic {
         return new boolean[board.getSize()][board.getSize()];
     }
 
-    private class CollectRet {
+    private class Group {
         ArrayList<Pair<Integer, Integer>> group = new ArrayList<>();
         int liberties = 0;
     }
 
-    private CollectRet collect(Board board, int i, int j, boolean[][] seen) {
-        CollectRet ret = new CollectRet();
+    private Group collectGroup(Board board, int i, int j, boolean[][] seen) {
+        Group ret = new Group();
         boolean[][] libertiesSeen = boolMatrix(board);
-        assert board.get(i, j).isPresent(); // TODO
+        assert indicesOk(board, i, j) && board.get(i, j).isPresent(); // TODO
+        assert !seen[i][j];
         Stone color = board.get(i, j).get();
         Queue<Pair<Integer, Integer>> queue = new LinkedList<>();
         queue.add(new Pair<>(i, j));
         ret.group.add(new Pair<>(i, j));
-        outer: while (!queue.isEmpty()) {
+        while (!queue.isEmpty()) {
             Pair<Integer, Integer> curr = queue.remove();
             seen[curr.x][curr.y] = true;
             for (Pair<Integer, Integer> d: offsets) {
                 int x = curr.x + d.x, y = curr.y + d.y;
 
-                if (!indicesOk(board, x, y)) continue outer;
+                if (!indicesOk(board, x, y)) continue;
 
                 if (board.get(x, y).isEmpty()) {
                     if (!libertiesSeen[x][y]) {
@@ -65,12 +66,54 @@ public enum GameLogic {
         return ret;
     }
 
+    private class Territory {
+        ArrayList<Pair<Integer, Integer>> territory = new ArrayList<>();
+        Optional<Stone> captor = Optional.empty();
+    }
+
+    private Territory collectTerritory(Board board, int i, int j, boolean[][] seen) {
+        assert indicesOk(board, i, j) && board.get(i, j).isEmpty(); // TODO
+        assert !seen[i][j];
+
+        Territory ret = new Territory();
+
+        // seenAnyColor && captor.isEmpty() => nie ma jednoznacznego koloru, który przejął to terytorium
+        boolean seenAnyColor = false;
+
+        Queue<Pair<Integer, Integer>> queue = new LinkedList<>();
+        queue.add(new Pair<>(i, j));
+        while (!queue.isEmpty()) {
+            Pair<Integer, Integer> curr = queue.remove();
+            for (Pair<Integer, Integer> d : offsets) {
+                int x = curr.x + d.x, y = curr.y + d.y;
+                if (!indicesOk(board, x, y)) continue;
+                if (board.get(x, y).isEmpty()) {
+                    if (!seen[x][y]) {
+                        queue.add(new Pair<>(x, y));
+                        seen[x][y] = true;
+                    }
+                } else {
+                    if (seenAnyColor) {
+                        if (ret.captor.isPresent()) {
+                            if (!ret.captor.get().equals(board.get(x, y).get())) // else the current captor is ok
+                                ret.captor = Optional.empty();
+                        } // else there is no proper captor
+                    } else {
+                        seenAnyColor = true;
+                        ret.captor = Optional.of(board.get(x, y).get());
+                    }
+                }
+            }
+        }
+        return ret;
+    }
+
     public boolean movePossible(Board board, int i, int j, Stone color) {
         if (!indicesOk(board, i, j)) return false;
         if (board.get(i, j).isPresent()) return false;
 
-        board.getBoard()[i][j] = new Optional<>(color);
-        CollectRet group = collect(board, i, j, boolMatrix(board));
+        board.getBoard()[i][j] = Optional.of(color);
+        Group group = collectGroup(board, i, j, boolMatrix(board));
         board.getBoard()[i][j] = Optional.empty();
 
         return group.liberties != 0;
@@ -81,7 +124,7 @@ public enum GameLogic {
         for (int i = 0; i < board.getSize(); i++) {
             for (int j = 0; j < board.getSize(); j++) {
                 if (board.get(i, j).isPresent() && !seen[i][j]) {
-                    CollectRet group = collect(board, i, j, seen);
+                    Group group = collectGroup(board, i, j, seen);
                     // TODO czy zawsze tylko jedna grupa na raz jest złapana?
                     if (group.liberties == 0)
                         return group.group;
@@ -89,5 +132,20 @@ public enum GameLogic {
             }
         }
         return new ArrayList<>();
+    }
+
+    public ArrayList<Territory> capturedTerritories(Board board) {
+        ArrayList<Territory> ret = new ArrayList<>();
+        boolean[][] seen = boolMatrix(board);
+        for (int i = 0; i < board.getSize(); i++) {
+            for (int j = 0; j < board.getSize(); j++) {
+                if (board.get(i, j).isEmpty() && !seen[i][j]) {
+                    Territory territory = collectTerritory(board, i, j, seen);
+                    if (territory.captor.isPresent())
+                        ret.add(territory);
+                }
+            }
+        }
+        return ret;
     }
 }
