@@ -4,6 +4,8 @@
 * [turorial 1](https://www.youtube.com/watch?v=5PTXdR8hLlQ)
 * [tutorial 2](https://www.youtube.com/watch?v=YPMog4LAmvg)
 
+
+zasady:
 * czarne zaczynają
 * plansza 19x19, 13x13, 9x9 **przecięć**, a nie pól
 * jeden samotny kamyk (stone) ma liberties - 4 przecięcia (intersection) wokół niego, chyba że jest tam róg/brzeg planszy
