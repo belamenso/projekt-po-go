@@ -44,7 +44,7 @@ To są małe struktury danych, więc to nie będzie przeszkadzało, a łatwiej t
 zrobić błędy w zarządzaniu stanem jeśli nie masz stanu itd. Myślę, że jak tak zrobimy rdzeń kodu opisujący samą grę, to później
 będzie prościej.
 
-*Bartosz* 26.04 22:50:
+*Bartosz 26.04 22:50*:
 
 Z uwagi na to, że logika gry jest napisana funkcyjnie i robienie takich rzeczy teraz jest bardzo proste,
 proponuję dodać sztuczki ze stanem aplikacji, to jest
