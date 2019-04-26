@@ -1,5 +1,8 @@
 # Go
 
+## TODO
+* w jednym ruchu można pojmać 2+ grup kamieni (OGS ko 1), zmienić logikę na ten wypadek
+
 ## Zasady gry
 * [turorial 1](https://www.youtube.com/watch?v=5PTXdR8hLlQ)
 * [tutorial 2](https://www.youtube.com/watch?v=YPMog4LAmvg)
