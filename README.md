@@ -3,7 +3,7 @@
 ## Zasady gry
 * [turorial 1](https://www.youtube.com/watch?v=5PTXdR8hLlQ)
 * [tutorial 2](https://www.youtube.com/watch?v=YPMog4LAmvg)
-
+* [interaktywny tutorial, dobre źródło testów systemu](https://online-go.com/learn-to-play-go/)
 
 zasady:
 * czarne zaczynają
