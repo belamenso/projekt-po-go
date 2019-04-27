@@ -1,8 +1,9 @@
 # Go
 
 ## TODO
-* w jednym ruchu można pojmać 2+ grup kamieni (OGS ko 1), zmienić logikę na ten wypadek
-* OGS ko 2 -> przypadek brzegowy, czasem można wejść w pozycję samobójczą, jeśli natychmiast nią zabijasz i już w niej nie jesteś, zmienić logikę
+* ~~w jednym ruchu można pojmać 2+ grup kamieni (OGS ko 1), zmienić logikę na ten wypadek~~
+* ~~OGS ko 2 -> przypadek brzegowy, czasem można wejść w pozycję samobójczą, jeśli natychmiast nią zabijasz i już w niej nie jesteś, zmienić logikę~~
+* ~~dokumentacja tego co jest~~
 * ogólnie [online-go.com](/online-go.com) to lepsza wersja tego, co budujemy, warto brać od nich pomysły
 
 ## Zasady gry
@@ -35,9 +36,10 @@ się w nieskończoność
 ## Plan ataku
 | Kto | Co | Stan |
 |---|---|---|
-| Bartosz | definicja podstawowych struktur danych (plansza, kamyki, stan gry) | W TRAKCIE |
-| Bartosz | funkcje implementujące podstawową logikę gry | W TRAKCIE |
+| Bartosz | definicja podstawowych struktur danych (plansza, kamyki, stan gry) | ✓ (POTRZEBA TESTÓW) |
+| Bartosz | funkcje implementujące podstawową logikę gry | ✓ (POTRZEBA TESTÓW) |
 | Rafał | projekt serwera | W TRAKCIE |
+| Bartosz | GameplayManger | ✓ (POTRZEBA TESTÓW) |
 
 ## Kierunek
 
