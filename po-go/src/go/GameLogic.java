@@ -120,18 +120,18 @@ public enum GameLogic {
     }
 
     public ArrayList<Pair<Integer, Integer>> captured(Board board) {
+        ArrayList<Pair<Integer, Integer>> ret = new ArrayList<>();
         boolean[][] seen = boolMatrix(board);
         for (int i = 0; i < board.getSize(); i++) {
             for (int j = 0; j < board.getSize(); j++) {
                 if (board.get(i, j).isPresent() && !seen[i][j]) {
                     Group group = collectGroup(board, i, j, seen);
-                    // TODO czy zawsze tylko jedna grupa na raz jest złapana?
                     if (group.liberties == 0)
-                        return group.group;
+                        ret.addAll(group.group);
                 }
             }
         }
-        return new ArrayList<>();
+        return ret;
     }
 
     public ArrayList<Territory> capturedTerritories(Board board) {
