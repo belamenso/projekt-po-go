@@ -2,6 +2,7 @@ package go;
 
 import util.Pair;
 
+import javax.swing.text.html.Option;
 import java.util.Queue;
 import java.util.Optional;
 import java.util.ArrayList;
@@ -116,7 +117,26 @@ public enum GameLogic {
         Group group = collectGroup(board, i, j, boolMatrix(board));
         board.getBoard()[i][j] = Optional.empty();
 
-        return group.liberties != 0;
+        if (group.liberties > 0) return true;
+        else { // sprawdź, czy ten ruch pojmie jakieś kamyki, jeśli tak, pozwól na niego
+            assert group.liberties == 0;
+
+            boolean ret = false;
+            board.getBoard()[i][j] = Optional.of(color);
+            for (Pair<Integer, Integer> d : offsets) {
+                int x = i + d.x, y = j + d.y;
+                if (!indicesOk(board, x, y)) continue;
+                assert board.get(x, y).isPresent();
+                if (board.get(x, y).get() == color.opposite) {
+                    if (collectGroup(board, x, y, boolMatrix(board)).liberties == 0) {
+                        ret = true;
+                        break;
+                    }
+                }
+            }
+            board.getBoard()[i][j] = Optional.empty();
+            return ret;
+        }
     }
 
     public ArrayList<Pair<Integer, Integer>> captured(Board board) {
