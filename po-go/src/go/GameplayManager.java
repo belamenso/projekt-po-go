@@ -17,7 +17,7 @@ public class GameplayManager {
     /**
      * Reprezentuje jeden ruch w historii gry
      */
-    static abstract class Move {
+    public static abstract class Move {
         Stone player;
 
         Move(Stone color) {
@@ -28,14 +28,14 @@ public class GameplayManager {
     /**
      * gracz player przepuścił kolejkę
      */
-    static class Pass extends Move {
-        Pass(Stone color) { super(color); }
+    public static class Pass extends Move {
+        public Pass(Stone color) { super(color); }
     }
 
     /**
      * Gracz player umieścił swój kamień na pozycji position
      */
-    static class StonePlacement extends Move {
+    public static class StonePlacement extends Move {
         Pair<Integer, Integer> position;
 
         StonePlacement(Stone color, int x, int y) {
