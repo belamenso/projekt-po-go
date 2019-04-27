@@ -139,12 +139,12 @@ public enum GameLogic {
         }
     }
 
-    public ArrayList<Pair<Integer, Integer>> captured(Board board) {
+    public ArrayList<Pair<Integer, Integer>> captured(Board board, Stone colorJustPlaced) {
         ArrayList<Pair<Integer, Integer>> ret = new ArrayList<>();
         boolean[][] seen = boolMatrix(board);
         for (int i = 0; i < board.getSize(); i++) {
             for (int j = 0; j < board.getSize(); j++) {
-                if (board.get(i, j).isPresent() && !seen[i][j]) {
+                if (board.get(i, j).isPresent() && !seen[i][j] && board.get(i, j).get() == colorJustPlaced.opposite) {
                     Group group = collectGroup(board, i, j, seen);
                     if (group.liberties == 0)
                         ret.addAll(group.group);
