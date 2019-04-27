@@ -1,7 +1,6 @@
 package go;
 
 import java.util.Optional;
-import org.jetbrains.annotations.NotNull;
 
 public class Board {
 
@@ -31,7 +30,7 @@ public class Board {
      * Tworzy pustą planszę o określonym rozmiarze
      * @param size rozmiar planszy
      */
-    public Board(@NotNull BoardSize size) {
+    public Board(BoardSize size) {
         this.size = size;
         board = new Optional[size.getSize()][size.getSize()];
         for (int i = 0; i < size.getSize(); i++) {

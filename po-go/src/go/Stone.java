@@ -14,4 +14,9 @@ public enum Stone {
         White.opposite = Black;
         Black.opposite = White;
     }
+
+    @Override
+    public String toString() {
+        return this == White ? "WHITE" : "BLACK";
+    }
 }

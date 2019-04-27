@@ -38,7 +38,7 @@ public class GameplayManager {
     public static class StonePlacement extends Move {
         Pair<Integer, Integer> position;
 
-        StonePlacement(Stone color, int x, int y) {
+        public StonePlacement(Stone color, int x, int y) {
             super(color);
             position = new Pair<>(x, y);
             // TODO error handling
@@ -56,7 +56,7 @@ public class GameplayManager {
     /**
      * czy gra jest w trakcie?
      */
-    private boolean inProgress;
+    private boolean inProgress = true;
     /**
      * liczba czarnych kameni przejętych przez białe w ciągu gry
      */
@@ -186,9 +186,9 @@ public class GameplayManager {
      * TODO czy ta klasa na pewno powinna być tutaj?
      */
     public class Result {
-        Stone winner;
-        double whitePoints;
-        double blackPoints;
+        public Stone winner;
+        public double whitePoints;
+        public double blackPoints;
     }
 
     /**
