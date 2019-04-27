@@ -20,5 +20,9 @@ public enum ReasonMoveImpossible {
     /**
      * Wykonując ten ruch, stan gry sprzed dwóch ruchów powtórzyłby się w całości
      */
-    ReturnToImmediatePreviousState
+    ReturnToImmediatePreviousState,
+    /**
+     * Jeden z graczy zerwał połączenie z serwerem zanim gra się zakończyła
+     */
+    GameInterrupted
 }

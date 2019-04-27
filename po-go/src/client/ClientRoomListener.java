@@ -32,7 +32,8 @@ public class ClientRoomListener implements ClientListener {
         } else if (msg.startsWith("MOVE_REJECTED")) {
             System.out.println("# move was rejected"); // TODO reason
         } else if (msg.startsWith("OPPONENT_DISCONNECTED")) {
-            System.out.println("# opponent has disconnected");
+            System.out.println("# opponent has disconnected, no more actions are possible");
+            manager.interruptGame();
         } else if (msg.startsWith("MOVE PASS")) {
             System.out.println("# opponent has passed his turn");
             assert (manager.registerMove(new GameplayManager.Pass(myColor.opposite))).isEmpty();
@@ -44,6 +45,7 @@ public class ClientRoomListener implements ClientListener {
             assert (manager.registerMove(new GameplayManager.StonePlacement(myColor.opposite, x, y))).isPresent();
         } else {
             System.out.println("UNRECOGNIZED MSG: " + msg);
+            // TODO handle lobbyJoined
         }
     }
 

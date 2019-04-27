@@ -58,6 +58,10 @@ public class GameplayManager {
      */
     private boolean inProgress = true;
     /**
+     * Czy któryś z zawodników odłączył się od serwera zanim gra się zakończyła?
+     */
+    private boolean gameInterrupted = false; // TODO better handling of this case
+    /**
      * liczba czarnych kameni przejętych przez białe w ciągu gry
      */
     private ArrayList<Integer> capturedByWhite = new ArrayList<>();
@@ -119,6 +123,10 @@ public class GameplayManager {
 
     public double getKomi() { return komi; }
 
+    public boolean interrupted() { return gameInterrupted; }
+
+    public void interruptGame() { gameInterrupted = true; }
+
     public int getCapturedBy(Stone color) {
         return color.equals(Stone.White) ? getCapturedByWhite() : getCapturedByBlack();
     }
@@ -136,7 +144,7 @@ public class GameplayManager {
      * @return kolor gracza, który teraz ma ruch
      */
     public Stone nextTurn() {
-        assert inProgress(); // TODO
+        assert inProgress() && !gameInterrupted; // TODO
         if (moves.isEmpty() || getLastMove().player.equals(Stone.White))
             return Stone.Black;
         else
@@ -149,6 +157,8 @@ public class GameplayManager {
      * @param m opis ruchu
      */
     public Optional<ReasonMoveImpossible> registerMove(Move m) {
+        if (gameInterrupted)
+            return Optional.of(ReasonMoveImpossible.GameInterrupted);
         if (!m.player.equals(nextTurn()))
             return Optional.of(ReasonMoveImpossible.NotYourTurn);
         if (m instanceof Pass) {

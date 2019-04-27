@@ -17,7 +17,8 @@ public class RoomListener implements ServerListener {
     private List<ServerClient> clients;
     private String name;
     private LobbyListener lobby;
-    private go.GameplayManager gameManager = new GameplayManager();
+
+    private GameplayManager manager = new GameplayManager();
 
     RoomListener(String name, LobbyListener lobby) {
         clients = new LinkedList<>();
@@ -27,18 +28,24 @@ public class RoomListener implements ServerListener {
 
     public String getName() { return name; }
 
+    /**
+     * Pokój nie akceptuje już żadnych graczy w stanie interrupted.
+     * Pierwszy gracz w pokoju zawsze jest czasny (TODO)
+     * Drugi gracz zawsze biały
+     * Chwilowo pokoje wcale nie obsługują spectators (TODO)
+     */
     @Override
     public synchronized boolean clientConnected(ServerClient client) {
-        if (clients.size() >= 2) {
-            client.sendMessage("CONNECTION_REFUSED");
+        if (clients.size() >= 2 || manager.interrupted()) {
+            client.sendMessage("CONNECTION_REFUSED"); // -> ClientLobbyListener
             return false;
         }
 
         if (clients.size() == 0) {
-            client.sendMessage("CONNECTED BLACK");
+            client.sendMessage("CONNECTED BLACK"); // -> ClientLobbyListener
         } else if (clients.size() == 1) {
-            client.sendMessage("CONNECTED WHITE");
-            clients.get(0).sendMessage("OPPONENT_JOINED");
+            client.sendMessage("CONNECTED WHITE"); // -> ClientLobbyListener
+            clients.get(0).sendMessage("OPPONENT_JOINED"); // -> ClientRoomListener
         } else {
             assert false;
         }
@@ -56,9 +63,12 @@ public class RoomListener implements ServerListener {
     public synchronized void clientDisconnected(ServerClient client) {
         clients.removeIf(c -> c == client);
 
-        for(ServerClient c : clients) {
-            c.sendMessage("OPPONENT_DISCONNECTED");
-            lobby.clientConnected(client);
+        if (manager.inProgress() && !manager.interrupted()) {
+            manager.interruptGame();
+            for (ServerClient c : clients) {
+                c.sendMessage("OPPONENT_DISCONNECTED");
+                lobby.clientConnected(client);
+            }
         }
 
         if(clients.isEmpty())
@@ -81,16 +91,16 @@ public class RoomListener implements ServerListener {
             String[] xs = msg.split(" ");
             GameplayManager.Move move;
 
-            if (clients.size() <= 1) {
+            if (clients.size() <= 1 || manager.interrupted()) {
                 clients.forEach(c -> c.sendMessage("MOVE_REJECTED"));
                 return;
             }
 
             Stone color = clients.get(0) == client ? Stone.Black : Stone.White; // TODO ugly
 
-            if (gameManager.finished()) {
+            if (manager.finished()) {
                 client.sendMessage("MOVE_REJECTED");
-            } else if (gameManager.inProgress()) {
+            } else if (manager.inProgress()) {
 
                 // parse move
                 if (xs.length == 2) { // MOVE PASS
@@ -101,7 +111,7 @@ public class RoomListener implements ServerListener {
                     move = new GameplayManager.StonePlacement(color, pos_x, pos_y);
                 }
 
-                Optional<ReasonMoveImpossible> result = gameManager.registerMove(move);
+                Optional<ReasonMoveImpossible> result = manager.registerMove(move);
                 if (result.isEmpty()) {
                     client.sendMessage("MOVE_ACCEPTED");
 
@@ -111,8 +121,8 @@ public class RoomListener implements ServerListener {
                         if (c != client) c.sendMessage(msg);
                     });
 
-                    if (gameManager.finished()) {
-                        GameplayManager.Result gameResult = gameManager.result();
+                    if (manager.finished()) {
+                        GameplayManager.Result gameResult = manager.result();
                         clients.forEach(c -> c.sendMessage("GAME_FINISHED " + gameResult.winner + " "
                                                             + gameResult.blackPoints + " " + gameResult.whitePoints));
                     }
