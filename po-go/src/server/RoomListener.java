@@ -26,6 +26,7 @@ public class RoomListener implements ServerListener {
         this.lobby = lobby;
     }
 
+    @SuppressWarnings("WeakerAccess")
     public String getName() { return name; }
 
     /**

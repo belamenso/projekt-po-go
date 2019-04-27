@@ -21,7 +21,8 @@ public class ClientRoomListener implements ClientListener {
     public void receivedInput(String msg) {
         if (msg.startsWith("exitedRoom")) {
             client.setListener(new ClientLobbyListener(client));
-        } else if (msg.startsWith("GAME_BEGINS")) {
+        } else //noinspection StatementWithEmptyBody
+            if (msg.startsWith("GAME_BEGINS")) {
 
         } else if (msg.startsWith("GAME_FINISHED")) {
             String[] parts = msg.split(" ");
@@ -36,13 +37,15 @@ public class ClientRoomListener implements ClientListener {
             manager.interruptGame();
         } else if (msg.startsWith("MOVE PASS")) {
             System.out.println("# opponent has passed his turn");
-            assert (manager.registerMove(new GameplayManager.Pass(myColor.opposite))).isEmpty();
+                //noinspection AssertWithSideEffects
+                assert (manager.registerMove(new GameplayManager.Pass(myColor.opposite))).isEmpty();
         } else if (msg.startsWith("MOVE ")) {
             String[] parts = msg.split(" ");
             assert parts.length == 3;
             int x = Integer.parseInt(parts[1]), y = Integer.parseInt(parts[2]);
             System.out.println("# opponent's move: " + x + ", " + y);
-            assert (manager.registerMove(new GameplayManager.StonePlacement(myColor.opposite, x, y))).isPresent();
+                //noinspection AssertWithSideEffects
+                assert (manager.registerMove(new GameplayManager.StonePlacement(myColor.opposite, x, y))).isPresent();
         } else {
             System.out.println("UNRECOGNIZED MSG: " + msg);
             // TODO handle lobbyJoined
