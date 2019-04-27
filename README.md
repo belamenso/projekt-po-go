@@ -71,3 +71,30 @@ Rzeczy, które potencjalnie możemy dodać, ale później i warto się na nie pr
 * szachy (coraz bardziej wątpliwe w tym projekcie :)
 * gra offline (dwóch graczy przed jednym komputerem)
 * gra z komputerem (niemożliwe do zrobienia w go, trzeba by było coś ukraść z internetu dla szachów)
+
+## Serwer
+Klasa Server uruchamia na komputerze server na wolnym porcie (uruchamiana z lini poleceń). Czeka na klientów.
+Klasa ServerClient przechowuje dane o kliencie - id, ip, port, strumien wyjsciowy, listener
+Interfejs ServerListener przetwarza dane i evenety od clienta. Póki co implementują go dwie klasy:
+
+LobbyListener - domyślny listener, obsluguje komendy:
+* list - zwraca liste pokoi - trzeba to inaczej sformatowac, tak aby dalo sie to latwo odczytac po stronie klienta i wstawic do GUI
+* create [name] - tworzy nowy pokoj o nazwie name, powinno jeszcze automatycznie przenosic klienta do pokoju
+* join [name] - laczy klienta z pokojem o nazwie name - zmienia mu listenera
+* remove [name] - usuwa pokoj o nazwie name, wysyla ja tylko RoomListener gdy wyjda z niego wszyscy gracze
+
+RoomListener - obluguje pojedyncza gre, na chwile obecną obsługuje jedną komendę:
+* quit - usuwa gracza z pokoju i przenosi do lobby
+
+W kazdym innym przypadku wysyla otrzymana wiadomosc do wszystkich graczy.
+W przyszłości będzie odpowiadał za przeprowadzenie gry i updatował graczy po otrzymaniu wiadomości o ruchach. Dobrze by było żeby w przyszłości była to klasa abstrakcyjna z której dziedziczyć bedą klasy pokoi dla odpowiednich trybów gry
+
+Po stronie klienta:
+Klasa Client laczy sie z serwerem i nasluchuje, wiadomosci i eventy przesyla do ClientListenera, póki co są dwa listenery:
+* ClientLobbyListener - póki co nic nie robi oprócz zmiany listenera na ClientRoomListener gdy otrzyma connectedToRoom, w przyszłości ma współdziałać z GUI aby wysyłać komendy i wyswietlać listę pokoi by umożliwić tworzenie i łączenie się z pokojem
+* ClientRoomListener - póki co jedyne co robi to wyświetla wiadomości i zmienia listenera na ClientLobbyListener gdy otrzyma exitedRoom, w przyszłości ma updatować GUI aby wyświetlaćzmiany na planszy
+
+TODO ConnectListener - podstawowy listener, bedzie działał z GUI przy łaczeniu się z serwerem, gdy się połaczy zmieni listenera na ClientLobbyListener i zmieni odpowiednio GUI
+Wszystkie wiadomosci wysyłane przez klienta są póki co czytane ze standardowego wejscia. W finalnym produkcie bedą wysyłane przez GUI.
+W tym stanie występuje dużo śmieci w komunikacji, które były potrzebne do testowania, wszystko się posprząta, gdy zaczniemy wprowadzać gui i logikę gry.
+Możesz przetestować serwer to w kilku oknach linii poleceń. W jednym uruchom server.Server, który wypisze IP i port. W pozostałych uruchom client.Client i przetestuj komendy (list, create, join, quit).
