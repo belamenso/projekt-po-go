@@ -30,6 +30,7 @@ public class Board {
      * Tworzy pustą planszę o określonym rozmiarze
      * @param size rozmiar planszy
      */
+    @SuppressWarnings("WeakerAccess")
     public Board(BoardSize size) {
         this.size = size;
         board = new Optional[size.getSize()][size.getSize()];
@@ -42,6 +43,7 @@ public class Board {
     /**
      * @return wykonuje głęboką kopię całej planszy
      */
+    @SuppressWarnings("WeakerAccess")
     public Board cloneBoard() {
         Board b = new Board(size);
         for (int i = 0; i < getSize(); i++)
@@ -49,14 +51,25 @@ public class Board {
         return b;
     }
 
+    /**
+     * Czy podana pozycja mieści się w plaszy?
+     */
+    @SuppressWarnings("WeakerAccess")
+    public boolean indicesOk(int i, int j) {
+        return i >= 0 && i < getSize() && j >= 0 && j < getSize();
+    }
+
+    @SuppressWarnings("WeakerAccess")
     public int getSize() {
         return size.getSize();
     }
 
+    @SuppressWarnings("WeakerAccess")
     public Optional<Stone>[][] getBoard() {
         return board;
     }
 
+    @SuppressWarnings("WeakerAccess")
     public Optional<Stone> get(int i, int j) throws ArrayIndexOutOfBoundsException {
         if (i < 0 || i >= getSize() || j < 0 || j >= getSize()) throw new ArrayIndexOutOfBoundsException();
         return board[i][j];

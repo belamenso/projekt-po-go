@@ -27,14 +27,6 @@ public enum GameLogic {
     }
 
     /**
-     * Czy podana pozycja mieści się w plaszy z której rzekomo pochodzi?
-     * TODO przenieść to do klasy Board
-     */
-    private boolean indicesOk(Board board, int i, int j) {
-        return i >= 0 && i < board.getSize() && j >= 0 && j < board.getSize();
-    }
-
-    /**
      * Tworzy świerzą macierz boolowską wielkości planszy podanej jako argument
      */
     private boolean[][] boolMatrix(Board board) {
@@ -60,7 +52,7 @@ public enum GameLogic {
     private Group collectGroup(Board board, int i, int j, boolean[][] seen) {
         Group ret = new Group();
         boolean[][] libertiesSeen = boolMatrix(board);
-        assert indicesOk(board, i, j) && board.get(i, j).isPresent(); // TODO
+        assert board.indicesOk(i, j) && board.get(i, j).isPresent(); // TODO
         assert !seen[i][j];
         Stone color = board.get(i, j).get();
         Queue<Pair<Integer, Integer>> queue = new LinkedList<>();
@@ -72,7 +64,7 @@ public enum GameLogic {
             for (Pair<Integer, Integer> d: offsets) {
                 int x = curr.x + d.x, y = curr.y + d.y;
 
-                if (!indicesOk(board, x, y)) continue;
+                if (!board.indicesOk(x, y)) continue;
 
                 if (board.get(x, y).isEmpty()) {
                     if (!libertiesSeen[x][y]) {
@@ -108,7 +100,7 @@ public enum GameLogic {
                    należy podawać ją świerzą za każdym razem
      */
     private Territory collectTerritory(Board board, int i, int j, boolean[][] seen) {
-        assert indicesOk(board, i, j) && board.get(i, j).isEmpty(); // TODO
+        assert board.indicesOk(i, j) && board.get(i, j).isEmpty(); // TODO
         assert !seen[i][j];
 
         Territory ret = new Territory();
@@ -124,7 +116,7 @@ public enum GameLogic {
             Pair<Integer, Integer> curr = queue.remove();
             for (Pair<Integer, Integer> d : offsets) {
                 int x = curr.x + d.x, y = curr.y + d.y;
-                if (!indicesOk(board, x, y) || seen[x][y]) continue;
+                if (!board.indicesOk(x, y) || seen[x][y]) continue;
                 if (board.get(x, y).isEmpty()) {
                     queue.add(new Pair<>(x, y));
                     seen[x][y] = true;
@@ -157,7 +149,7 @@ public enum GameLogic {
      * @return empty jeśli ruch jest możliwy, powód jeśli nie jest
      */
     public Optional<ReasonMoveImpossible> movePossible(Board board, int i, int j, Stone color) {
-        if (!indicesOk(board, i, j)) return Optional.of(ReasonMoveImpossible.PositionOutOfBounds);
+        if (!board.indicesOk(i, j)) return Optional.of(ReasonMoveImpossible.PositionOutOfBounds);
         if (board.get(i, j).isPresent()) return Optional.of(ReasonMoveImpossible.PositionOccupied);
 
         board.getBoard()[i][j] = Optional.of(color);
@@ -172,7 +164,7 @@ public enum GameLogic {
             board.getBoard()[i][j] = Optional.of(color);
             for (Pair<Integer, Integer> d : offsets) {
                 int x = i + d.x, y = j + d.y;
-                if (!indicesOk(board, x, y)) continue;
+                if (!board.indicesOk(x, y)) continue;
                 assert board.get(x, y).isPresent();
                 if (board.get(x, y).get() == color.opposite) {
                     if (collectGroup(board, x, y, boolMatrix(board)).liberties == 0) {
