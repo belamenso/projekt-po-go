@@ -28,6 +28,13 @@ public class Board {
         }
     }
 
+    public Board cloneBoard() {
+        Board b = new Board(size);
+        for (int i = 0; i < getSize(); i++)
+            if (getSize() >= 0) System.arraycopy(board[i], 0, b.board[i], 0, getSize());
+        return b;
+    }
+
     public int getSize() {
         return size.getSize();
     }

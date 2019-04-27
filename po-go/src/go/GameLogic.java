@@ -67,7 +67,7 @@ public enum GameLogic {
         return ret;
     }
 
-    private class Territory {
+    class Territory {
         ArrayList<Pair<Integer, Integer>> territory = new ArrayList<>();
         Optional<Stone> captor = Optional.empty();
     }
