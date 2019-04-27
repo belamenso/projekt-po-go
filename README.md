@@ -85,8 +85,10 @@ LobbyListener - domyślny listener, obsluguje komendy:
 
 RoomListener - obluguje pojedyncza gre, na chwile obecną obsługuje jedną komendę:
 * quit - usuwa gracza z pokoju i przenosi do lobby
+
 W kazdym innym przypadku wysyla otrzymana wiadomosc do wszystkich graczy.
 W przyszłości będzie odpowiadał za przeprowadzenie gry i updatował graczy po otrzymaniu wiadomości o ruchach. Dobrze by było żeby w przyszłości była to klasa abstrakcyjna z której dziedziczyć bedą klasy pokoi dla odpowiednich trybów gry
+
 Po stronie klienta:
 Klasa Client laczy sie z serwerem i nasluchuje, wiadomosci i eventy przesyla do ClientListenera, póki co są dwa listenery:
 * ClientLobbyListener - póki co nic nie robi oprócz zmiany listenera na ClientRoomListener gdy otrzyma connectedToRoom, w przyszłości ma współdziałać z GUI aby wysyłać komendy i wyswietlać listę pokoi by umożliwić tworzenie i łączenie się z pokojem
