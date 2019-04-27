@@ -59,25 +59,41 @@ public class GameplayManager {
     private boolean inProgress;
     /**
      * liczba czarnych kameni przejętych przez białe w ciągu gry
-     * TODO zamień to na historię
      */
-    private int capturedByWhite = 0;
+    private ArrayList<Integer> capturedByWhite = new ArrayList<>();
     /**
      * liczba białych kamieni przejętych przez czarne w ciągu gry
-     * TODO zamień to na historię
      */
-    private int capturedByBlack = 0;
+    private ArrayList<Integer> capturedByBlack = new ArrayList<>();
     /**
      * wartość liczbowa dodawana do punktów białych pod koniec gry, ponieważ one nie zaczynały
      * zawsze zachodzi floor(komi) != komi aby nie dopuścić remisów
      */
     private final double komi;
 
+    private int getCapturedByWhite() { return capturedByWhite.get(capturedByWhite.size() - 1); }
+
+    private int getCapturedByBlack() { return capturedByBlack.get(capturedByBlack.size() - 1); }
+
+    /**
+     * Przedłuż historię liczby przejętych kaniemi oraz zaktualizuj obecne dane
+     */
     private void updateCapturedCount(Stone playerCapturing, int n) {
-        if (playerCapturing.equals(Stone.White))
-            capturedByWhite += n;
-        else
-            capturedByBlack += n;
+        if (playerCapturing.equals(Stone.White)) {
+            capturedByWhite.add(getCapturedByWhite() + n);
+            capturedByBlack.add(getCapturedByBlack());
+        } else {
+            capturedByWhite.add(getCapturedByWhite());
+            capturedByBlack.add(getCapturedByBlack() + n);
+        }
+    }
+
+    /**
+     * Przedłuż historię liczby przejętych kamieni i niczego nie modyfikuj
+     */
+    private void extendCapturedHistory() {
+        capturedByWhite.add(getCapturedByWhite());
+        capturedByBlack.add(getCapturedByBlack());
     }
 
     private Move getLastMove() {
@@ -85,12 +101,16 @@ public class GameplayManager {
         return moves.get(moves.size() - 1);
     }
 
-    //////////////////// public interface
+    /***********
+     ****** PUBLIC INTERFACE
+     ***********/
 
     public GameplayManager(Board.BoardSize size, double komi) {
         assert Math.floor(komi) != komi; // needed to break ties
         this.komi = komi;
         boards.add(new Board(size));
+        capturedByBlack.add(0);
+        capturedByWhite.add(0);
     }
 
     public GameplayManager() {
@@ -100,7 +120,7 @@ public class GameplayManager {
     public double getKomi() { return komi; }
 
     public int getCapturedBy(Stone color) {
-        return color.equals(Stone.White) ? capturedByWhite : capturedByBlack;
+        return color.equals(Stone.White) ? getCapturedByWhite() : getCapturedByBlack();
     }
 
     public Board getBoard() {
@@ -135,6 +155,7 @@ public class GameplayManager {
             if (!moves.isEmpty() && getLastMove() instanceof Pass)
                 inProgress = false;
             moves.add(m);
+            extendCapturedHistory();
         } else {
             StonePlacement placement = (StonePlacement) m;
             assert gameLogic.movePossible(getBoard(), placement.position.x, placement.position.y, placement.player); // TODO
@@ -143,12 +164,13 @@ public class GameplayManager {
             Board nextBoard = getBoard().cloneBoard();
             nextBoard.getBoard()[placement.position.x][placement.position.y] = Optional.of(m.player);
             ArrayList<Pair<Integer, Integer>> captured = gameLogic.captured(nextBoard, m.player);
-            updateCapturedCount(m.player, captured.size());
             for (Pair<Integer, Integer> pos : captured)
                 nextBoard.getBoard()[pos.x][pos.y] = Optional.empty();
 
+            // changes to the state
             moves.add(placement);
             boards.add(nextBoard);
+            updateCapturedCount(m.player, captured.size());
         }
     }
 
@@ -179,8 +201,8 @@ public class GameplayManager {
                     ret.blackPoints += t.territory.size();
             }
         }
-        ret.whitePoints -= capturedByBlack;
-        ret.blackPoints -= capturedByWhite;
+        ret.whitePoints -= getCapturedByBlack();
+        ret.blackPoints -= getCapturedByWhite();
         ret.whitePoints += komi;
         assert ret.whitePoints != ret.blackPoints; // ties are not possible
         ret.winner = ret.whitePoints > ret.blackPoints ? Stone.White : Stone.Black;
