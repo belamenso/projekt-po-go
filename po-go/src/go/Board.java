@@ -5,8 +5,11 @@ import org.jetbrains.annotations.NotNull;
 
 public class Board {
 
+    /**
+     * Enum określający standardowe rozmiary planszy
+     */
     public enum BoardSize {
-        Size19, Size13, Size9;
+        Size13, Size19, Size9;
 
         int getSize() {
             if (this == Size19) return 19;
@@ -17,8 +20,17 @@ public class Board {
     }
 
     final private BoardSize size;
+    /**
+     * tablica Optional
+     *      empty -> nie ma żadnego kamienia na przecięciu
+     *      value -> kamień
+     */
     final private Optional<Stone>[][] board;
 
+    /**
+     * Tworzy pustą planszę o określonym rozmiarze
+     * @param size rozmiar planszy
+     */
     public Board(@NotNull BoardSize size) {
         this.size = size;
         board = new Optional[size.getSize()][size.getSize()];
@@ -28,6 +40,9 @@ public class Board {
         }
     }
 
+    /**
+     * @return wykonuje głęboką kopię całej planszy
+     */
     public Board cloneBoard() {
         Board b = new Board(size);
         for (int i = 0; i < getSize(); i++)
@@ -48,6 +63,9 @@ public class Board {
         return board[i][j];
     }
 
+    /**
+     * Porównuje po stanie planszy, to jest sprawdza równość pustych/białych/czarnych przecięć.
+     */
     @Override
     public boolean equals(Object o) {
         if (o == null) return false;
