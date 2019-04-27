@@ -144,27 +144,30 @@ public enum GameLogic {
         return ret;
     }
 
+
     /**
      * determinuje, czy ruch gracza color na miejsce (i, j) jest dozwolony, to znaczy czy
+     * <b>uwaga! ta metoda nie sprawdza czy gracz ma teraz kolejkę, ponieważ za to odpowiedzialny jest GameplayManager</b>
      * <ol>
      * <li>indeks jest poprawny</li>
      * <li>nie ma tam innego kamienia</li>
      * <li>ruch nie jest samobójczy albo jest samobójczy, ale natychmiast przerywa zagrożenie</li>
      * </ol>
+     * @return empty jeśli ruch jest możliwy, powód jeśli nie jest
      */
-    public boolean movePossible(Board board, int i, int j, Stone color) {
-        if (!indicesOk(board, i, j)) return false;
-        if (board.get(i, j).isPresent()) return false;
+    public Optional<ReasonMoveImpossible> movePossible(Board board, int i, int j, Stone color) {
+        if (!indicesOk(board, i, j)) return Optional.of(ReasonMoveImpossible.PositionOutOfBounds);
+        if (board.get(i, j).isPresent()) return Optional.of(ReasonMoveImpossible.PositionOccupied);
 
         board.getBoard()[i][j] = Optional.of(color);
         Group group = collectGroup(board, i, j, boolMatrix(board));
         board.getBoard()[i][j] = Optional.empty();
 
-        if (group.liberties > 0) return true;
+        if (group.liberties > 0) return Optional.empty();
         else { // sprawdź, czy ten ruch pojmie jakieś kamyki, jeśli tak, pozwól na niego
             assert group.liberties == 0;
 
-            boolean ret = false;
+            Optional<ReasonMoveImpossible> ret = Optional.of(ReasonMoveImpossible.SuicidalMove);
             board.getBoard()[i][j] = Optional.of(color);
             for (Pair<Integer, Integer> d : offsets) {
                 int x = i + d.x, y = j + d.y;
@@ -172,7 +175,7 @@ public enum GameLogic {
                 assert board.get(x, y).isPresent();
                 if (board.get(x, y).get() == color.opposite) {
                     if (collectGroup(board, x, y, boolMatrix(board)).liberties == 0) {
-                        ret = true;
+                        ret = Optional.empty();
                         break;
                     }
                 }

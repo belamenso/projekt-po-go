@@ -144,21 +144,24 @@ public class GameplayManager {
     }
 
     /**
-     * <b>może być wywołane tylko gry m.player == nextTurn() oraz gdy ruch jest poprawny!</b>
-     * TODO better error handling
+     * gdy nie (m.player == nextTurn() oraz gdy ruch jest poprawny), wtedy zwraca powód, jeśli ruch został przyjęty, zwraca empty()
      * rejestruje ruch gracza m.player i gra toczy się dalej
      * @param m opis ruchu
      */
-    public void registerMove(Move m) {
-        assert m.player == nextTurn(); // TODO
+    public Optional<ReasonMoveImpossible> registerMove(Move m) {
+        if (!m.player.equals(nextTurn()))
+            return Optional.of(ReasonMoveImpossible.NotYourTurn);
         if (m instanceof Pass) {
             if (!moves.isEmpty() && getLastMove() instanceof Pass)
                 inProgress = false;
             moves.add(m);
             extendCapturedHistory();
+            return Optional.empty();
         } else {
             StonePlacement placement = (StonePlacement) m;
-            assert gameLogic.movePossible(getBoard(), placement.position.x, placement.position.y, placement.player); // TODO
+            Optional<ReasonMoveImpossible> reason = gameLogic.movePossible(getBoard(), placement.position.x, placement.position.y, placement.player);
+            if (reason.isPresent())
+                return reason;
 
             // compute the next board
             Board nextBoard = getBoard().cloneBoard();
@@ -171,6 +174,7 @@ public class GameplayManager {
             moves.add(placement);
             boards.add(nextBoard);
             updateCapturedCount(m.player, captured.size());
+            return Optional.empty();
         }
     }
 
