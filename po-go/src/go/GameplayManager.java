@@ -123,6 +123,11 @@ public class GameplayManager {
 
     public double getKomi() { return komi; }
 
+    /**
+     * @return może się zdarzyć, że klient i serwer mają różne implementacje zasad gry, niekompatybilne pokoje nie powinny być widoczne
+     */
+    public String getEngineVersion() { return "0.0.1"; }
+
     public boolean interrupted() { return gameInterrupted; }
 
     public void interruptGame() { gameInterrupted = true; }

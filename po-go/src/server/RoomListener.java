@@ -26,8 +26,38 @@ public class RoomListener implements ServerListener {
         this.lobby = lobby;
     }
 
+    /**
+     * @return nazwa pokoju
+     * TODO ona chyba nie powinna być dowolna, może coś bez spacji czy coś?
+     */
     @SuppressWarnings("WeakerAccess")
     public String getName() { return name; }
+
+    /**
+     * @return początkowo w projekcie miały być różne gry, nie wiadomo, czy tak będzie, ale warto się zabezpieczyć
+     */
+    public String getGameType() { return "Go"; }
+
+    /**
+     * @return Rozmiar planszy do Go w rozgrywce
+     */
+    public int getBoardSize() { return manager.getBoard().getSize(); }
+
+    /**
+     * @return może się zdarzyć, że klient i serwer mają różne implementacje zasad gry
+     * niekompatybilne pokoje nie powinny być widoczne dla klienta
+     */
+    public String gameEngineVersion() { return manager.getEngineVersion(); }
+
+    /**
+     * @return TODO Późniejsza wersja będzie to implementowała
+     */
+    public int numberOfSpectators() { return 0; }
+
+    /**
+     * @return TODO Późniejsza wersja będzie to implementowała
+     */
+    public int durationInSeconds() { return 0; }
 
     /**
      * Pokój nie akceptuje już żadnych graczy w stanie interrupted.
