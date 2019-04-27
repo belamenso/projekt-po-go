@@ -22,10 +22,6 @@ public class ClientRoomListener implements ClientListener {
 
     @Override
     public void receivedInput(String msg) {
-        System.out.println(msg);
-        if(msg.startsWith("exitedRoom")) {
-            client.setListener(new ClientLobbyListener(client));
-        }
     }
 
     @Override

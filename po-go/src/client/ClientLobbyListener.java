@@ -1,5 +1,7 @@
 package client;
 
+import javafx.application.Platform;
+
 /**
  * Listener obsulugujacy lobby po stronie gracza
  * póki co wypisuje otrzymane wiadomosci
@@ -8,20 +10,18 @@ package client;
  */
 public class ClientLobbyListener implements ClientListener {
     private Client client;
+    private LobbyScreen ls;
 
-    ClientLobbyListener(Client client) {
-        this.client = client;
+    ClientLobbyListener(LobbyScreen ls) {
+        this.ls = ls;
+        this.client = ls.client;
     }
 
     @Override
-    public void unknownHost() {
-        System.out.println("unknownHost");
-    }
+    public void unknownHost() {}
 
     @Override
-    public void couldNotConnect() {
-        System.out.println("couldNotConnect");
-    }
+    public void couldNotConnect() {}
 
     @Override
     public void receivedInput(String msg) {
