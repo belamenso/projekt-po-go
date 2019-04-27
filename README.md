@@ -1,9 +1,14 @@
 # Go
 
+## TODO
+* w jednym ruchu można pojmać 2+ grup kamieni (OGS ko 1), zmienić logikę na ten wypadek
+* OGS ko 2 -> przypadek brzegowy, czasem można wejść w pozycję samobójczą, jeśli natychmiast nią zabijasz i już w niej nie jesteś, zmienić logikę
+* ogólnie [online-go.com](/online-go.com) to lepsza wersja tego, co budujemy, warto brać od nich pomysły
+
 ## Zasady gry
 * [turorial 1](https://www.youtube.com/watch?v=5PTXdR8hLlQ)
 * [tutorial 2](https://www.youtube.com/watch?v=YPMog4LAmvg)
-
+* [interaktywny tutorial, dobre źródło testów systemu](https://online-go.com/learn-to-play-go/)
 
 zasady:
 * czarne zaczynają
@@ -32,10 +37,12 @@ się w nieskończoność
 |---|---|---|
 | Bartosz | definicja podstawowych struktur danych (plansza, kamyki, stan gry) | W TRAKCIE |
 | Bartosz | funkcje implementujące podstawową logikę gry | W TRAKCIE |
+| Rafał | projekt serwera | W TRAKCIE |
 
 ## Kierunek
 
-*Bartosz*:
+*Bartosz 26.04 18:00*:
+
 Chciałbym, żeby rdzeń aplikacji (logika gry, stan gry...) były w całości odizolowane od UI, serwera itd, po prostu niech
 w środku będą czyste dane, czyli klasy z public final polami takimi jak plansza pionków, itd, bez żadnych metod robiących
 modyfikacje in place. I statyczne metody w tych klasach biorące stan planszy, opis ruchu i zwracające kolejny stan planszy.
@@ -43,7 +50,7 @@ To są małe struktury danych, więc to nie będzie przeszkadzało, a łatwiej t
 zrobić błędy w zarządzaniu stanem jeśli nie masz stanu itd. Myślę, że jak tak zrobimy rdzeń kodu opisujący samą grę, to później
 będzie prościej.
 
-*Bartosz*:
+*Bartosz 26.04 22:50*:
 
 Z uwagi na to, że logika gry jest napisana funkcyjnie i robienie takich rzeczy teraz jest bardzo proste,
 proponuję dodać sztuczki ze stanem aplikacji, to jest
