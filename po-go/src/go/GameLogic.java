@@ -112,6 +112,8 @@ public enum GameLogic {
         assert !seen[i][j];
 
         Territory ret = new Territory();
+        seen[i][j] = true;
+        ret.territory.add(new Pair<>(i, j));
 
         // seenAnyColor && captor.isEmpty() => nie ma jednoznacznego koloru, który przejął to terytorium
         boolean seenAnyColor = false;
@@ -122,12 +124,11 @@ public enum GameLogic {
             Pair<Integer, Integer> curr = queue.remove();
             for (Pair<Integer, Integer> d : offsets) {
                 int x = curr.x + d.x, y = curr.y + d.y;
-                if (!indicesOk(board, x, y)) continue;
+                if (!indicesOk(board, x, y) || seen[x][y]) continue;
                 if (board.get(x, y).isEmpty()) {
-                    if (!seen[x][y]) {
-                        queue.add(new Pair<>(x, y));
-                        seen[x][y] = true;
-                    }
+                    queue.add(new Pair<>(x, y));
+                    seen[x][y] = true;
+                    ret.territory.add(new Pair<>(x, y));
                 } else {
                     if (seenAnyColor) {
                         if (ret.captor.isPresent()) {
