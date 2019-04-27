@@ -3,10 +3,9 @@ package go;
 import java.util.Optional;
 import org.jetbrains.annotations.NotNull;
 
-
 public class Board {
 
-    enum BoardSize {
+    public enum BoardSize {
         Size19, Size13, Size9;
 
         int getSize() {

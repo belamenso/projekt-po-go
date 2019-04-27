@@ -9,7 +9,7 @@ import java.util.ArrayList;
 import java.util.LinkedList;
 
 public enum GameLogic {
-    GameLogic;
+    gameLogic;
 
     private final ArrayList<Pair<Integer, Integer>> offsets;
     {
