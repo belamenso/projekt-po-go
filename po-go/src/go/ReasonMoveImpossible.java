@@ -16,5 +16,9 @@ public enum ReasonMoveImpossible {
     /**
      * Gracz, który zgłosił ruch nie miał teraz prawa tego zrobić
      */
-    NotYourTurn
+    NotYourTurn,
+    /**
+     * Wykonując ten ruch, stan gry sprzed dwóch ruchów powtórzyłby się w całości
+     */
+    ReturnToImmediatePreviousState
 }

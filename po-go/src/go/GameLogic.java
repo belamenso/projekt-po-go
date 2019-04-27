@@ -147,7 +147,7 @@ public enum GameLogic {
 
     /**
      * determinuje, czy ruch gracza color na miejsce (i, j) jest dozwolony, to znaczy czy
-     * <b>uwaga! ta metoda nie sprawdza czy gracz ma teraz kolejkę, ponieważ za to odpowiedzialny jest GameplayManager</b>
+     * <b>uwaga! ta metoda nie sprawdza czy gracz ma teraz kolejkę ani czy stan gry się nie powtórzy, ponieważ za to odpowiedzialny jest GameplayManager</b>
      * <ol>
      * <li>indeks jest poprawny</li>
      * <li>nie ma tam innego kamienia</li>

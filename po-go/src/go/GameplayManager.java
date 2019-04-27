@@ -2,6 +2,7 @@ package go;
 
 import util.Pair;
 
+import javax.swing.text.html.Option;
 import java.util.ArrayList;
 import java.util.Optional;
 
@@ -169,6 +170,9 @@ public class GameplayManager {
             ArrayList<Pair<Integer, Integer>> captured = gameLogic.captured(nextBoard, m.player);
             for (Pair<Integer, Integer> pos : captured)
                 nextBoard.getBoard()[pos.x][pos.y] = Optional.empty();
+
+            if (boards.size() >= 2 && boards.get(boards.size() - 2).equals(nextBoard))
+                return Optional.of(ReasonMoveImpossible.ReturnToImmediatePreviousState);
 
             // changes to the state
             moves.add(placement);
