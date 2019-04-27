@@ -1,5 +1,7 @@
 package client;
 
+import go.Stone;
+
 /**
  * Listener obsulugujacy lobby po stronie gracza
  * póki co wypisuje otrzymane wiadomosci
@@ -26,8 +28,13 @@ public class ClientLobbyListener implements ClientListener {
     @Override
     public void receivedInput(String msg) {
         System.out.println("receivedInput >"+msg+"<");
-        if(msg.startsWith("connectedToRoom")) {
-            client.setListener(new ClientRoomListener(client));
+
+        if(msg.startsWith("CONNECTED ")) {
+            String[] parts = msg.split(" ");
+            assert parts.length == 2;
+            client.setListener(new ClientRoomListener(client, parts[1].equals("WHITE") ? Stone.White : Stone.Black));
+        } else {
+
         }
     }
 
