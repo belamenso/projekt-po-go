@@ -1,6 +1,5 @@
 package server;
 
-import go.Board;
 import go.GameplayManager;
 import go.ReasonMoveImpossible;
 import go.Stone;

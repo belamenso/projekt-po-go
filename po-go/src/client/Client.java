@@ -20,11 +20,13 @@ public class Client {
 
     private boolean open;
 
+    @SuppressWarnings("WeakerAccess")
     public Client() {
         open = false;
         listener = null;
     }
 
+    @SuppressWarnings("WeakerAccess")
     public void startConnection(String ip, int port) {
         if(open) return;
         open = true;
@@ -72,10 +74,12 @@ public class Client {
         }
     }
 
+    @SuppressWarnings("WeakerAccess")
     public void setListener(ClientListener listener) {
         this.listener = listener;
     }
 
+    @SuppressWarnings("WeakerAccess")
     public void close() {
         try {
             if(open) {
@@ -92,6 +96,7 @@ public class Client {
         } catch(Exception e) { e.printStackTrace(); }
     }
 
+    @SuppressWarnings("WeakerAccess")
     public void sendMessage(String msg){ if(open) out.println(msg); }
 
     public boolean isConnected(){ return open; }
