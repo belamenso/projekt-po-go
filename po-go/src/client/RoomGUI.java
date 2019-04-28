@@ -66,7 +66,7 @@ public class RoomGUI implements Initializable {
             text.setX((2 * i + 1) * r-3);
             text.setY(-2);
             boardGroup.getChildren().add(text);
-            Text text2 = new Text(Integer.toString(i));
+            Text text2 = new Text(Integer.toString(i+1));
             text2.setY((2 * (size-i-1) + 1) * r+5);
             text2.setX(-10);
             boardGroup.getChildren().add(text2);
@@ -104,17 +104,13 @@ public class RoomGUI implements Initializable {
     }
 
 
-    // Zmienia kolor kamieni, wywoływana gedzie po każdej zmianie
+    // Renderuje planszę
     void renderBoard() {
-        // Powinnow renderować planszę
         final Board toRender = crl.getBoard();
         Platform.runLater(() -> {
-            //System.out.println("Rendering board");
             for(int i = 0; i < toRender.getSize(); ++ i) {
                 for(int j = 0; j < toRender.getSize(); ++ j) {
                     Optional<Stone> stone = toRender.get(i, j);
-                    // TODO zmienic to na klasy w stylesheecie
-                    //System.out.print(stone.isEmpty() ? " " : (stone.get().equals(Stone.White)?"W":"B"));
                     if(stone.isEmpty()) {
                         stones[i][j].setStyle("-fx-fill: transparent");
                     } else if(stone.get().equals(Stone.White)){
@@ -123,7 +119,6 @@ public class RoomGUI implements Initializable {
                         stones[i][j].setStyle("-fx-fill: #000000");
                     }
                 }
-                //System.out.print("\n");
             }
         });
     }
@@ -168,30 +163,9 @@ public class RoomGUI implements Initializable {
         Platform.runLater(()->scene.setRoot(root));
     }
 
-
-    /*private class Message {
-        private StringProperty msg;
-        public Message(String stockTicker) {
-            this.msg = new SimpleStringProperty(stockTicker);
-        }
-
-        public String getMsg() {
-            return msg.get();
-        }
-
-        public void setMsg(String msg) {
-            msg.set(msg);
-        }
-
-        public StringProperty msgProperty() {
-            return msg;
-        }
-    }*/
-
     public class Message {
 
         private String name;
-
         public Message(){ this.name = ""; }
         public Message(String name){ this.name = name; }
         public String getName() { return name; }
@@ -202,7 +176,7 @@ public class RoomGUI implements Initializable {
     @Override
     public void initialize(URL url, ResourceBundle resourceBundle) {
         TableColumn<Message, String> nameColumn = new TableColumn<>("Messages");
-        nameColumn.setMinWidth(199);
+        nameColumn.setMinWidth(198);
         nameColumn.setCellValueFactory(new PropertyValueFactory<>("name"));
         nameColumn.setSortable(false);
         nameColumn.setEditable(false);
