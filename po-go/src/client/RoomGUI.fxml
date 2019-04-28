@@ -66,7 +66,10 @@
    <top>
       <VBox alignment="CENTER" prefHeight="60.0" BorderPane.alignment="CENTER">
          <children>
-            <Label fx:id="infoLabel" text="Info o ruchach itp" />
+            <Label fx:id="infoLabel" text="Info o ruchach itp">
+               <VBox.margin>
+                  <Insets top="-8.0" />
+               </VBox.margin></Label>
          </children>
       </VBox>
    </top>
