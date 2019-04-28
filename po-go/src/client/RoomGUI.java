@@ -1,6 +1,8 @@
 package client;
 
 import go.Board;
+import go.GameplayManager;
+import go.ReasonMoveImpossible;
 import go.Stone;
 import javafx.application.Platform;
 import javafx.collections.FXCollections;
@@ -23,6 +25,8 @@ import javafx.scene.shape.Rectangle;
 import java.net.URL;
 import java.util.Optional;
 import java.util.ResourceBundle;
+
+import static go.GameLogic.gameLogic;
 
 public class RoomGUI implements Initializable {
     private Client client;
@@ -59,9 +63,17 @@ public class RoomGUI implements Initializable {
                 rect.setStyle("-fx-fill: transparent");
                 rect.setOnMouseClicked(e -> {
                     System.out.println("click " + y + " " + x);
-                    // Z tego co się orientuje tu ma być jeszcze wywoływanie ruchu na lokalnym managerze
-                    // Pewnie jakaś funkcja w ClientRoomListenerze która przeprowadza ruch
-                    //client.sendMessage("MOVE " + x + " " + y);
+                    if (crl.myTurn()) {
+                        Optional<ReasonMoveImpossible> reason = gameLogic.movePossible(crl.getBoard(), x, y, crl.getColor());
+                        if (reason.isPresent()) {
+                            System.out.println("Move impossible: " + reason.get());
+                        } else {
+                            crl.makeMyMove(new GameplayManager.StonePlacement(crl.getColor(), x, y));
+                            renderBoard();
+                        }
+                    } else {
+                        System.out.println("NOT MY TURN!");
+                    }
                 });
 
                 Circle stone = new Circle((2*x+1)*r, (2*y+1)*r, r*0.8);

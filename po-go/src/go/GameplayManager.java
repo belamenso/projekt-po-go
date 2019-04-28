@@ -30,6 +30,12 @@ public class GameplayManager {
      */
     public static class Pass extends Move {
         public Pass(Stone color) { super(color); }
+
+        /**
+         * @return Renderuje komendę
+         */
+        @Override
+        public String toString() { return "MOVE PASS"; }
     }
 
     /**
@@ -42,6 +48,14 @@ public class GameplayManager {
             super(color);
             position = new Pair<>(x, y);
             // TODO error handling
+        }
+
+        /**
+         * @return Renderuje komendę
+         */
+        @Override
+        public String toString() {
+            return "MOVE " + position.x + " " + position.y;
         }
     }
 
