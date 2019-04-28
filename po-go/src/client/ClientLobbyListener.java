@@ -1,6 +1,11 @@
 package client;
 
 import go.Stone;
+import javafx.application.Platform;
+
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Listener obsulugujacy lobby po stronie gracza
@@ -10,20 +15,18 @@ import go.Stone;
  */
 public class ClientLobbyListener implements ClientListener {
     private Client client;
+    private LobbyScreen ls;
 
-    ClientLobbyListener(Client client) {
-        this.client = client;
+    ClientLobbyListener(LobbyScreen ls) {
+        this.ls = ls;
+        this.client = ls.client;
     }
 
     @Override
-    public void unknownHost() {
-        System.out.println("unknownHost");
-    }
+    public void unknownHost() {}
 
     @Override
-    public void couldNotConnect() {
-        System.out.println("couldNotConnect");
-    }
+    public void couldNotConnect() {}
 
     @Override
     public void receivedInput(String msg) {
@@ -32,9 +35,17 @@ public class ClientLobbyListener implements ClientListener {
         if(msg.startsWith("CONNECTED ")) {
             String[] parts = msg.split(" ");
             assert parts.length == 2;
-            client.setListener(new ClientRoomListener(client, parts[1].equals("WHITE") ? Stone.White : Stone.Black));
-        } else {
-
+            Platform.runLater(() -> ls.moveToRoom(parts[1].equals("WHITE") ? Stone.White : Stone.Black));
+        } else if(msg.startsWith("list")){
+            List<RoomData> data = new ArrayList<>();
+            String[] rooms = msg.split(";");
+            for(int i = 1; i < rooms.length; ++ i) {
+                String[] roomData = rooms[i].split(",");
+                data.add(new RoomData(roomData[0], roomData[1]));
+                Platform.runLater(() -> ls.updateList(data));
+            }
+        } else if(msg.equals("changeAccured")) {
+            Platform.runLater(() -> ls.update());
         }
     }
 
@@ -46,10 +57,15 @@ public class ClientLobbyListener implements ClientListener {
     @Override
     public void disconnected() {
         System.out.println("disconnected");
+        Platform.runLater(() -> {
+            try {
+                ls.returnToConnecting();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        });
     }
 
     @Override
-    public void connectedToServer() {
-        System.out.println("connectedToServer");
-    }
+    public void connectedToServer() {}
 }

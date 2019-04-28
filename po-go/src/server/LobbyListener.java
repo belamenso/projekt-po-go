@@ -50,11 +50,15 @@ public class LobbyListener implements ServerListener {
 
         if(msg.equals("list")) {
 
-            String message = rooms.toString();
-            System.out.println("listing: "  + message);
+            String message = "list";
+            for(RoomListener room : rooms) {
+                message = message + ";" + room.getName() + "," + room.getRoomState().name();
+            }
+            //System.out.println("listing: "  + message);
             client.sendMessage(message);
 
         } else if(msg.startsWith("create")) {
+            if(msg.split(" ").length < 2) return;
 
             String name = msg.split(" ")[1];
             for(RoomListener room : rooms) {
@@ -66,6 +70,10 @@ public class LobbyListener implements ServerListener {
 
             System.out.println("Adding room " + name);
             rooms.add(new RoomListener(name, this));
+
+            for(ServerClient sc : clients) {
+                sc.sendMessage("changeAccured");
+            }
 
         } else if(msg.startsWith("join")) {
 

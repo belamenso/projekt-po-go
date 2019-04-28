@@ -26,6 +26,9 @@ public class Server {
             String in = sc.nextLine();
             if(in.equals("close"))
                 break;
+            else if(in.equals("clients")) {
+
+            }
         }
 
         s.dispose();

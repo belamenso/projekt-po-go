@@ -2,6 +2,7 @@ package client;
 
 import go.GameplayManager;
 import go.Stone;
+import javafx.application.Platform;
 
 /**
  * Listener obsugujacy pokoj po stronie gracza
@@ -10,17 +11,20 @@ public class ClientRoomListener implements ClientListener {
     private Client client;
     private Stone myColor;
     private GameplayManager manager = new GameplayManager();
+    private RoomGUI rg;
 
-    ClientRoomListener(Client client, Stone color) {
+    ClientRoomListener(Client client, Stone color, RoomGUI rg) {
         System.out.println("### ClientRoomListenerCreated");
+        this.rg = rg;
         this.client = client;
         this.myColor = color;
     }
 
     @Override
     public void receivedInput(String msg) {
+        Platform.runLater(() -> rg.setMessage(msg));
         if (msg.startsWith("exitedRoom")) {
-            client.setListener(new ClientLobbyListener(client));
+            //client.setListener(new ClientLobbyListener(client));
         } else //noinspection StatementWithEmptyBody
             if (msg.startsWith("GAME_BEGINS")) {
 

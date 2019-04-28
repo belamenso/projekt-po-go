@@ -12,23 +12,7 @@ import java.util.Scanner;
  * Klient, lączy się z serwerem, w finalnej wersji uruchaminy bedzie przez GUI
  * z podanymi w nim IP i portem
  */
-public class Client{
-    public static void main(String[] args) {
-        Scanner s = new Scanner(System.in);
-        System.out.print("IP: ");
-        String ip = s.nextLine();
-        System.out.print("port: ");
-        int port = s.nextInt();
-        Client c = new Client();
-        c.setListener(new ClientLobbyListener(c));
-        c.startConnection(ip, port);
-        System.out.println("Enter commands:");
-        while(s.hasNext()) {
-            String msg = s.nextLine();
-            c.sendMessage(msg);
-        }
-    }
-
+public class Client {
     private Socket socket;
     private BufferedReader in;
     private PrintWriter out;
@@ -93,7 +77,7 @@ public class Client{
     }
 
     public void close() {
-        try{
+        try {
             if(open) {
                 open = false;
                 socket.close();
@@ -105,7 +89,7 @@ public class Client{
             in = null;
             out = null;
             listener = null;
-        } catch(Exception e) { e.printStackTrace();}
+        } catch(Exception e) { e.printStackTrace(); }
     }
 
     public void sendMessage(String msg){ if(open) out.println(msg); }
