@@ -44,7 +44,8 @@ public class ClientRoomListener implements ClientListener {
 
     @Override
     public void receivedInput(String msg) {
-        Platform.runLater(() -> rg.setMessage(msg));
+        Platform.runLater(() -> rg.addMessage(msg));
+
         if (msg.startsWith("exitedRoom")) {
             //client.setListener(new ClientLobbyListener(client));
         } else //noinspection StatementWithEmptyBody
