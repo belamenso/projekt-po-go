@@ -23,6 +23,7 @@ import javafx.scene.shape.Circle;
 import javafx.scene.shape.Line;
 import javafx.scene.shape.Rectangle;
 import javafx.scene.text.Text;
+import util.Pair;
 
 import java.io.IOException;
 import java.net.URL;
@@ -86,6 +87,7 @@ public class RoomGUI implements Initializable {
                             System.out.println("Move impossible: " + reason.get());
                         } else {
                             crl.makeMyMove(new GameplayManager.StonePlacement(crl.getColor(), x, y));
+                            addMessage("You moved to " + crl.getBoard().positionToNumeral(new Pair<>(x, y)));
                             renderBoard();
                         }
                     } else {
@@ -164,6 +166,7 @@ public class RoomGUI implements Initializable {
     public void passButtonPressed() {
         if (crl.myTurn()) {
             crl.makeMyMove(new GameplayManager.Pass(crl.getColor()));
+            addMessage("You passed");
         } else {
             handleAttemptToSkipTurn();
         }
