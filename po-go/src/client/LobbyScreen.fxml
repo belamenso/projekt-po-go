@@ -11,7 +11,7 @@
    <children>
       <HBox spacing="10.0">
          <children>
-            <TextField fx:id="nameField" minWidth="200.0" promptText="Room name" />
+            <TextField fx:id="nameField" minWidth="200.0" onAction="#createRoom" promptText="Room name" />
             <Button fx:id="createButton" mnemonicParsing="false" onAction="#createRoom" text="Create Room" />
             <Button fx:id="joinButton" mnemonicParsing="false" onAction="#joinRoom" text="Join Selected" />
             <Button mnemonicParsing="false" onAction="#update" text="Update" />
