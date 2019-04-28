@@ -4,7 +4,7 @@ Autorzy: Bartosz Białas, Rafał Kilar
 
 ## Co już działa
 * Prawie cała logika gry (nie obsługujemy usuwania martwych kamieni przed zliczaniem punktów)
-* Serwer trzymający dane rozgrywek w pamięci
+* Serwer trzymający pełną historię stanów dla każdej rozgrywki w pamięci (później będą z tego historia gry i forki)
 * Możliwość gry od początku do końca z innym graczem przez sieć (tworzenie pokoju, wchodzenie, gra, wynik gry)
 * Niedozwolone ruchy nie są dopuszczalne
 * Podgląd kamieni usuwanych z planszy prze ruch
