@@ -38,12 +38,11 @@ public class RoomGUI implements Initializable {
     private Scene scene;
     private ClientRoomListener crl;
 
-    @FXML private TextField input;
-    @FXML private Label messageLabel;
     @FXML private Group boardGroup;
     @FXML private Circle[][] stones;
     @FXML private TableView<Message> messageTable;
     @FXML private Label infoLabel;
+    @FXML private TextField chatField;
     private ObservableList<Message> messages;
 
     private Optional<GameplayManager.Result> cachedGameResult = Optional.empty();
@@ -201,6 +200,14 @@ public class RoomGUI implements Initializable {
     public void quitButtonPressed() { // TODO
         System.out.println("quit");
         client.sendMessage("quit");
+    }
+
+    @FXML
+    public void sendChat() {
+        String msg = chatField.getText();
+        chatField.clear();
+
+        crl.sendChat(msg);
     }
 
     public void returnToLobby() throws IOException {

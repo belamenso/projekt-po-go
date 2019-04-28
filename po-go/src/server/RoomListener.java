@@ -197,6 +197,10 @@ public class RoomListener implements ServerListener {
                     client.sendMessage("MOVE_REJECTED"); // TODO send reason
                 }
             }
+        } else if(msg.startsWith("chat")) {
+            clients.forEach(c -> {
+                if (c != client) c.sendMessage(msg);
+            });
         } else {
             // UNRECOGNIZED COMMAND
 
