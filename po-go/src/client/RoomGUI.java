@@ -20,6 +20,7 @@ import javafx.scene.shape.Circle;
 import javafx.scene.shape.Line;
 import javafx.scene.shape.Rectangle;
 
+import java.io.IOException;
 import java.net.URL;
 import java.util.Optional;
 import java.util.ResourceBundle;
@@ -111,7 +112,17 @@ public class RoomGUI implements Initializable {
     @FXML
     public void quitButtonPressed() {
         System.out.println("quit");
+        client.sendMessage("quit");
         // TODO
+    }
+
+    public void returnToLobby() throws IOException {
+        FXMLLoader loader = new FXMLLoader(getClass().getResource("LobbyScreen.fxml"));
+        Parent root = loader.load();
+        LobbyScreen controller = loader.getController();
+        controller.setScene(scene);
+        controller.setClient(client);
+        Platform.runLater(()->scene.setRoot(root));
     }
 
     @Override

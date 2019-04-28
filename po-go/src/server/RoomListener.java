@@ -147,7 +147,6 @@ public class RoomListener implements ServerListener {
             /// QUITTING
 
             clientDisconnected(client);
-            client.sendMessage("exitedRoom");
             lobby.clientConnected(client);
 
         } else if (msg.startsWith("MOVE ")) {

@@ -5,6 +5,8 @@ import go.GameplayManager;
 import go.Stone;
 import javafx.application.Platform;
 
+import java.io.IOException;
+
 /**
  * Listener obsugujacy pokoj po stronie gracza
  */
@@ -64,7 +66,13 @@ public class ClientRoomListener implements ClientListener {
             System.out.println("# opponent's move: " + x + ", " + y);
                 //noinspection AssertWithSideEffects
                 assert (manager.registerMove(new GameplayManager.StonePlacement(myColor.opposite, x, y))).isPresent();
-        } else {
+        } else if(msg.equals("lobbyJoined"))  {
+                try {
+                    rg.returnToLobby();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            } else {
             System.out.println("UNRECOGNIZED MSG: " + msg);
             // TODO handle lobbyJoined
         }
