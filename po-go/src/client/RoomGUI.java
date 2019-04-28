@@ -90,7 +90,7 @@ public class RoomGUI implements Initializable {
                             renderBoard();
                         }
                     } else {
-                        System.out.println("NOT MY TURN!");
+                        handleAttemptToSkipTurn();
                     }
                 });
 
@@ -137,10 +137,19 @@ public class RoomGUI implements Initializable {
         messages.add(new Message(msg));
     }
 
+    private void handleAttemptToSkipTurn() {
+        System.out.println("Not your turn!");
+        System.out.println("\tfinished: " + crl.manager.finished());
+        System.out.println("\tinterrupted: " + crl.manager.interrupted());
+    }
+
     @FXML
     public void passButtonPressed() {
-        System.out.println("pass");
-        // Wysyła ruch do listenera
+        if (crl.myTurn()) {
+            crl.makeMyMove(new GameplayManager.Pass(crl.getColor()));
+        } else {
+            handleAttemptToSkipTurn();
+        }
     }
 
     @FXML
@@ -202,4 +211,5 @@ public class RoomGUI implements Initializable {
         messageTable.setItems(messages);
         messageTable.getColumns().add(nameColumn);
     }
+
 }
