@@ -77,7 +77,7 @@ public class ClientRoomListener implements ClientListener {
             String[] parts = msg.split(" ");
             assert parts.length == 3;
             int x = Integer.parseInt(parts[1]), y = Integer.parseInt(parts[2]);
-            Platform.runLater(() -> rg.addMessage(opponentRepresentation + " places stone at " + getBoard().positionToNumeral(new Pair<>(x, y))));
+            Platform.runLater(() -> rg.addMessage(opponentRepresentation + " places stone at " + getBoard().positionToNumeral(new Pair<>(y, x))));
             Optional<ReasonMoveImpossible> reason = manager.registerMove(new GameplayManager.StonePlacement(myColor.opposite, x, y));
             assert reason.isEmpty();
         } else if (msg.equals("lobbyJoined"))  {

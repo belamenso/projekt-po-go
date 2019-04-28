@@ -87,7 +87,7 @@ public class RoomGUI implements Initializable {
                             System.out.println("Move impossible: " + reason.get());
                         } else {
                             crl.makeMyMove(new GameplayManager.StonePlacement(crl.getColor(), x, y));
-                            addMessage("You (" + crl.myRepresentation + ") moved to " + crl.getBoard().positionToNumeral(new Pair<>(x, y)));
+                            addMessage("You (" + crl.myRepresentation + ") moved to " + crl.getBoard().positionToNumeral(new Pair<>(y, x))); // nie ruszać kolejności
                             renderBoard();
                         }
                     } else {
