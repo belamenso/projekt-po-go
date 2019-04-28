@@ -98,7 +98,8 @@ public class RoomGUI implements Initializable {
                 Circle stone = new Circle((2*x+1)*r, (2*y+1)*r, r*0.8);
                 stones[x][y] = stone;
                 stone.setMouseTransparent(true);
-                stone.setStyle("-fx-fill: transparent");
+                stone.getStyleClass().clear();
+                stone.getStyleClass().add("stone-invisible");
                 boardGroup.getChildren().addAll(rect, stone);
             }
         }
@@ -135,11 +136,14 @@ public class RoomGUI implements Initializable {
                 for(int j = 0; j < toRender.getSize(); ++ j) {
                     Optional<Stone> stone = toRender.get(i, j);
                     if(stone.isEmpty()) {
-                        stones[i][j].setStyle("-fx-fill: transparent");
+                        stones[i][j].getStyleClass().clear();
+                        stones[i][j].getStyleClass().add("stone-invisible");
                     } else if(stone.get().equals(Stone.White)){
-                        stones[i][j].setStyle("-fx-fill: #ffffff");
+                        stones[i][j].getStyleClass().clear();
+                        stones[i][j].getStyleClass().add("stone-white");
                     } else {
-                        stones[i][j].setStyle("-fx-fill: #000000");
+                        stones[i][j].getStyleClass().clear();
+                        stones[i][j].getStyleClass().add("stone-black");
                     }
                 }
             }

@@ -7,9 +7,13 @@
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
 
-<VBox maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="600.0" prefWidth="800.0" xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1" fx:controller="client.LobbyScreen">
-   <children>
-      <HBox spacing="10.0">
+
+<BorderPane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="400.0" prefWidth="600.0" xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1" fx:controller="client.LobbyScreen">
+   <center>
+      <TableView fx:id="rooms" minHeight="0.0" BorderPane.alignment="CENTER" />
+   </center>
+   <top>
+      <HBox spacing="10.0" BorderPane.alignment="CENTER">
          <children>
             <TextField fx:id="nameField" minWidth="200.0" onAction="#createRoom" promptText="Room name" />
             <Button fx:id="createButton" mnemonicParsing="false" onAction="#createRoom" text="Create Room" />
@@ -20,8 +24,9 @@
             <Insets bottom="8.0" left="8.0" right="8.0" top="8.0" />
          </padding>
       </HBox>
-      <TableView fx:id="rooms" prefWidth="200.0" />
-      <HBox prefWidth="200.0">
+   </top>
+   <bottom>
+      <HBox prefWidth="200.0" BorderPane.alignment="CENTER">
          <children>
             <Label fx:id="messageLabel" />
          </children>
@@ -29,5 +34,5 @@
             <Insets bottom="5.0" left="5.0" right="5.0" top="5.0" />
          </padding>
       </HBox>
-   </children>
-</VBox>
+   </bottom>
+</BorderPane>

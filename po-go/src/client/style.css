@@ -1,0 +1,16 @@
+.stone-invisible {
+    -fx-fill: transparent;
+    -fx-stroke: transparent;
+}
+
+.stone-white {
+    -fx-fill: #ffffff;
+    -fx-stroke: #dddddd;
+    -fx-stroke-width: 2px;
+}
+
+.stone-black {
+    -fx-fill: #000000;
+    -fx-stroke: #333333;
+    -fx-stroke-width: 2px;
+}

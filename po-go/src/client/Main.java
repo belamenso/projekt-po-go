@@ -24,6 +24,8 @@ public class Main extends Application {
         controller.setScene(scene);
         controller.setClient(client);
 
+        scene.getStylesheets().add(getClass().getResource("style.css").toString());
+
         window.setScene(scene);
         window.show();
 
