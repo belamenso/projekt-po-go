@@ -2,6 +2,17 @@
 
 Autorzy: Bartosz Białas, Rafał Kilar
 
+## Co już działa
+* Prawie cała logika gry (nie obsługujemy usuwania martwych kamieni przed zliczaniem punktów)
+* Serwer trzymający dane rozgrywek w pamięci
+* Możliwość gry od początku do końca z innym graczem przez sieć (tworzenie pokoju, wchodzenie, gra, wynik gry)
+* Niedozwolone ruchy nie są dopuszczalne
+* Podgląd kamieni usuwanych z planszy prze ruch
+* Podgląd zajętych terytoriów pod koniec gry
+* Prosty chat między graczami
+* Skrypt z rozgrywki z czasami zdarzeń
+* GUI, które umożliwia grę online od początku do końca
+
 ## Możliwe kierunki
 * usuwanie martwych kamieni przed zliczeniem punktów
 * lepsze GUI (eg. wyświetlanie liczby pojmanych kamieni, estetyczny resize)
