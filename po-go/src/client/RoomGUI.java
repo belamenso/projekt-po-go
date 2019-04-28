@@ -95,6 +95,14 @@ public class RoomGUI implements Initializable {
                     }
                 });
 
+                rect.setOnMouseEntered(e -> {
+                    System.out.println("entered " + x + " " + y);
+                });
+
+                rect.setOnMouseExited(e -> {
+                    System.out.println("exited " + x + " " + y);
+                });
+
                 Circle stone = new Circle((2*x+1)*r, (2*y+1)*r, r*0.8);
                 stones[x][y] = stone;
                 stone.setMouseTransparent(true);

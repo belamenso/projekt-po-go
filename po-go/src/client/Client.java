@@ -87,7 +87,7 @@ public class Client {
                 socket.close();
                 in.close();
                 out.close();
-                listener.disconnected();
+                if(listener != null) listener.disconnected();
             }
             socket = null;
             in = null;
