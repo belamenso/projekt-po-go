@@ -113,8 +113,7 @@ public class LobbyScreen implements Initializable {
         FXMLLoader loader = new FXMLLoader(getClass().getResource("RoomGUI.fxml"));
         final Parent root = loader.load();
         RoomGUI controller = loader.getController();
-        controller.setScene(scene);
-        controller.setClient(client, color);
+        controller.setup(scene, client, color);
         Platform.runLater(() -> scene.setRoot(root));
     }
 }

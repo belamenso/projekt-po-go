@@ -1,5 +1,6 @@
 package client;
 
+import go.Board;
 import go.GameplayManager;
 import go.Stone;
 import javafx.application.Platform;
@@ -18,6 +19,18 @@ public class ClientRoomListener implements ClientListener {
         this.rg = rg;
         this.client = client;
         this.myColor = color;
+    }
+
+    int getSize() {
+        return manager.getBoard().getSize();
+    }
+
+    Board getBoard() {
+        return manager.getBoard();
+    }
+
+    public synchronized void makeMyMove(GameplayManager.Move move) {
+        // Przeprowadzi ruch i wyśle na serwer
     }
 
     @Override
@@ -43,6 +56,7 @@ public class ClientRoomListener implements ClientListener {
             System.out.println("# opponent has passed his turn");
                 //noinspection AssertWithSideEffects
                 assert (manager.registerMove(new GameplayManager.Pass(myColor.opposite))).isEmpty();
+
         } else if (msg.startsWith("MOVE ")) {
             String[] parts = msg.split(" ");
             assert parts.length == 3;
