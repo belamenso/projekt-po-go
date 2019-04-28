@@ -88,6 +88,9 @@ public class ClientRoomListener implements ClientListener {
             }
         } else if (msg.equals("OPPONENT_JOINED")) {
             Platform.runLater(() -> rg.addMessage(myColor.opposite.pictogram + " has joined the game"));
+        } else if(msg.startsWith("chat")) {
+            String chat = msg.split(";")[1];
+            Platform.runLater(() -> rg.addMessage("("+myColor.opposite.pictogram + "): " + chat));
         } else {
             System.out.println("UNRECOGNIZED MSG: " + msg);
             Platform.runLater(() -> rg.addMessage("UNRECOGNIZED MESSAGE: " + msg));
@@ -123,6 +126,15 @@ public class ClientRoomListener implements ClientListener {
         } else {
             handleAttemptToSkipTurn();
         }
+    }
+
+    /**
+     * Sends chat message
+     */
+    void sendChat(String msg) {
+        if(msg == null || msg.length()==0) return;
+        Platform.runLater(() -> rg.addMessage("("+myColor.pictogram+"): " + msg));
+        client.sendMessage("chat;"+msg);
     }
 
     private void handleAttemptToSkipTurn() { // TODO

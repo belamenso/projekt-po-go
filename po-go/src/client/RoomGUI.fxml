@@ -30,7 +30,13 @@
                   <Button mnemonicParsing="false" onAction="#quitButtonPressed" text="Quit" />
                </children>
             </HBox>
-            <TableView fx:id="messageTable" prefHeight="450.0" prefWidth="240.0" />
+            <TableView fx:id="messageTable" prefHeight="420.0" prefWidth="240.0" />
+            <HBox prefWidth="240.0" spacing="10.0">
+               <children>
+                  <TextField fx:id="chatField" onAction="#sendChat" prefWidth="170.0" />
+                  <Button mnemonicParsing="false" onAction="#sendChat" prefWidth="60.0" text="Send" />
+               </children>
+            </HBox>
          </children>
       </VBox>
    </right>
