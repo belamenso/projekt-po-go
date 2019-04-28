@@ -14,8 +14,7 @@ public class Main extends Application {
 
     @Override
     public void start(Stage window) throws Exception {
-        window.setTitle("Po-Go");
-        window.setResizable(false);
+        window.setTitle("Pogo");
 
         Client client = new Client();
 
