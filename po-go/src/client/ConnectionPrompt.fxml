@@ -23,7 +23,7 @@
             <Label text="IP" GridPane.halignment="RIGHT" />
             <Label text="port" GridPane.halignment="RIGHT" GridPane.rowIndex="1" />
             <TextField fx:id="ipField" maxWidth="-Infinity" minWidth="-Infinity" prefWidth="200.0" GridPane.columnIndex="1" />
-            <TextField fx:id="portField" maxWidth="-Infinity" minWidth="-Infinity" prefWidth="200.0" GridPane.columnIndex="1" GridPane.rowIndex="1" />
+            <TextField fx:id="portField" maxWidth="-Infinity" minWidth="-Infinity" onAction="#connectButtonClicked" prefWidth="200.0" GridPane.columnIndex="1" GridPane.rowIndex="1" />
          </children>
          <opaqueInsets>
             <Insets />
