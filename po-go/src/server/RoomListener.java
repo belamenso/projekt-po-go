@@ -186,9 +186,7 @@ public class RoomListener implements ServerListener {
                         if (c != client) c.sendMessage(msg);
                     });
 
-                    System.out.println("JESTEM JUŻ PRAWIE!!!");
                     if (manager.finished()) {
-                        System.out.println("DONE!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
                         GameplayManager.Result gameResult = manager.result();
                         clients.forEach(c -> c.sendMessage("GAME_FINISHED " + gameResult.winner + " "
                                 + gameResult.blackPoints + " " + gameResult.whitePoints));
