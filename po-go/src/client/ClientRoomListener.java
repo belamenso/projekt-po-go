@@ -7,6 +7,7 @@ import go.Stone;
 import javafx.application.Platform;
 
 import java.util.Optional;
+import java.io.IOException;
 
 /**
  * Listener obsugujacy pokoj po stronie gracza
@@ -76,7 +77,14 @@ public class ClientRoomListener implements ClientListener {
             Optional<ReasonMoveImpossible> reason = manager.registerMove(new GameplayManager.StonePlacement(myColor.opposite, x, y));
             assert reason.isEmpty();
             rg.renderBoard();
-        } else {
+        } else if(msg.equals("lobbyJoined"))  {
+                try {
+                    rg.returnToLobby();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            } else {
+
             System.out.println("UNRECOGNIZED MSG: " + msg);
             // TODO handle lobbyJoined
         }
