@@ -26,5 +26,9 @@ public class Main extends Application {
 
         window.setScene(scene);
         window.show();
+
+        window.setOnCloseRequest(windowEvent -> {
+            client.close();
+        });
     }
 }

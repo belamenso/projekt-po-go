@@ -76,9 +76,11 @@ public class Server {
                 client.listener.clientConnected(client);
                 Thread.currentThread().setName("Thread for " + client);
 
-                while(open) {
-                    try{
-                        client.listener.receivedInput(client, in.readLine());
+                while (open) {
+                    try {
+                        String line = in.readLine();
+                        if (line == null) throw new IOException();
+                        client.listener.receivedInput(client, line);
                     } catch(IOException e) {
                         client.listener.clientDisconnected(client);
 
