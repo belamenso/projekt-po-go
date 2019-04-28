@@ -33,6 +33,24 @@ public class LobbyListener implements ServerListener {
         clients.remove(client);
     }
 
+    private String roomListing() {
+        String message = "list";
+        for(RoomListener room : rooms)
+            message = message + ";" + room.getName() + "," + room.getRoomState().name();
+        return message;
+    }
+
+    public void broadcastRoomUpdate() {
+        String msg = roomListing();
+        for (ServerClient c : clients) {
+            if (c == null) {
+                System.out.println("dlaczego null tutaj?");
+            } else {
+                c.sendMessage(msg);
+            }
+        }
+    }
+
     /**
      * Obsluguje operacje:
      * list - zwraca liste pokoi
@@ -49,14 +67,7 @@ public class LobbyListener implements ServerListener {
         System.out.println("Lobby received " + msg + " from " + client);
 
         if(msg.equals("list")) {
-
-            String message = "list";
-            for(RoomListener room : rooms) {
-                message = message + ";" + room.getName() + "," + room.getRoomState().name();
-            }
-            //System.out.println("listing: "  + message);
-            client.sendMessage(message);
-
+            client.sendMessage(roomListing());
         } else if(msg.startsWith("create")) {
             if(msg.split(" ").length < 2) return;
 
@@ -90,7 +101,11 @@ public class LobbyListener implements ServerListener {
 
         } else if(msg.startsWith("remove")) {
             final String name = msg.split(" ")[1];
+            int sizeBefore = rooms.size();
             rooms.removeIf(roomListener -> roomListener.getName().equals(name));
+            int sizeAfter = rooms.size();
+            if (sizeBefore != sizeAfter)
+                broadcastRoomUpdate();
         }
     }
 

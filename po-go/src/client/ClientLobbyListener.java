@@ -46,8 +46,8 @@ public class ClientLobbyListener implements ClientListener {
             for(int i = 1; i < rooms.length; ++ i) {
                 String[] roomData = rooms[i].split(",");
                 data.add(new RoomData(roomData[0], roomData[1]));
-                Platform.runLater(() -> ls.updateList(data));
             }
+            Platform.runLater(() -> ls.updateList(data));
         } else if(msg.equals("changeAccured")) {
             Platform.runLater(() -> ls.update());
         } else if(msg.equals("CONNECTION_REFUSED")) {

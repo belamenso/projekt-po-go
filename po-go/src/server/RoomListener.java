@@ -62,9 +62,9 @@ public class RoomListener implements ServerListener {
         // kolejność sprawdzania jest ważna
         if (manager.interrupted()) return RoomState.GameInterrupted;
         if (manager.finished()) return RoomState.GameFinished;
-        if (manager.inProgress()) return RoomState.GameInProgress;
         if (clients.size() == 0) return RoomState.EmptyRoom;
         if (clients.size() == 1) return RoomState.WaitingForWhite; // TODO wybór koloru
+        if (manager.inProgress()) return RoomState.GameInProgress;
         else {
             assert false;
             return RoomState.EmptyRoom; // z jakiegoś powodu Java nie pozwala na kończenie metody assert false
@@ -97,19 +97,26 @@ public class RoomListener implements ServerListener {
 
         // not interrupted and game in progress
         if (clients.size() == 0) {
+            client.setListener(this);
+            clients.add(client);
+            assert getRoomState() == RoomState.WaitingForWhite;
             client.sendMessage("CONNECTED BLACK"); // -> ClientLobbyListener
+            lobby.broadcastRoomUpdate(); // !!!!!! uwaga na kolejność, roomState zależy od zawartości clients !!!
         } else if (clients.size() == 1) {
+            client.setListener(this);
+            clients.add(client);
             client.sendMessage("CONNECTED WHITE"); // -> ClientLobbyListener
             clients.get(0).sendMessage("OPPONENT_JOINED"); // -> ClientRoomListener
+            assert getRoomState() == RoomState.GameInProgress;
+            lobby.broadcastRoomUpdate();
         } else {
             assert false;
         }
 
-        client.setListener(this);
-        clients.add(client);
 
-        if (clients.size() >= 2)
+        if (clients.size() >= 2) {
             clients.forEach(c -> c.sendMessage("GAME_BEGINS"));
+        }
 
         return true;
     }
@@ -123,6 +130,7 @@ public class RoomListener implements ServerListener {
             for (ServerClient c : clients) {
                 c.sendMessage("OPPONENT_DISCONNECTED");
                 lobby.clientConnected(client);
+                lobby.broadcastRoomUpdate();
             }
         }
 
