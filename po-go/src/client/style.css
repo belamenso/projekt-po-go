@@ -26,3 +26,13 @@
     -fx-stroke: #333333;
     -fx-stroke-width: 2px;
 }
+
+.title {
+    -fx-font-size: 96px;
+    -fx-font-weight: bold;
+    -fx-font-smoothing-type: gray;
+}
+
+.subtitle {
+    -fx-font-size: 12px;
+}

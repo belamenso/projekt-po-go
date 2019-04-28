@@ -228,7 +228,5 @@ public class RoomGUI implements Initializable {
         messageTable.setItems(messages);
         messageTable.getColumns().addAll(timeColumn, nameColumn);
         nameColumn.setPrefWidth(messageTable.getPrefWidth() - 64);
-
     }
-
 }

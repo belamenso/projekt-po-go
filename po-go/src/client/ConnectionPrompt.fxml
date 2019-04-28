@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
+<?import javafx.scene.text.*?>
 <?import javafx.geometry.*?>
 <?import java.lang.*?>
 <?import java.util.*?>
@@ -7,8 +8,18 @@
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
 
-<VBox alignment="CENTER" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="400.0" prefWidth="600.0" spacing="20.0" xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1" fx:controller="client.ConnectionPrompt">
+<VBox alignment="CENTER" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="600.0" prefWidth="800.0" spacing="20.0" xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1" fx:controller="client.ConnectionPrompt">
    <children>
+      <Label styleClass="title" text="PoGo">
+         <VBox.margin>
+            <Insets bottom="-20.0" />
+         </VBox.margin>
+      </Label>
+      <Label styleClass="subtitle" text="by Bartosz Białas, Rafał Kilar">
+         <VBox.margin>
+            <Insets bottom="30.0" />
+         </VBox.margin>
+      </Label>
       <Label alignment="CENTER" contentDisplay="CENTER" text="Podaj IP i port serwera, z którym chcesz się połączyć" />
       <GridPane hgap="20.0" vgap="10.0">
         <columnConstraints>
