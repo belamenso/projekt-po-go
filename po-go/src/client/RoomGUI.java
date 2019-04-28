@@ -2,7 +2,6 @@ package client;
 
 import go.Board;
 import go.GameplayManager;
-import go.ReasonMoveImpossible;
 import go.Stone;
 import javafx.application.Platform;
 import javafx.collections.FXCollections;
@@ -23,14 +22,11 @@ import javafx.scene.shape.Circle;
 import javafx.scene.shape.Line;
 import javafx.scene.shape.Rectangle;
 import javafx.scene.text.Text;
-import util.Pair;
 
 import java.io.IOException;
 import java.net.URL;
 import java.util.Optional;
 import java.util.ResourceBundle;
-
-import static go.GameLogic.gameLogic;
 
 public class RoomGUI implements Initializable {
     private Client client;
@@ -81,18 +77,7 @@ public class RoomGUI implements Initializable {
                 rect.setStyle("-fx-fill: transparent");
                 rect.setOnMouseClicked(e -> {
                     System.out.println("click " + y + " " + x);
-                    if (crl.myTurn()) {
-                        Optional<ReasonMoveImpossible> reason = gameLogic.movePossible(crl.getBoard(), x, y, crl.getColor());
-                        if (reason.isPresent()) {
-                            System.out.println("Move impossible: " + reason.get());
-                        } else {
-                            crl.makeMyMove(new GameplayManager.StonePlacement(crl.getColor(), x, y));
-                            addMessage("You (" + crl.myRepresentation + ") moved to " + crl.getBoard().positionToNumeral(new Pair<>(y, x))); // nie ruszać kolejności
-                            renderBoard();
-                        }
-                    } else {
-                        handleAttemptToSkipTurn();
-                    }
+                    crl.attemptedToMakeMove(x, y);
                 });
 
                 rect.setOnMouseEntered(e -> {
@@ -168,27 +153,13 @@ public class RoomGUI implements Initializable {
         messageTable.scrollTo(messageTable.getItems().size() - 1);
     }
 
-    private void handleAttemptToSkipTurn() {
-        System.out.println("Not your turn!");
-        System.out.println("\tfinished: " + crl.manager.finished());
-        System.out.println("\tinterrupted: " + crl.manager.interrupted());
-    }
+    @FXML
+    public void passButtonPressed() { crl.attemptedToPass(); }
 
     @FXML
-    public void passButtonPressed() {
-        if (crl.myTurn()) {
-            crl.makeMyMove(new GameplayManager.Pass(crl.getColor()));
-            addMessage("You (" + crl.myRepresentation + ") passed");
-        } else {
-            handleAttemptToSkipTurn();
-        }
-    }
-
-    @FXML
-    public void quitButtonPressed() {
+    public void quitButtonPressed() { // TODO
         System.out.println("quit");
         client.sendMessage("quit");
-        // TODO
     }
 
     public void returnToLobby() throws IOException {

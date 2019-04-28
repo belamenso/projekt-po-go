@@ -10,6 +10,8 @@ import util.Pair;
 import java.util.Optional;
 import java.io.IOException;
 
+import static go.GameLogic.gameLogic;
+
 /**
  * Listener obsugujacy pokoj po stronie gracza
  */
@@ -42,7 +44,7 @@ public class ClientRoomListener implements ClientListener {
         return gameStarted && !manager.interrupted() && manager.inProgress() && manager.nextTurn().equals(myColor);
     }
 
-    public synchronized void makeMyMove(GameplayManager.Move move) {
+    private synchronized void makeMyMove(GameplayManager.Move move) {
         manager.registerMove(move);
         client.sendMessage(move.toString());
     }
@@ -92,6 +94,40 @@ public class ClientRoomListener implements ClientListener {
             Platform.runLater(() -> rg.addMessage("UNRECOGNIZED MESSAGE: " + msg));
         }
         Platform.runLater(() -> rg.renderBoard());
+    }
+
+    /**
+     * called from the GUI thread
+     */
+    void attemptedToPass() {
+        if (myTurn()) {
+            makeMyMove(new GameplayManager.Pass(myColor));
+            rg.addMessage("You (" + myRepresentation + ") passed");
+        } else {
+            handleAttemptToSkipTurn();
+        }
+    }
+
+    /**
+     * called from the GUI thread
+     */
+    void attemptedToMakeMove(int x, int y) {
+        if (myTurn()) {
+            Optional<ReasonMoveImpossible> reason = gameLogic.movePossible(getBoard(), x, y, myColor);
+            if (reason.isPresent()) {
+                System.out.println("Move impossible: " + reason.get());
+            } else {
+                makeMyMove(new GameplayManager.StonePlacement(myColor, x, y));
+                rg.addMessage("You (" + myRepresentation + ") moved to " + getBoard().positionToNumeral(new Pair<>(y, x))); // nie ruszać kolejności
+                rg.renderBoard();
+            }
+        } else {
+            handleAttemptToSkipTurn();
+        }
+    }
+
+    private void handleAttemptToSkipTurn() { // TODO
+        System.out.println("Not your turn!");
     }
 
     @Override
