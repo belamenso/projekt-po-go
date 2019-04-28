@@ -1,5 +1,7 @@
 package go;
 
+import util.Pair;
+
 import java.util.Optional;
 
 public class Board {
@@ -92,5 +94,21 @@ public class Board {
         }
         return true;
     }
+
+    public String columnNumeral(int i) {
+        if (i >= 8) i++; // nie ma pozycji dla I
+        int col = 'A' + i;
+        char charColumn = (char) col;
+        return Character.toString(charColumn);
+    }
+
+    public String rowNumeral(int i) {
+        return Integer.toString(getSize() - i);
+    }
+
+    public String positionToNumeral(Pair<Integer, Integer> pos) {
+        return columnNumeral(pos.y) + rowNumeral(pos.x);
+    }
 }
+
 
