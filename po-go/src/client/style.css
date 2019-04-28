@@ -16,13 +16,13 @@
 }
 
 .stone-potentially-captured-white {
-    -fx-fill: #FF5E5D;
+    -fx-fill: linear-gradient(from 0% 0% to 100% 100%, white 20%, red 100%);
     -fx-stroke: #dddddd;
     -fx-stroke-width: 2px;
 }
 
 .stone-potentially-captured-black {
-    -fx-fill: #771824;
-    -fx-stroke: #dddddd;
+    -fx-fill: linear-gradient(from 0% 0% to 100% 100%, black 20%, red 100%);
+    -fx-stroke: #333333;
     -fx-stroke-width: 2px;
 }
