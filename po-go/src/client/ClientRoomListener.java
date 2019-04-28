@@ -18,6 +18,7 @@ public class ClientRoomListener implements ClientListener {
     private Stone myColor;
     GameplayManager manager = new GameplayManager();
     private RoomGUI rg;
+    private boolean gameStarted = false;
     String myRepresentation, opponentRepresentation;
 
     ClientRoomListener(Client client, Stone color, RoomGUI rg) {
@@ -38,7 +39,7 @@ public class ClientRoomListener implements ClientListener {
     Board getBoard() { return manager.getBoard(); }
 
     boolean myTurn() {
-        return !manager.interrupted() && manager.inProgress() && manager.nextTurn().equals(myColor);
+        return gameStarted && !manager.interrupted() && manager.inProgress() && manager.nextTurn().equals(myColor);
     }
 
     public synchronized void makeMyMove(GameplayManager.Move move) {
@@ -54,8 +55,8 @@ public class ClientRoomListener implements ClientListener {
         } else if (msg.startsWith("exitedRoom")) {
             //client.setListener(new ClientLobbyListener(client));
         } else if (msg.startsWith("GAME_BEGINS")) {
+            gameStarted = true;
             Platform.runLater(() -> rg.addMessage("The game begins"));
-            rg.renderBoard();
         } else if (msg.startsWith("GAME_FINISHED")) {
             String[] parts = msg.split(" ");
             System.out.println("Game finished, black points: " + parts[2] + " white: " + parts[3]);
