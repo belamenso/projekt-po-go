@@ -59,11 +59,12 @@ public class RoomListener implements ServerListener {
     }
 
     public RoomState getRoomState() {
-        if (clients.size() == 0) return RoomState.EmptyRoom;
-        if (clients.size() == 1) return RoomState.WaitingForWhite; // TODO wybór koloru
+        // kolejność sprawdzania jest ważna
         if (manager.interrupted()) return RoomState.GameInterrupted;
         if (manager.finished()) return RoomState.GameFinished;
         if (manager.inProgress()) return RoomState.GameInProgress;
+        if (clients.size() == 0) return RoomState.EmptyRoom;
+        if (clients.size() == 1) return RoomState.WaitingForWhite; // TODO wybór koloru
         else {
             assert false;
             return RoomState.EmptyRoom; // z jakiegoś powodu Java nie pozwala na kończenie metody assert false
