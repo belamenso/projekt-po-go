@@ -5,8 +5,6 @@ import go.GameplayManager;
 import go.ReasonMoveImpossible;
 import go.Stone;
 import javafx.application.Platform;
-import javafx.beans.property.SimpleStringProperty;
-import javafx.beans.property.StringProperty;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
@@ -59,13 +57,11 @@ public class RoomGUI implements Initializable {
 
         stones = new Circle[size][size];
 
-        String[] columns = {"A","B","C","D","E","F","G","H","J","K","L","M","N","O","P","Q","R","S","T"};
-
         for(int i = 0; i < size; ++ i) {
             boardGroup.getChildren().add(new Line(r, (2 * i + 1) * r, (2 * size - 1) * r, (2 * i + 1) * r));
             boardGroup.getChildren().add(new Line((2 * i + 1) * r, r, (2 * i + 1) * r, (2 * size - 1) * r));
 
-            Text text = new Text(columns[i]);
+            Text text = new Text(crl.getBoard().columnNumeral(i));
             text.setX((2 * i + 1) * r-3);
             text.setY(-2);
             boardGroup.getChildren().add(text);
@@ -155,6 +151,7 @@ public class RoomGUI implements Initializable {
     public void addMessage(String msg) {
         System.out.println("addMessage: " + msg);
         messages.add(new Message(msg));
+        messageTable.scrollTo(messageTable.getItems().size() - 1);
     }
 
     private void handleAttemptToSkipTurn() {
@@ -209,6 +206,8 @@ public class RoomGUI implements Initializable {
         messages = FXCollections.observableArrayList();
         messageTable.setItems(messages);
         messageTable.getColumns().add(nameColumn);
+        nameColumn.setPrefWidth(messageTable.getPrefWidth() - 2);
+        nameColumn.setResizable(false);
     }
 
 }
