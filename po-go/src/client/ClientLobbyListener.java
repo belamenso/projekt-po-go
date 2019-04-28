@@ -35,7 +35,11 @@ public class ClientLobbyListener implements ClientListener {
         if(msg.startsWith("CONNECTED ")) {
             String[] parts = msg.split(" ");
             assert parts.length == 2;
-            Platform.runLater(() -> ls.moveToRoom(parts[1].equals("WHITE") ? Stone.White : Stone.Black));
+            try {
+                ls.moveToRoom(parts[1].equals("WHITE") ? Stone.White : Stone.Black);
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
         } else if(msg.startsWith("list")){
             List<RoomData> data = new ArrayList<>();
             String[] rooms = msg.split(";");
