@@ -87,9 +87,9 @@ public enum GameLogic {
      * Reprezentuje spójne terytorium <b>pustych przecięć</b>
      * captor - gracz do kótrego należy terytorium lub Optional.empty() jeśli nie należy do żadnego
      */
-    class Territory {
-        ArrayList<Pair<Integer, Integer>> territory = new ArrayList<>();
-        Optional<Stone> captor = Optional.empty();
+    public class Territory {
+        public ArrayList<Pair<Integer, Integer>> territory = new ArrayList<>();
+        public Optional<Stone> captor = Optional.empty();
     }
 
     /**

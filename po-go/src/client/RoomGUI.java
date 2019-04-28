@@ -1,9 +1,6 @@
 package client;
 
-import go.Board;
-import go.GameplayManager;
-import go.ReasonMoveImpossible;
-import go.Stone;
+import go.*;
 import javafx.application.Platform;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
@@ -53,6 +50,10 @@ public class RoomGUI implements Initializable {
 
     private String colorToCapturedClass(Stone color) {
         return color == Stone.White ? "stone-potentially-captured-white" : "stone-potentially-captured-black";
+    }
+
+    private String colorToTerritoryClass(Stone color) {
+        return color == Stone.White ? "white-territory" : "black-territory";
     }
 
     public void setup(Scene scene, Client client, Stone color) {
@@ -121,6 +122,19 @@ public class RoomGUI implements Initializable {
         }
     }
 
+    void markTerritories() {
+        assert crl.manager.finished() && !crl.manager.interrupted();
+
+        ArrayList<GameLogic.Territory> ts = gameLogic.capturedTerritories(crl.getBoard());
+        for (GameLogic.Territory t : ts) {
+            for (Pair<Integer, Integer> pos : t.territory) {
+                Platform.runLater(() -> {
+                    stones[pos.x][pos.y].getStyleClass().clear();
+                    stones[pos.x][pos.y].getStyleClass().add(colorToTerritoryClass(t.captor.get())); // TODO zmienić to optional tam
+                });
+            }
+        }
+    }
 
     // Renderuje planszę
     void renderBoard() {
@@ -164,6 +178,8 @@ public class RoomGUI implements Initializable {
                 }
             }
         });
+
+        if (crl.manager.finished()) markTerritories();
     }
 
     public void setInfo(String info) {
