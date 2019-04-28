@@ -46,6 +46,8 @@ public class ClientLobbyListener implements ClientListener {
             }
         } else if(msg.equals("changeAccured")) {
             Platform.runLater(() -> ls.update());
+        } else if(msg.equals("CONNECTION_REFUSED")) {
+            Platform.runLater(() -> ls.setMessage("Nie udało się połączyć z pokojem"));
         }
     }
 
