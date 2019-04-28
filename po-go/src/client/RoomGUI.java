@@ -5,6 +5,8 @@ import go.GameplayManager;
 import go.ReasonMoveImpossible;
 import go.Stone;
 import javafx.application.Platform;
+import javafx.beans.property.SimpleStringProperty;
+import javafx.beans.property.StringProperty;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
@@ -21,6 +23,7 @@ import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.scene.shape.Circle;
 import javafx.scene.shape.Line;
 import javafx.scene.shape.Rectangle;
+import javafx.scene.text.Text;
 
 import java.io.IOException;
 import java.net.URL;
@@ -38,6 +41,9 @@ public class RoomGUI implements Initializable {
     @FXML private Label messageLabel;
     @FXML private Group boardGroup;
     @FXML private Circle[][] stones;
+    @FXML private TableView<Message> messageTable;
+    @FXML private Label infoLabel;
+    private ObservableList<Message> messages;
 
     public void setup(Scene scene, Client client, Stone color) {
         this.scene = scene;
@@ -50,9 +56,20 @@ public class RoomGUI implements Initializable {
 
         stones = new Circle[size][size];
 
+        String[] columns = {"A","B","C","D","E","F","G","H","J","K","L","M","N","O","P","Q","R","S","T"};
+
         for(int i = 0; i < size; ++ i) {
             boardGroup.getChildren().add(new Line(r, (2 * i + 1) * r, (2 * size - 1) * r, (2 * i + 1) * r));
             boardGroup.getChildren().add(new Line((2 * i + 1) * r, r, (2 * i + 1) * r, (2 * size - 1) * r));
+
+            Text text = new Text(columns[i]);
+            text.setX((2 * i + 1) * r-3);
+            text.setY(-2);
+            boardGroup.getChildren().add(text);
+            Text text2 = new Text(Integer.toString(i));
+            text2.setY((2 * (size-i-1) + 1) * r+5);
+            text2.setX(-10);
+            boardGroup.getChildren().add(text2);
         }
 
         for(int i = 0; i < size; ++ i) {
@@ -80,7 +97,7 @@ public class RoomGUI implements Initializable {
                 Circle stone = new Circle((2*x+1)*r, (2*y+1)*r, r*0.8);
                 stones[x][y] = stone;
                 stone.setMouseTransparent(true);
-                stone.setStyle("-fx-fill: #666666"); // ma byc transparent - teraz jest zeby wida było gdzie są
+                stone.setStyle("-fx-fill: transparent");
                 boardGroup.getChildren().addAll(rect, stone);
             }
         }
@@ -92,12 +109,12 @@ public class RoomGUI implements Initializable {
         // Powinnow renderować planszę
         final Board toRender = crl.getBoard();
         Platform.runLater(() -> {
-            System.out.println("Rendering board");
+            //System.out.println("Rendering board");
             for(int i = 0; i < toRender.getSize(); ++ i) {
                 for(int j = 0; j < toRender.getSize(); ++ j) {
                     Optional<Stone> stone = toRender.get(i, j);
                     // TODO zmienic to na klasy w stylesheecie
-                    System.out.print(stone.isEmpty() ? " " : (stone.get().equals(Stone.White)?"W":"B"));
+                    //System.out.print(stone.isEmpty() ? " " : (stone.get().equals(Stone.White)?"W":"B"));
                     if(stone.isEmpty()) {
                         stones[i][j].setStyle("-fx-fill: transparent");
                     } else if(stone.get().equals(Stone.White)){
@@ -106,13 +123,18 @@ public class RoomGUI implements Initializable {
                         stones[i][j].setStyle("-fx-fill: #000000");
                     }
                 }
-                System.out.print("\n");
+                //System.out.print("\n");
             }
         });
     }
 
-    public void setMessage(String msg) {
-        messageLabel.setText(msg);
+    public void setInfo(String info) {
+        infoLabel.setText(info);
+    }
+
+    public void addMessage(String msg) {
+        System.out.println("addMessage: " + msg);
+        messages.add(new Message(msg));
     }
 
     @FXML
@@ -137,14 +159,45 @@ public class RoomGUI implements Initializable {
         Platform.runLater(()->scene.setRoot(root));
     }
 
+
+    /*private class Message {
+        private StringProperty msg;
+        public Message(String stockTicker) {
+            this.msg = new SimpleStringProperty(stockTicker);
+        }
+
+        public String getMsg() {
+            return msg.get();
+        }
+
+        public void setMsg(String msg) {
+            msg.set(msg);
+        }
+
+        public StringProperty msgProperty() {
+            return msg;
+        }
+    }*/
+
+    public class Message {
+
+        private String name;
+
+        public Message(){ this.name = ""; }
+        public Message(String name){ this.name = name; }
+        public String getName() { return name; }
+        public void setName(String name) { this.name = name; }
+    }
+
+
     @Override
     public void initialize(URL url, ResourceBundle resourceBundle) {
-    }
+        TableColumn<Message, String> nameColumn = new TableColumn<>("Messages");
+        nameColumn.setMinWidth(198);
+        nameColumn.setCellValueFactory(new PropertyValueFactory<>("name"));
 
-    public void send() {
-        String msg = input.getText();
-        input.clear();
-        client.sendMessage(msg);
+        messages = FXCollections.observableArrayList();
+        messageTable.setItems(messages);
+        messageTable.getColumns().add(nameColumn);
     }
-
 }

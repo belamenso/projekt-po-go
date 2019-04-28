@@ -18,18 +18,27 @@
          </BorderPane.margin>
       </Pane>
    </left>
-   <top>
-      <Label fx:id="messageLabel" BorderPane.alignment="CENTER" />
-   </top>
    <right>
-      <VBox prefHeight="200.0" prefWidth="100.0" spacing="10.0" BorderPane.alignment="CENTER">
+      <VBox prefHeight="200.0" spacing="10.0" BorderPane.alignment="CENTER">
          <padding>
             <Insets bottom="20.0" left="20.0" right="20.0" top="20.0" />
          </padding>
          <children>
-            <Button mnemonicParsing="false" onAction="#passButtonPressed" text="Pass" />
-            <Button mnemonicParsing="false" onAction="#quitButtonPressed" text="Quit" />
+            <HBox prefWidth="200.0" spacing="10.0">
+               <children>
+                  <Button mnemonicParsing="false" onAction="#passButtonPressed" text="Pass" />
+                  <Button mnemonicParsing="false" onAction="#quitButtonPressed" text="Quit" />
+               </children>
+            </HBox>
+            <TableView fx:id="messageTable" prefHeight="400.0" prefWidth="200.0" />
          </children>
       </VBox>
    </right>
+   <top>
+      <Label fx:id="infoLabel" text="Info o ruchach itp" BorderPane.alignment="CENTER">
+         <BorderPane.margin>
+            <Insets top="20.0" />
+         </BorderPane.margin>
+      </Label>
+   </top>
 </BorderPane>
