@@ -39,6 +39,7 @@ public class LobbyScreen implements Initializable {
     public void createRoom() {
         String name = nameField.getText();
         nameField.clear();
+        setMessage("");
 
         for(int i = 0; i < name.length(); ++ i) {
             if(!Character.isLetter(name.charAt(i))) {
