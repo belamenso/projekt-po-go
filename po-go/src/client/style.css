@@ -14,3 +14,15 @@
     -fx-stroke: #333333;
     -fx-stroke-width: 2px;
 }
+
+.stone-potentially-captured-white {
+    -fx-fill: #FF5E5D;
+    -fx-stroke: #dddddd;
+    -fx-stroke-width: 2px;
+}
+
+.stone-potentially-captured-black {
+    -fx-fill: #771824;
+    -fx-stroke: #dddddd;
+    -fx-stroke-width: 2px;
+}

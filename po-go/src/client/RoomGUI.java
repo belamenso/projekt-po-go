@@ -2,6 +2,7 @@ package client;
 
 import go.Board;
 import go.GameplayManager;
+import go.ReasonMoveImpossible;
 import go.Stone;
 import javafx.application.Platform;
 import javafx.collections.FXCollections;
@@ -22,11 +23,15 @@ import javafx.scene.shape.Circle;
 import javafx.scene.shape.Line;
 import javafx.scene.shape.Rectangle;
 import javafx.scene.text.Text;
+import util.Pair;
 
 import java.io.IOException;
 import java.net.URL;
+import java.util.ArrayList;
 import java.util.Optional;
 import java.util.ResourceBundle;
+
+import static go.GameLogic.gameLogic;
 
 public class RoomGUI implements Initializable {
     private Client client;
@@ -42,6 +47,10 @@ public class RoomGUI implements Initializable {
     private ObservableList<Message> messages;
 
     private Optional<GameplayManager.Result> cachedGameResult = Optional.empty();
+
+    private String colorToCapturedClass(Stone color) {
+        return color == Stone.White ? "stone-potentially-captured-white" : "stone-potentially-captured-black";
+    }
 
     public void setup(Scene scene, Client client, Stone color) {
         this.scene = scene;
@@ -81,12 +90,23 @@ public class RoomGUI implements Initializable {
                 });
 
                 rect.setOnMouseEntered(e -> {
-                    System.out.println("entered " + x + " " + y);
+                    if (crl.myTurn()) {
+                        Optional<ReasonMoveImpossible> reason = gameLogic.movePossible(crl.getBoard(), x, y, crl.getColor());
+                        if (reason.isEmpty()) {
+                            Board boardCopy = crl.getBoard().cloneBoard();
+                            boardCopy.getBoard()[x][y] = Optional.of(crl.getColor());
+                            ArrayList<Pair<Integer, Integer>> potentiallyCaptured = gameLogic.captured(boardCopy, crl.getColor());
+                            for (Pair<Integer, Integer> pos : potentiallyCaptured) {
+                                Platform.runLater(() -> {
+                                    stones[pos.x][pos.y].getStyleClass().clear();
+                                    stones[pos.x][pos.y].getStyleClass().add(colorToCapturedClass(crl.getColor().opposite));
+                                });
+                            }
+                        }
+                    }
                 });
 
-                rect.setOnMouseExited(e -> {
-                    System.out.println("exited " + x + " " + y);
-                });
+                rect.setOnMouseExited(e -> renderBoard());
 
                 Circle stone = new Circle((2*x+1)*r, (2*y+1)*r, r*0.8);
                 stones[x][y] = stone;
