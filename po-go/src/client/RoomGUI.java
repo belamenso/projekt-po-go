@@ -202,8 +202,10 @@ public class RoomGUI implements Initializable {
     @Override
     public void initialize(URL url, ResourceBundle resourceBundle) {
         TableColumn<Message, String> nameColumn = new TableColumn<>("Messages");
-        nameColumn.setMinWidth(198);
+        nameColumn.setMinWidth(199);
         nameColumn.setCellValueFactory(new PropertyValueFactory<>("name"));
+        nameColumn.setSortable(false);
+        nameColumn.setEditable(false);
 
         messages = FXCollections.observableArrayList();
         messageTable.setItems(messages);
