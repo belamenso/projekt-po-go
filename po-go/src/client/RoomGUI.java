@@ -244,7 +244,7 @@ public class RoomGUI implements Initializable {
         nameColumn.setEditable(false);
         nameColumn.setResizable(false);
 
-        TableColumn<Message, String> timeColumn = new TableColumn<>("");
+        TableColumn<Message, String> timeColumn = new TableColumn<>("Time");
         timeColumn.setMinWidth(50);
         timeColumn.setPrefWidth(50);
         timeColumn.setCellValueFactory(new PropertyValueFactory<>("time"));
@@ -255,6 +255,7 @@ public class RoomGUI implements Initializable {
         messages = FXCollections.observableArrayList();
         messageTable.setItems(messages);
         messageTable.getColumns().addAll(timeColumn, nameColumn);
-        nameColumn.setPrefWidth(messageTable.getPrefWidth() - 54);
+
+        nameColumn.prefWidthProperty().bind(messageTable.widthProperty().subtract(54));
     }
 }
