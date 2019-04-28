@@ -7,6 +7,7 @@ import go.Stone;
 import javafx.application.Platform;
 import util.Pair;
 
+import java.util.Date;
 import java.util.Optional;
 import java.io.IOException;
 
@@ -21,6 +22,7 @@ public class ClientRoomListener implements ClientListener {
     GameplayManager manager = new GameplayManager();
     private RoomGUI rg;
     private boolean gameStarted = false;
+    Date start;
 
     ClientRoomListener(Client client, Stone color, RoomGUI rg) {
         System.out.println("### ClientRoomListenerCreated");
@@ -55,29 +57,28 @@ public class ClientRoomListener implements ClientListener {
             //client.setListener(new ClientLobbyListener(client));
         } else if (msg.startsWith("GAME_BEGINS")) {
             gameStarted = true;
-            Platform.runLater(() -> rg.addMessage("The game begins, you are " + myColor.pictogram));
+            start = new Date();
+            Platform.runLater(() -> rg.addMessage("The game begins, you are " + myColor.pictogram, start));
         } else if (msg.startsWith("GAME_FINISHED")) {
             String[] parts = msg.split(" ");
-            System.out.println("Game finished, black points: " + parts[2] + " white: " + parts[3]);
-            System.out.println(myColor.toString().equals(parts[1]) ? "WYGRANA!" : "PRZEGRANA");
-            Platform.runLater(() -> rg.addMessage((parts[1].equals(myColor.toString()) ? myColor.pictogram : myColor.opposite.pictogram) + " won"));
+            Platform.runLater(() -> rg.addMessage((parts[1].equals(myColor.toString()) ? myColor.pictogram : myColor.opposite.pictogram) + " won", start));
         } else if (msg.startsWith("MOVE_ACCEPTED")) {
             System.out.println("# move was accepted");
         } else if (msg.startsWith("MOVE_REJECTED")) {
             System.out.println("# move was rejected"); // TODO reason
-            Platform.runLater(() -> rg.addMessage("ERROR: move rejected by the server"));
+            Platform.runLater(() -> rg.addMessage("ERROR: move rejected by the server", start));
         } else if (msg.startsWith("OPPONENT_DISCONNECTED")) {
             manager.interruptGame();
-            Platform.runLater(() -> rg.addMessage(myColor.pictogram + " has disconnected"));
+            Platform.runLater(() -> rg.addMessage(myColor.pictogram + " has disconnected", start));
         } else if (msg.startsWith("MOVE PASS")) {
             Optional<ReasonMoveImpossible> reason = manager.registerMove(new GameplayManager.Pass(myColor.opposite));
-            Platform.runLater(() -> rg.addMessage(myColor.opposite.pictogram + " has passed their turn"));
+            Platform.runLater(() -> rg.addMessage(myColor.opposite.pictogram + " has passed their turn", start));
             assert reason.isEmpty();
         } else if (msg.startsWith("MOVE ")) {
             String[] parts = msg.split(" ");
             assert parts.length == 3;
             int x = Integer.parseInt(parts[1]), y = Integer.parseInt(parts[2]);
-            Platform.runLater(() -> rg.addMessage(myColor.opposite.pictogram + " places stone at " + getBoard().positionToNumeral(new Pair<>(y, x))));
+            Platform.runLater(() -> rg.addMessage(myColor.opposite.pictogram + " places stone at " + getBoard().positionToNumeral(new Pair<>(y, x)), start));
             Optional<ReasonMoveImpossible> reason = manager.registerMove(new GameplayManager.StonePlacement(myColor.opposite, x, y));
             assert reason.isEmpty();
         } else if (msg.equals("lobbyJoined")) {
@@ -87,13 +88,13 @@ public class ClientRoomListener implements ClientListener {
                 e.printStackTrace();
             }
         } else if (msg.equals("OPPONENT_JOINED")) {
-            Platform.runLater(() -> rg.addMessage(myColor.opposite.pictogram + " has joined the game"));
+            Platform.runLater(() -> rg.addMessage(myColor.opposite.pictogram + " has joined the game", null));
         } else if(msg.startsWith("chat")) {
             String chat = msg.split(";")[1];
-            Platform.runLater(() -> rg.addMessage("("+myColor.opposite.pictogram + "): " + chat));
+            Platform.runLater(() -> rg.addMessage("("+myColor.opposite.pictogram + "): " + chat, start));
         } else {
             System.out.println("UNRECOGNIZED MSG: " + msg);
-            Platform.runLater(() -> rg.addMessage("UNRECOGNIZED MESSAGE: " + msg));
+            Platform.runLater(() -> rg.addMessage("UNRECOGNIZED MESSAGE: " + msg, null));
         }
         Platform.runLater(() -> rg.renderBoard());
     }
@@ -104,7 +105,7 @@ public class ClientRoomListener implements ClientListener {
     void attemptedToPass() {
         if (myTurn()) {
             makeMyMove(new GameplayManager.Pass(myColor));
-            rg.addMessage("You (" + myColor.pictogram + ") passed");
+            rg.addMessage("You (" + myColor.pictogram + ") passed", start);
         } else {
             handleAttemptToSkipTurn();
         }
@@ -120,7 +121,7 @@ public class ClientRoomListener implements ClientListener {
                 System.out.println("Move impossible: " + reason.get());
             } else {
                 makeMyMove(new GameplayManager.StonePlacement(myColor, x, y));
-                rg.addMessage("You (" + myColor.pictogram + ") moved to " + getBoard().positionToNumeral(new Pair<>(y, x))); // nie ruszać kolejności
+                rg.addMessage("You (" + myColor.pictogram + ") moved to " + getBoard().positionToNumeral(new Pair<>(y, x)), start); // nie ruszać kolejności
                 rg.renderBoard();
             }
         } else {
@@ -133,7 +134,7 @@ public class ClientRoomListener implements ClientListener {
      */
     void sendChat(String msg) {
         if(msg == null || msg.length()==0) return;
-        Platform.runLater(() -> rg.addMessage("("+myColor.pictogram+"): " + msg));
+        Platform.runLater(() -> rg.addMessage("("+myColor.pictogram+"): " + msg, start));
         client.sendMessage("chat;"+msg);
     }
 

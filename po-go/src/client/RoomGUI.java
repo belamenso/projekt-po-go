@@ -185,11 +185,16 @@ public class RoomGUI implements Initializable {
         infoLabel.setText(info);
     }
 
-    public void addMessage(String msg) {
-        //System.out.println("addMessage: " + msg);
-        DateFormat dateFormat = new SimpleDateFormat("HH:mm:ss");
-        Date date = new Date();
-        messages.add(new Message(msg, dateFormat.format(date)));
+    public void addMessage(String msg, Date start) {
+        if (start == null) {
+            messages.add(new Message(msg, ""));
+        } else {
+            long interval = (new Date().getTime() - start.getTime()) / 1000;
+            String seconds = Long.toString(interval % 60);
+            if (seconds.length() == 1) seconds = "0" + seconds;
+            String timestamp = interval / 60 + ":" + seconds;
+            messages.add(new Message(msg, timestamp));
+        }
         messageTable.scrollTo(messageTable.getItems().size() - 1);
     }
 
@@ -239,9 +244,9 @@ public class RoomGUI implements Initializable {
         nameColumn.setEditable(false);
         nameColumn.setResizable(false);
 
-        TableColumn<Message, String> timeColumn = new TableColumn<>("Time");
-        timeColumn.setMinWidth(60);
-        timeColumn.setPrefWidth(60);
+        TableColumn<Message, String> timeColumn = new TableColumn<>("");
+        timeColumn.setMinWidth(50);
+        timeColumn.setPrefWidth(50);
         timeColumn.setCellValueFactory(new PropertyValueFactory<>("time"));
         timeColumn.setSortable(false);
         timeColumn.setEditable(false);
@@ -250,6 +255,6 @@ public class RoomGUI implements Initializable {
         messages = FXCollections.observableArrayList();
         messageTable.setItems(messages);
         messageTable.getColumns().addAll(timeColumn, nameColumn);
-        nameColumn.setPrefWidth(messageTable.getPrefWidth() - 64);
+        nameColumn.setPrefWidth(messageTable.getPrefWidth() - 54);
     }
 }
