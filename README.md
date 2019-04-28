@@ -28,6 +28,14 @@ Autorzy: Bartosz Białas, Rafał Kilar
 * dodanie dźwięku
 * dodanie prostego GUI do serwera
 
+## Plany na kolejne spotkanie
+* usuwanie martwych kamieni przed zliczeniem punktów
+* lepsze GUI (eg. wyświetlanie liczby pojmanych kamieni, estetyczny resize)
+* dodanie obsługi plansz różnej wielkości do GUI
+* dodanie możliwości oglądania rozgrywek, bez uczestniczenia w nich
+* dodanie podglądu historii rozgrywki do GUI + animacja gry
+* możliwość forkowania rozgrywki od dowolnego punktu
+
 ----
 
 ## Zasady gry
