@@ -18,12 +18,15 @@ public class ClientRoomListener implements ClientListener {
     private Stone myColor;
     GameplayManager manager = new GameplayManager();
     private RoomGUI rg;
+    String myRepresentation, opponentRepresentation;
 
     ClientRoomListener(Client client, Stone color, RoomGUI rg) {
         System.out.println("### ClientRoomListenerCreated");
         this.rg = rg;
         this.client = client;
         this.myColor = color;
+        myRepresentation = myColor == Stone.White ? "○" : "●";
+        opponentRepresentation = myColor == Stone.Black ? "○" : "●";
     }
 
     int getSize() {
@@ -65,16 +68,16 @@ public class ClientRoomListener implements ClientListener {
             Platform.runLater(() -> rg.addMessage("ERROR: move rejected by the server"));
         } else if (msg.startsWith("OPPONENT_DISCONNECTED")) {
             manager.interruptGame();
-            Platform.runLater(() -> rg.addMessage("Opponent has disconnected"));
+            Platform.runLater(() -> rg.addMessage(opponentRepresentation + " has disconnected"));
         } else if (msg.startsWith("MOVE PASS")) {
             Optional<ReasonMoveImpossible> reason = manager.registerMove(new GameplayManager.Pass(myColor.opposite));
-            Platform.runLater(() -> rg.addMessage("Opponent has passed their turn"));
+            Platform.runLater(() -> rg.addMessage(opponentRepresentation + " has passed their turn"));
             assert reason.isEmpty();
         } else if (msg.startsWith("MOVE ")) {
             String[] parts = msg.split(" ");
             assert parts.length == 3;
             int x = Integer.parseInt(parts[1]), y = Integer.parseInt(parts[2]);
-            Platform.runLater(() -> rg.addMessage("Opponent places stone at " + getBoard().positionToNumeral(new Pair<>(x, y))));
+            Platform.runLater(() -> rg.addMessage(opponentRepresentation + " places stone at " + getBoard().positionToNumeral(new Pair<>(x, y))));
             Optional<ReasonMoveImpossible> reason = manager.registerMove(new GameplayManager.StonePlacement(myColor.opposite, x, y));
             assert reason.isEmpty();
         } else if (msg.equals("lobbyJoined"))  {

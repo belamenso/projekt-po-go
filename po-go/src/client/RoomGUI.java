@@ -87,7 +87,7 @@ public class RoomGUI implements Initializable {
                             System.out.println("Move impossible: " + reason.get());
                         } else {
                             crl.makeMyMove(new GameplayManager.StonePlacement(crl.getColor(), x, y));
-                            addMessage("You moved to " + crl.getBoard().positionToNumeral(new Pair<>(x, y)));
+                            addMessage("You (" + crl.myRepresentation + ") moved to " + crl.getBoard().positionToNumeral(new Pair<>(x, y)));
                             renderBoard();
                         }
                     } else {
@@ -166,7 +166,7 @@ public class RoomGUI implements Initializable {
     public void passButtonPressed() {
         if (crl.myTurn()) {
             crl.makeMyMove(new GameplayManager.Pass(crl.getColor()));
-            addMessage("You passed");
+            addMessage("You (" + crl.myRepresentation + ") passed");
         } else {
             handleAttemptToSkipTurn();
         }
