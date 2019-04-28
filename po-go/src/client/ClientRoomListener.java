@@ -86,6 +86,8 @@ public class ClientRoomListener implements ClientListener {
             } catch (IOException e) {
                 e.printStackTrace();
             }
+        } else if (msg.equals("OPPONENT_JOINED")) {
+            Platform.runLater(() -> rg.addMessage(myColor.opposite.pictogram + " has joined the game"));
         } else {
             System.out.println("UNRECOGNIZED MSG: " + msg);
             Platform.runLater(() -> rg.addMessage("UNRECOGNIZED MESSAGE: " + msg));
