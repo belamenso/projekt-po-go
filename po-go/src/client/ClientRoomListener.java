@@ -15,7 +15,7 @@ import java.io.IOException;
 public class ClientRoomListener implements ClientListener {
     private Client client;
     private Stone myColor;
-    private GameplayManager manager = new GameplayManager();
+    GameplayManager manager = new GameplayManager();
     private RoomGUI rg;
 
     ClientRoomListener(Client client, Stone color, RoomGUI rg) {
@@ -65,15 +65,14 @@ public class ClientRoomListener implements ClientListener {
             rg.renderBoard();
         } else if (msg.startsWith("MOVE PASS")) {
             System.out.println("# opponent has passed his turn");
-            //noinspection AssertWithSideEffects
-            assert (manager.registerMove(new GameplayManager.Pass(myColor.opposite))).isEmpty();
+            Optional<ReasonMoveImpossible> reason = manager.registerMove(new GameplayManager.Pass(myColor.opposite));
+            assert reason.isEmpty();
             rg.renderBoard();
         } else if (msg.startsWith("MOVE ")) {
             String[] parts = msg.split(" ");
             assert parts.length == 3;
             int x = Integer.parseInt(parts[1]), y = Integer.parseInt(parts[2]);
             System.out.println("# opponent's move: " + x + ", " + y);
-            //noinspection AssertWithSideEffects
             Optional<ReasonMoveImpossible> reason = manager.registerMove(new GameplayManager.StonePlacement(myColor.opposite, x, y));
             assert reason.isEmpty();
             rg.renderBoard();

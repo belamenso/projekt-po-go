@@ -155,14 +155,14 @@ public class RoomListener implements ServerListener {
             String[] xs = msg.split(" ");
             GameplayManager.Move move;
 
-            if (clients.size() <= 1 || manager.interrupted()) {
+            if (clients.size() <= 1) {
                 clients.forEach(c -> c.sendMessage("MOVE_REJECTED"));
                 return;
             }
 
             Stone color = clients.get(0) == client ? Stone.Black : Stone.White; // TODO ugly
 
-            if (manager.finished()) {
+            if (manager.finished() || manager.interrupted()) {
                 client.sendMessage("MOVE_REJECTED");
             } else if (manager.inProgress()) {
 
@@ -171,6 +171,7 @@ public class RoomListener implements ServerListener {
                     assert xs[1].equals("PASS");
                     move = new GameplayManager.Pass(color);
                 } else { // MOVE 1 4
+                    assert xs.length == 3;
                     int pos_x = Integer.parseInt(xs[1]), pos_y = Integer.parseInt(xs[2]);
                     move = new GameplayManager.StonePlacement(color, pos_x, pos_y);
                 }
@@ -185,10 +186,12 @@ public class RoomListener implements ServerListener {
                         if (c != client) c.sendMessage(msg);
                     });
 
+                    System.out.println("JESTEM JUŻ PRAWIE!!!");
                     if (manager.finished()) {
+                        System.out.println("DONE!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
                         GameplayManager.Result gameResult = manager.result();
                         clients.forEach(c -> c.sendMessage("GAME_FINISHED " + gameResult.winner + " "
-                                                            + gameResult.blackPoints + " " + gameResult.whitePoints));
+                                + gameResult.blackPoints + " " + gameResult.whitePoints));
                     }
                 } else {
                     client.sendMessage("MOVE_REJECTED"); // TODO send reason
