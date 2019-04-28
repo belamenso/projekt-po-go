@@ -20,6 +20,7 @@ import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableView;
 import javafx.scene.control.TextField;
 import javafx.scene.control.cell.PropertyValueFactory;
+import javafx.scene.paint.Color;
 import javafx.scene.shape.Circle;
 import javafx.scene.shape.Line;
 import javafx.scene.shape.Rectangle;
@@ -44,6 +45,8 @@ public class RoomGUI implements Initializable {
     @FXML private TableView<Message> messageTable;
     @FXML private Label infoLabel;
     private ObservableList<Message> messages;
+
+    private Optional<GameplayManager.Result> cachedGameResult = Optional.empty();
 
     public void setup(Scene scene, Client client, Stone color) {
         this.scene = scene;
@@ -106,6 +109,28 @@ public class RoomGUI implements Initializable {
 
     // Renderuje planszę
     void renderBoard() {
+
+        infoLabel.setTextFill(Color.BLACK);
+        if (crl.myTurn()) {
+            infoLabel.setText("Your move");
+        } else if (crl.manager.interrupted()) {
+            infoLabel.setText("Opponent has left the game");
+        } else if (crl.manager.finished()) {
+            if (!cachedGameResult.isPresent())
+                cachedGameResult = Optional.of(crl.manager.result());
+            if (cachedGameResult.get().winner == crl.getColor()) {
+                infoLabel.setText("You won");
+                infoLabel.setTextFill(Color.DARKGREEN);
+            } else {
+                infoLabel.setText("You lost");
+                infoLabel.setTextFill(Color.CRIMSON);
+            }
+            infoLabel.setText(infoLabel.getText()
+                    + "\nWhite " + cachedGameResult.get().whitePoints + ", Black: " + cachedGameResult.get().blackPoints);
+        } else if (crl.manager.inProgress()) {
+            infoLabel.setText("Waiting for opponent's move");
+        } else assert false;
+
         final Board toRender = crl.getBoard();
         Platform.runLater(() -> {
             for(int i = 0; i < toRender.getSize(); ++ i) {
