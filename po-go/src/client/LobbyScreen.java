@@ -81,7 +81,7 @@ public class LobbyScreen implements Initializable {
         nameColumn.setCellValueFactory(new PropertyValueFactory<>("name"));
 
         TableColumn<RoomData, String> stanColumn = new TableColumn<>("Stan");
-        stanColumn.setMinWidth(100);
+        stanColumn.setMinWidth(150);
         stanColumn.setCellValueFactory(new PropertyValueFactory<>("stan"));
 
         rooms.setRowFactory(tv -> {
@@ -108,17 +108,12 @@ public class LobbyScreen implements Initializable {
         scene.setRoot(root);
     }
 
-    public void moveToRoom(Stone color) {
+    public void moveToRoom(Stone color) throws IOException {
         FXMLLoader loader = new FXMLLoader(getClass().getResource("RoomGUI.fxml"));
-        Parent root = null;
-        try {
-            root = loader.load();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+        final Parent root = loader.load();
         RoomGUI controller = loader.getController();
         controller.setScene(scene);
         controller.setClient(client, color);
-        scene.setRoot(root);
+        Platform.runLater(() -> scene.setRoot(root));
     }
 }
