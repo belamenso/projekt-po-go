@@ -17,6 +17,12 @@ public enum Stone {
 
     @Override
     public String toString() {
-        return this == White ? "WHITE" : "BLACK";
+        return this == White ? "WHITE" : "BLACK"; // TODO bardzo niebezpieczne, na wyniku tej metody opiera się protokół klient-serwer
+    }
+
+    public String pictogram;
+    static {
+        White.pictogram = "○";
+        Black.pictogram = "●";
     }
 }

@@ -21,15 +21,12 @@ public class ClientRoomListener implements ClientListener {
     GameplayManager manager = new GameplayManager();
     private RoomGUI rg;
     private boolean gameStarted = false;
-    String myRepresentation, opponentRepresentation;
 
     ClientRoomListener(Client client, Stone color, RoomGUI rg) {
         System.out.println("### ClientRoomListenerCreated");
         this.rg = rg;
         this.client = client;
         this.myColor = color;
-        myRepresentation = myColor == Stone.White ? "○" : "●";
-        opponentRepresentation = myColor == Stone.Black ? "○" : "●";
     }
 
     int getSize() {
@@ -58,12 +55,12 @@ public class ClientRoomListener implements ClientListener {
             //client.setListener(new ClientLobbyListener(client));
         } else if (msg.startsWith("GAME_BEGINS")) {
             gameStarted = true;
-            Platform.runLater(() -> rg.addMessage("The game begins"));
+            Platform.runLater(() -> rg.addMessage("The game begins, you are " + myColor.pictogram));
         } else if (msg.startsWith("GAME_FINISHED")) {
             String[] parts = msg.split(" ");
             System.out.println("Game finished, black points: " + parts[2] + " white: " + parts[3]);
             System.out.println(myColor.toString().equals(parts[1]) ? "WYGRANA!" : "PRZEGRANA");
-            Platform.runLater(() -> rg.addMessage(parts[1] + " won"));
+            Platform.runLater(() -> rg.addMessage((parts[1].equals(myColor.toString()) ? myColor.pictogram : myColor.opposite.pictogram) + " won"));
         } else if (msg.startsWith("MOVE_ACCEPTED")) {
             System.out.println("# move was accepted");
         } else if (msg.startsWith("MOVE_REJECTED")) {
@@ -71,19 +68,19 @@ public class ClientRoomListener implements ClientListener {
             Platform.runLater(() -> rg.addMessage("ERROR: move rejected by the server"));
         } else if (msg.startsWith("OPPONENT_DISCONNECTED")) {
             manager.interruptGame();
-            Platform.runLater(() -> rg.addMessage(opponentRepresentation + " has disconnected"));
+            Platform.runLater(() -> rg.addMessage(myColor.pictogram + " has disconnected"));
         } else if (msg.startsWith("MOVE PASS")) {
             Optional<ReasonMoveImpossible> reason = manager.registerMove(new GameplayManager.Pass(myColor.opposite));
-            Platform.runLater(() -> rg.addMessage(opponentRepresentation + " has passed their turn"));
+            Platform.runLater(() -> rg.addMessage(myColor.opposite.pictogram + " has passed their turn"));
             assert reason.isEmpty();
         } else if (msg.startsWith("MOVE ")) {
             String[] parts = msg.split(" ");
             assert parts.length == 3;
             int x = Integer.parseInt(parts[1]), y = Integer.parseInt(parts[2]);
-            Platform.runLater(() -> rg.addMessage(opponentRepresentation + " places stone at " + getBoard().positionToNumeral(new Pair<>(y, x))));
+            Platform.runLater(() -> rg.addMessage(myColor.opposite.pictogram + " places stone at " + getBoard().positionToNumeral(new Pair<>(y, x))));
             Optional<ReasonMoveImpossible> reason = manager.registerMove(new GameplayManager.StonePlacement(myColor.opposite, x, y));
             assert reason.isEmpty();
-        } else if (msg.equals("lobbyJoined"))  {
+        } else if (msg.equals("lobbyJoined")) {
             try {
                 rg.returnToLobby();
             } catch (IOException e) {
@@ -102,7 +99,7 @@ public class ClientRoomListener implements ClientListener {
     void attemptedToPass() {
         if (myTurn()) {
             makeMyMove(new GameplayManager.Pass(myColor));
-            rg.addMessage("You (" + myRepresentation + ") passed");
+            rg.addMessage("You (" + myColor.pictogram + ") passed");
         } else {
             handleAttemptToSkipTurn();
         }
@@ -118,7 +115,7 @@ public class ClientRoomListener implements ClientListener {
                 System.out.println("Move impossible: " + reason.get());
             } else {
                 makeMyMove(new GameplayManager.StonePlacement(myColor, x, y));
-                rg.addMessage("You (" + myRepresentation + ") moved to " + getBoard().positionToNumeral(new Pair<>(y, x))); // nie ruszać kolejności
+                rg.addMessage("You (" + myColor.pictogram + ") moved to " + getBoard().positionToNumeral(new Pair<>(y, x))); // nie ruszać kolejności
                 rg.renderBoard();
             }
         } else {
