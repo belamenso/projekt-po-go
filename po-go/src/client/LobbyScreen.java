@@ -1,21 +1,15 @@
 package client;
 
 import go.Stone;
-import javafx.application.Platform;
 import javafx.collections.FXCollections;
-import javafx.collections.ObservableArray;
 import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.fxml.Initializable;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
-import javafx.scene.control.Label;
-import javafx.scene.control.TableColumn;
-import javafx.scene.control.TableView;
-import javafx.scene.control.TextField;
+import javafx.scene.control.*;
 import javafx.scene.control.cell.PropertyValueFactory;
-import server.RoomListener;
 
 import java.io.IOException;
 import java.net.URL;
@@ -55,10 +49,14 @@ public class LobbyScreen implements Initializable {
         client.sendMessage("create " + name);
     }
 
+    private void sendJoinRoomRequest(String roomName) {
+        client.sendMessage("join " + roomName);
+    }
+
     @FXML
     public void joinRoom() {
         String name = rooms.getSelectionModel().getSelectedItems().get(0).getName();
-        client.sendMessage("join " + name);
+        sendJoinRoomRequest(name);
     }
 
     @FXML
@@ -85,6 +83,17 @@ public class LobbyScreen implements Initializable {
         TableColumn<RoomData, String> stanColumn = new TableColumn<>("Stan");
         stanColumn.setMinWidth(100);
         stanColumn.setCellValueFactory(new PropertyValueFactory<>("stan"));
+
+        rooms.setRowFactory(tv -> {
+            TableRow<RoomData> row = new TableRow<>();
+            row.setOnMouseClicked(event -> {
+                if (event.getClickCount() == 2 && !row.isEmpty()) {
+                    RoomData rowData = row.getItem();
+                    sendJoinRoomRequest(rowData.name);
+                }
+            });
+            return row;
+        });
 
         rooms.getColumns().clear();
         rooms.getColumns().addAll(nameColumn, stanColumn);

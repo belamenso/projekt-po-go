@@ -5,17 +5,17 @@ import javafx.fxml.FXMLLoader;
 import javafx.fxml.Initializable;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
-import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.control.TextField;
+import javafx.scene.paint.Color;
 
 import java.io.IOException;
 import java.net.URL;
 import java.util.ResourceBundle;
 
-public class ConnectionPrompt {
-    Client client;
-    Scene scene;
+public class ConnectionPrompt implements Initializable {
+    private Client client;
+    private Scene scene;
 
     @FXML private Label messageLabel;
     @FXML private TextField ipField;
@@ -26,27 +26,20 @@ public class ConnectionPrompt {
         client.setListener(new ConnectListener(this));
     }
 
-    public void setScene(Scene scene) {
-        this.scene = scene;
-    }
+    void setScene(Scene scene) { this.scene = scene; }
 
-    void setMessage(String msg) {
-        messageLabel.setText(msg);
-    }
+    void setMessage(String msg) { messageLabel.setText(msg); }
 
     @FXML
     void connectButtonClicked() {
-        String ip = ipField.getText();
-        int port = 0;
         try {
-            port = Integer.parseInt(portField.getText());
+            String ip = ipField.getText();
+            int port = Integer.parseInt(portField.getText());
+            client.startConnection(ip, port);
         } catch(RuntimeException ex) {
             messageLabel.setText("Port musi być liczbą");
-            return;
+            messageLabel.setTextFill(Color.CRIMSON);
         }
-        //ipField.clear();
-        //portField.clear();
-        client.startConnection(ip, port);
     }
 
     void switchToLobby() throws IOException {
@@ -56,5 +49,11 @@ public class ConnectionPrompt {
         controller.setScene(scene);
         controller.setClient(client);
         scene.setRoot(root);
+    }
+
+    @Override
+    public void initialize(URL url, ResourceBundle resourceBundle) {
+        System.out.println("CREATED!");
+        ipField.setText("localhost");
     }
 }
