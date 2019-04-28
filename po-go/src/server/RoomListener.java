@@ -89,11 +89,13 @@ public class RoomListener implements ServerListener {
      */
     @Override
     public synchronized boolean clientConnected(ServerClient client) {
-        if (clients.size() >= 2 || manager.interrupted()) {
+        // TODO spectators
+        if (clients.size() >= 2 || manager.interrupted() || manager.finished()) {
             client.sendMessage("CONNECTION_REFUSED"); // -> ClientLobbyListener
             return false;
         }
 
+        // not interrupted and game in progress
         if (clients.size() == 0) {
             client.sendMessage("CONNECTED BLACK"); // -> ClientLobbyListener
         } else if (clients.size() == 1) {
