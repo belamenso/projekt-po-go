@@ -34,3 +34,13 @@
 .black-territory {
     -fx-fill: radial-gradient(center 50% 50% , radius 35%, black 0%, black 24%, blue 25%, blue 39%, transparent 40%);
 }
+
+.title {
+    -fx-font-size: 96px;
+    -fx-font-weight: bold;
+    -fx-font-smoothing-type: gray;
+}
+
+.subtitle {
+    -fx-font-size: 12px;
+}
