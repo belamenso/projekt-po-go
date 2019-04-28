@@ -27,6 +27,8 @@ Autorzy: Bartosz Białas, Rafał Kilar
 * gra offline (dwóch graczy przed jednym komputerem)
 * dodanie dźwięku
 
+----
+
 ## Zasady gry
 * [turorial 1](https://www.youtube.com/watch?v=5PTXdR8hLlQ)
 * [tutorial 2](https://www.youtube.com/watch?v=YPMog4LAmvg)
