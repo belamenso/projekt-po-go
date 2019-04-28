@@ -27,7 +27,10 @@ import util.Pair;
 
 import java.io.IOException;
 import java.net.URL;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.Optional;
 import java.util.ResourceBundle;
 
@@ -168,8 +171,10 @@ public class RoomGUI implements Initializable {
     }
 
     public void addMessage(String msg) {
-        System.out.println("addMessage: " + msg);
-        messages.add(new Message(msg));
+        //System.out.println("addMessage: " + msg);
+        DateFormat dateFormat = new SimpleDateFormat("HH:mm:ss");
+        Date date = new Date();
+        messages.add(new Message(msg, dateFormat.format(date)));
         messageTable.scrollTo(messageTable.getItems().size() - 1);
     }
 
@@ -192,28 +197,38 @@ public class RoomGUI implements Initializable {
     }
 
     public class Message {
-
         private String name;
-        public Message(){ this.name = ""; }
-        public Message(String name){ this.name = name; }
+        private String time;
+        public Message(){ this.name = ""; this.time=""; }
+        public Message(String name, String time){ this.name = name; this.time = time; }
         public String getName() { return name; }
+        public String getTime() { return time; }
         public void setName(String name) { this.name = name; }
+        public void setTime(String time) { this.time = time; }
     }
 
 
     @Override
     public void initialize(URL url, ResourceBundle resourceBundle) {
         TableColumn<Message, String> nameColumn = new TableColumn<>("Messages");
-        nameColumn.setMinWidth(198);
         nameColumn.setCellValueFactory(new PropertyValueFactory<>("name"));
         nameColumn.setSortable(false);
         nameColumn.setEditable(false);
+        nameColumn.setResizable(false);
+
+        TableColumn<Message, String> timeColumn = new TableColumn<>("Time");
+        timeColumn.setMinWidth(60);
+        timeColumn.setPrefWidth(60);
+        timeColumn.setCellValueFactory(new PropertyValueFactory<>("time"));
+        timeColumn.setSortable(false);
+        timeColumn.setEditable(false);
+        timeColumn.setResizable(false);
 
         messages = FXCollections.observableArrayList();
         messageTable.setItems(messages);
-        messageTable.getColumns().add(nameColumn);
-        nameColumn.setPrefWidth(messageTable.getPrefWidth() - 2);
-        nameColumn.setResizable(false);
+        messageTable.getColumns().addAll(timeColumn, nameColumn);
+        nameColumn.setPrefWidth(messageTable.getPrefWidth() - 64);
+
     }
 
 }
