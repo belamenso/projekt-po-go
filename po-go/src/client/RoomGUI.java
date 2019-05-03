@@ -122,7 +122,7 @@ public class RoomGUI implements Initializable {
     }
 
     void markTerritories() {
-        assert crl.manager.finished() && !crl.manager.interrupted();
+        assert crl.manager.finished() && !crl.wasInterruped();
 
         ArrayList<GameLogic.Territory> ts = gameLogic.capturedTerritories(crl.getBoard());
         for (GameLogic.Territory t : ts) {
@@ -141,7 +141,7 @@ public class RoomGUI implements Initializable {
         infoLabel.setTextFill(Color.BLACK);
         if (crl.myTurn()) {
             infoLabel.setText("Your move");
-        } else if (crl.manager.interrupted()) {
+        } else if (crl.wasInterruped()) {
             infoLabel.setText("Opponent has left the game");
         } else if (crl.manager.finished()) {
             if (!cachedGameResult.isPresent())

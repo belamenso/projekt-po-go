@@ -22,6 +22,7 @@ public class ClientRoomListener implements ClientListener {
     GameplayManager manager = new GameplayManager();
     private RoomGUI rg;
     private boolean gameStarted = false;
+    private boolean gameInterruped = false;
     Date start;
 
     ClientRoomListener(Client client, Stone color, RoomGUI rg) {
@@ -40,8 +41,10 @@ public class ClientRoomListener implements ClientListener {
     Board getBoard() { return manager.getBoard(); }
 
     boolean myTurn() {
-        return gameStarted && !manager.interrupted() && manager.inProgress() && manager.nextTurn().equals(myColor);
+        return gameStarted && !gameInterruped && manager.inProgress() && manager.nextTurn().equals(myColor);
     }
+
+    boolean wasInterruped() { return gameInterruped; }
 
     private synchronized void makeMyMove(GameplayManager.Move move) {
         manager.registerMove(move);
@@ -68,7 +71,7 @@ public class ClientRoomListener implements ClientListener {
             System.out.println("# move was rejected"); // TODO reason
             Platform.runLater(() -> rg.addMessage("ERROR: move rejected by the server", start));
         } else if (msg.startsWith("OPPONENT_DISCONNECTED")) {
-            manager.interruptGame();
+            gameInterruped = true;
             Platform.runLater(() -> rg.addMessage(myColor.pictogram + " has disconnected", start));
         } else if (msg.startsWith("MOVE PASS")) {
             Optional<ReasonMoveImpossible> reason = manager.registerMove(new GameplayManager.Pass(myColor.opposite));

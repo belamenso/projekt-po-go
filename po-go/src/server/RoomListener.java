@@ -21,6 +21,7 @@ public class RoomListener implements ServerListener {
     private LobbyListener lobby;
 
     private GameplayManager manager = new GameplayManager();
+    private boolean gameInterrupted = false;
 
     RoomListener(String name, LobbyListener lobby) {
         clients = new LinkedList<>();
@@ -62,7 +63,7 @@ public class RoomListener implements ServerListener {
 
     public RoomState getRoomState() {
         // kolejność sprawdzania jest ważna
-        if (manager.interrupted()) return RoomState.GameInterrupted;
+        if (gameInterrupted) return RoomState.GameInterrupted;
         if (manager.finished()) return RoomState.GameFinished;
         if (clients.size() == 0) return RoomState.EmptyRoom;
         if (clients.size() == 1) return RoomState.WaitingForWhite; // TODO wybór koloru
@@ -92,8 +93,8 @@ public class RoomListener implements ServerListener {
     @Override
     public synchronized boolean clientConnected(ServerClient client) {
         // TODO spectators
-        if (clients.size() >= 2 || manager.interrupted() || manager.finished()) {
-            client.sendMessage("CONNECTION_REFUSED"); // -> ClientLobbyListener
+        if (clients.size() >= 2 || gameInterrupted || manager.finished()) {
+            client.sendMessage("CONNECTION_REFUSED"); // -> ClientLobbyListener // TODO Reason
             return false;
         }
 
@@ -127,8 +128,8 @@ public class RoomListener implements ServerListener {
     public synchronized void clientDisconnected(ServerClient client) {
         clients.removeIf(c -> c == client);
 
-        if (manager.inProgress() && !manager.interrupted()) {
-            manager.interruptGame();
+        if (manager.inProgress() && !gameInterrupted) {
+            gameInterrupted = true;
             for (ServerClient c : clients) {
                 c.sendMessage("OPPONENT_DISCONNECTED");
                 lobby.clientConnected(client);
@@ -162,7 +163,7 @@ public class RoomListener implements ServerListener {
 
             Stone color = clients.get(0) == client ? Stone.Black : Stone.White; // TODO ugly
 
-            if (manager.finished() || manager.interrupted()) {
+            if (manager.finished() || gameInterrupted) {
                 client.sendMessage("MOVE_REJECTED");
             } else if (manager.inProgress()) {
 
