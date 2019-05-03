@@ -136,9 +136,6 @@ public class RoomListener implements ServerListener {
                 lobby.broadcastRoomUpdate();
             }
         }
-
-        if(clients.isEmpty())
-            lobby.receivedInput(null, "remove " + getName());
     }
 
     @Override
