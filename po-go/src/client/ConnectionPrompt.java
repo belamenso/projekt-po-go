@@ -16,6 +16,7 @@ import java.util.ResourceBundle;
 public class ConnectionPrompt implements Initializable {
     private Client client;
     private Scene scene;
+    private Settings settings;
 
     @FXML private Label messageLabel;
     @FXML private TextField ipField;
@@ -53,8 +54,9 @@ public class ConnectionPrompt implements Initializable {
 
     @Override
     public void initialize(URL url, ResourceBundle resourceBundle) {
-        System.out.println("CREATED!");
-        ipField.setText("localhost");
-        portField.setText("33107");
+        Settings.assertConfigurationExists();
+        settings = Settings.readSettings();
+        ipField.setText(settings.host);
+        portField.setText(settings.port);
     }
 }
