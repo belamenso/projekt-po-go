@@ -73,17 +73,19 @@ public class ClientRoomListener implements ClientListener {
         } else if (msg.startsWith("OPPONENT_DISCONNECTED")) {
             gameInterruped = true;
             Platform.runLater(() -> rg.addMessage(myColor.pictogram + " has disconnected", start));
-        } else if (msg.startsWith("MOVE PASS")) {
+        } else if (msg.startsWith("MOVE ") && msg.split(" ").length == 3) { // MOVE Player PASS
+            assert msg.split(" ")[1] == myColor.opposite.toString();
             Optional<ReasonMoveImpossible> reason = manager.registerMove(new GameplayManager.Pass(myColor.opposite));
             Platform.runLater(() -> rg.addMessage(myColor.opposite.pictogram + " has passed their turn", start));
             assert reason.isEmpty();
-        } else if (msg.startsWith("MOVE ")) {
+        } else if (msg.startsWith("MOVE ") && msg.split(" ").length == 4) { // MOVE Player 1 2
             String[] parts = msg.split(" ");
-            assert parts.length == 3;
-            int x = Integer.parseInt(parts[1]), y = Integer.parseInt(parts[2]);
+            int x = Integer.parseInt(parts[2]), y = Integer.parseInt(parts[3]);
             Platform.runLater(() -> rg.addMessage(myColor.opposite.pictogram + " places stone at " + getBoard().positionToNumeral(new Pair<>(y, x)), start));
             Optional<ReasonMoveImpossible> reason = manager.registerMove(new GameplayManager.StonePlacement(myColor.opposite, x, y));
             assert reason.isEmpty();
+        } else if (msg.startsWith("MOVE ")) {
+            assert false;
         } else if (msg.equals("lobbyJoined")) {
             try {
                 rg.returnToLobby();

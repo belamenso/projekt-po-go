@@ -165,12 +165,12 @@ public class RoomListener implements ServerListener {
             } else if (manager.inProgress()) {
 
                 // parse move
-                if (xs.length == 2) { // MOVE PASS
-                    assert xs[1].equals("PASS");
+                if (xs.length == 3) { // MOVE Player PASS
+                    assert xs[2].equals("PASS");
                     move = new GameplayManager.Pass(color);
-                } else { // MOVE 1 4
-                    assert xs.length == 3;
-                    int pos_x = Integer.parseInt(xs[1]), pos_y = Integer.parseInt(xs[2]);
+                } else { // MOVE Player 1 4
+                    assert xs.length == 4;
+                    int pos_x = Integer.parseInt(xs[2]), pos_y = Integer.parseInt(xs[3]);
                     move = new GameplayManager.StonePlacement(color, pos_x, pos_y);
                 }
 
@@ -178,10 +178,8 @@ public class RoomListener implements ServerListener {
                 if (result.isEmpty()) {
                     client.sendMessage("MOVE_ACCEPTED");
 
-                    // TODO really the same thing?
-                    // TODO what if the client misses this message?
                     clients.forEach(c -> {
-                        if (c != client) c.sendMessage(msg);
+                        if (c != client) c.sendMessage(move.toString());
                     });
 
                     if (manager.finished()) {

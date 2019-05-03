@@ -36,7 +36,7 @@ public class GameplayManager {
          * @return Renderuje komendę
          */
         @Override
-        public String toString() { return "MOVE PASS"; }
+        public String toString() { return "MOVE " + player + " PASS"; }
     }
 
     /**
@@ -56,7 +56,7 @@ public class GameplayManager {
          */
         @Override
         public String toString() {
-            return "MOVE " + position.x + " " + position.y;
+            return "MOVE " + player + " " + position.x + " " + position.y;
         }
     }
 
