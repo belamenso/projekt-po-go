@@ -55,5 +55,6 @@ public class ConnectionPrompt implements Initializable {
     public void initialize(URL url, ResourceBundle resourceBundle) {
         System.out.println("CREATED!");
         ipField.setText("localhost");
+        portField.setText("33107");
     }
 }

@@ -18,7 +18,7 @@ import java.util.Scanner;
  */
 public class Server {
     public static void main(String[] args) {
-        Server s = new Server(0, new LobbyListener());
+        Server s = new Server(33107, new LobbyListener());
         System.out.println("The server started at " + s.getIp() + " : " + s.port);
 
         Scanner sc = new Scanner(System.in);
