@@ -3,6 +3,7 @@ package go;
 import util.Pair;
 
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.Optional;
 
 import static go.GameLogic.gameLogic;
@@ -85,6 +86,10 @@ public class GameplayManager {
      */
     private final double komi;
 
+    private final Board.BoardSize size;
+
+    private ArrayList<Pair<GameplayManager, Integer>> myForks = new ArrayList<>();
+
     private int getCapturedByWhite() { return capturedByWhite.get(capturedByWhite.size() - 1); }
 
     private int getCapturedByBlack() { return capturedByBlack.get(capturedByBlack.size() - 1); }
@@ -115,6 +120,26 @@ public class GameplayManager {
         return moves.get(moves.size() - 1);
     }
 
+    private GameplayManager(GameplayManager other, int afterNMoves) {
+        assert afterNMoves >= 0 && afterNMoves <= other.moves.size();
+        this.komi = other.komi;
+        this.size = other.size;
+
+        boards.add(new Board(size));
+        for (int i = 0; i < afterNMoves; i++) {
+            boards.add(other.boards.get(i + 1));
+            moves.add(other.moves.get(i));
+            capturedByWhite.add(other.capturedByWhite.get(i));
+            capturedByBlack.add(other.capturedByBlack.get(i));
+        }
+
+        if (other.inProgress) {
+            inProgress = true;
+        } else {
+            inProgress = afterNMoves != other.moves.size();
+        }
+    }
+
     /***********
      ****** PUBLIC INTERFACE
      ***********/
@@ -122,6 +147,7 @@ public class GameplayManager {
     public GameplayManager(Board.BoardSize size, double komi) {
         assert Math.floor(komi) != komi; // needed to break ties
         this.komi = komi;
+        this.size = size;
         boards.add(new Board(size));
         capturedByBlack.add(0);
         capturedByWhite.add(0);
@@ -131,7 +157,16 @@ public class GameplayManager {
         this(Board.BoardSize.Size9, 6.5);
     }
 
+    public GameplayManager fork(int afterNMoves) {
+        GameplayManager ret = new GameplayManager(this, afterNMoves);
+        myForks.add(new Pair<>(ret, afterNMoves));
+        myForks.sort(Comparator.comparingInt(o -> o.y));
+        return ret;
+    }
+
     public double getKomi() { return komi; }
+
+    public Board.BoardSize getSize() { return size; }
 
     /**
      * @return może się zdarzyć, że klient i serwer mają różne implementacje zasad gry, niekompatybilne pokoje nie powinny być widoczne
