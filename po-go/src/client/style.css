@@ -44,3 +44,8 @@
 .subtitle {
     -fx-font-size: 12px;
 }
+
+.table-view:focused {
+    -fx-background-color: -fx-outer-border, -fx-inner-border, #ffffff;
+    -fx-background-insets: 0, 1, 2;
+}

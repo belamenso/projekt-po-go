@@ -255,6 +255,8 @@ public class RoomGUI implements Initializable {
         messages = FXCollections.observableArrayList();
         messageTable.setItems(messages);
         messageTable.getColumns().addAll(timeColumn, nameColumn);
+        messageTable.setPlaceholder(new Label("No messages"));
+        messageTable.setSelectionModel(null);
 
         nameColumn.prefWidthProperty().bind(messageTable.widthProperty().subtract(54));
     }

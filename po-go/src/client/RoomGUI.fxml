@@ -18,13 +18,6 @@
          </BorderPane.margin>
       </Pane>
    </left>
-   <bottom>
-      <VBox prefHeight="200.0" spacing="10.0" BorderPane.alignment="CENTER">
-         <padding>
-            <Insets bottom="20.0" left="20.0" right="20.0" top="20.0" />
-         </padding>
-      </VBox>
-   </bottom>
    <center>
       <BorderPane BorderPane.alignment="CENTER">
          <top>
@@ -66,7 +59,10 @@
    <top>
       <VBox alignment="CENTER" prefHeight="60.0" BorderPane.alignment="CENTER">
          <children>
-            <Label fx:id="infoLabel" text="Info o ruchach itp" />
+            <Label fx:id="infoLabel" text="Info o ruchach itp">
+               <VBox.margin>
+                  <Insets top="-8.0" />
+               </VBox.margin></Label>
          </children>
       </VBox>
    </top>

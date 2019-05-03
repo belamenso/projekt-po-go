@@ -1,10 +1,42 @@
-# Go
+# PoGo
 
-## TODO
-* ~~w jednym ruchu można pojmać 2+ grup kamieni (OGS ko 1), zmienić logikę na ten wypadek~~
-* ~~OGS ko 2 -> przypadek brzegowy, czasem można wejść w pozycję samobójczą, jeśli natychmiast nią zabijasz i już w niej nie jesteś, zmienić logikę~~
-* ~~dokumentacja tego co jest~~
-* ogólnie [online-go.com](/online-go.com) to lepsza wersja tego, co budujemy, warto brać od nich pomysły
+Autorzy: Bartosz Białas, Rafał Kilar
+
+## Co już działa
+* Prawie cała logika gry (nie obsługujemy usuwania martwych kamieni przed zliczaniem punktów)
+* Serwer trzymający pełną historię stanów dla każdej rozgrywki w pamięci (później będą z tego historia gry i forki)
+* Możliwość gry od początku do końca z innym graczem przez sieć (tworzenie pokoju, wchodzenie, gra, wynik gry)
+* Niedozwolone ruchy nie są dopuszczalne
+* Podgląd kamieni usuwanych z planszy prze ruch
+* Podgląd zajętych terytoriów pod koniec gry
+* Prosty chat między graczami
+* Skrypt z rozgrywki z czasami zdarzeń
+* GUI, które umożliwia grę online od początku do końca
+
+## Możliwe kierunki
+* usuwanie martwych kamieni przed zliczeniem punktów
+* lepsze GUI (eg. wyświetlanie liczby pojmanych kamieni, estetyczny resize)
+* dodanie obsługi plansz różnej wielkości do GUI
+* dodanie możliwości oglądania rozgrywek, bez uczestniczenia w nich
+* lepszy sposób łączenia się z serwerem (eg. stały port)
+* dodanie importu i eksportu plików SGF - integracja z innymi programami do gry w go
+* przechowywanie zakończonych rozgrywek (baza danych)
+* dodanie podglądu historii rozgrywki do GUI + animacja gry
+* bardziej zorganizowany chat
+* możliwość forkowania rozgrywki od dowolnego punktu
+* gra offline (dwóch graczy przed jednym komputerem)
+* dodanie dźwięku
+* dodanie prostego GUI do serwera
+
+## Plany na kolejne spotkanie
+* usuwanie martwych kamieni przed zliczeniem punktów
+* lepsze GUI (eg. wyświetlanie liczby pojmanych kamieni, estetyczny resize)
+* dodanie obsługi plansz różnej wielkości do GUI
+* dodanie możliwości oglądania rozgrywek, bez uczestniczenia w nich
+* dodanie podglądu historii rozgrywki do GUI + animacja gry
+* możliwość forkowania rozgrywki od dowolnego punktu
+
+----
 
 ## Zasady gry
 * [turorial 1](https://www.youtube.com/watch?v=5PTXdR8hLlQ)
@@ -29,72 +61,9 @@ polach prowadzi cię do kamyka tego samego koloru (np. czarnego) albo brzegu pla
 punkty jakie sumują się do wyniku gracza (czarnego)
 * ilość twoich kamyków, które oponent przejął jest odejmowana od twojego wyniku
 * (???) gdy gra się kończy, dead stones are immediately removed
-* (???) jeszcze dziwniejsze zasady zabraniające pewnych specyficznych ułożeń, bo one mogą prowadzić do ruchów które przeplatają
+* zasady zabraniające pewnych specyficznych ułożeń, bo one mogą prowadzić do ruchów które przeplatają
 się w nieskończoność
-* (???) pod koniec białe dostają jakiś bonus, ponieważ nie zaczynały pierwsze
+* pod koniec białe dostają jakiś bonus, ponieważ nie zaczynały pierwsze
 
-## Plan ataku
-| Kto | Co | Stan |
-|---|---|---|
-| Bartosz | definicja podstawowych struktur danych (plansza, kamyki, stan gry) | ✓ (POTRZEBA TESTÓW) |
-| Bartosz | funkcje implementujące podstawową logikę gry | ✓ (POTRZEBA TESTÓW) |
-| Rafał | projekt serwera | W TRAKCIE |
-| Bartosz | GameplayManger | ✓ (POTRZEBA TESTÓW) |
-
-## Kierunek
-
-*Bartosz 26.04 18:00*:
-
-Chciałbym, żeby rdzeń aplikacji (logika gry, stan gry...) były w całości odizolowane od UI, serwera itd, po prostu niech
-w środku będą czyste dane, czyli klasy z public final polami takimi jak plansza pionków, itd, bez żadnych metod robiących
-modyfikacje in place. I statyczne metody w tych klasach biorące stan planszy, opis ruchu i zwracające kolejny stan planszy.
-To są małe struktury danych, więc to nie będzie przeszkadzało, a łatwiej to testować, odseparować od wszystkiego, trudniej
-zrobić błędy w zarządzaniu stanem jeśli nie masz stanu itd. Myślę, że jak tak zrobimy rdzeń kodu opisujący samą grę, to później
-będzie prościej.
-
-*Bartosz 26.04 22:50*:
-
-Z uwagi na to, że logika gry jest napisana funkcyjnie i robienie takich rzeczy teraz jest bardzo proste,
-proponuję dodać sztuczki ze stanem aplikacji, to jest
-* cofanie ruchów (w multiplayerze może cofanie do 5 sekund po wykonaniu?)
-* w GUI można dodać podgląd ruchu, który chce się zrobić (w sensie, np. kamienie, które znikają jeśli wykonasz ruch
-w miejsce gdzie masz krusor myszy są półprzezroczyste)
-* podgląd historii rozgrywki (możesz sobie sliderem przesunąć i pokaże ci jak gra się rozwijała od początku do końca) <- **to będzie super fajne**
-
-Do pokojów na serwerze powinno się też móc wchodzić jako spektator, może nawet kiedy ciągle oczekuje się na 2giego gracza.
-
-## Myślenie na pryszłość
-Jakie decyzje projektowe podjąć teraz, żeby później łatwo było dodawać funkcjonalność i żeby to się ładnie zeszło?
-
-Rzeczy, które potencjalnie możemy dodać, ale później i warto się na nie przygotować:
-* gra na planszach o różnych rozmiarach (wtedy wchodząc na serwer gry widać by było pokoje z zaznaczonym typem rozgrywki)
-* szachy (coraz bardziej wątpliwe w tym projekcie :)
-* gra offline (dwóch graczy przed jednym komputerem)
-* gra z komputerem (niemożliwe do zrobienia w go, trzeba by było coś ukraść z internetu dla szachów)
-
-## Serwer
-Klasa Server uruchamia na komputerze server na wolnym porcie (uruchamiana z lini poleceń). Czeka na klientów.
-Klasa ServerClient przechowuje dane o kliencie - id, ip, port, strumien wyjsciowy, listener
-Interfejs ServerListener przetwarza dane i evenety od clienta. Póki co implementują go dwie klasy:
-
-LobbyListener - domyślny listener, obsluguje komendy:
-* list - zwraca liste pokoi - trzeba to inaczej sformatowac, tak aby dalo sie to latwo odczytac po stronie klienta i wstawic do GUI
-* create [name] - tworzy nowy pokoj o nazwie name, powinno jeszcze automatycznie przenosic klienta do pokoju
-* join [name] - laczy klienta z pokojem o nazwie name - zmienia mu listenera
-* remove [name] - usuwa pokoj o nazwie name, wysyla ja tylko RoomListener gdy wyjda z niego wszyscy gracze
-
-RoomListener - obluguje pojedyncza gre, na chwile obecną obsługuje jedną komendę:
-* quit - usuwa gracza z pokoju i przenosi do lobby
-
-W kazdym innym przypadku wysyla otrzymana wiadomosc do wszystkich graczy.
-W przyszłości będzie odpowiadał za przeprowadzenie gry i updatował graczy po otrzymaniu wiadomości o ruchach. Dobrze by było żeby w przyszłości była to klasa abstrakcyjna z której dziedziczyć bedą klasy pokoi dla odpowiednich trybów gry
-
-Po stronie klienta:
-Klasa Client laczy sie z serwerem i nasluchuje, wiadomosci i eventy przesyla do ClientListenera, póki co są dwa listenery:
-* ClientLobbyListener - póki co nic nie robi oprócz zmiany listenera na ClientRoomListener gdy otrzyma connectedToRoom, w przyszłości ma współdziałać z GUI aby wysyłać komendy i wyswietlać listę pokoi by umożliwić tworzenie i łączenie się z pokojem
-* ClientRoomListener - póki co jedyne co robi to wyświetla wiadomości i zmienia listenera na ClientLobbyListener gdy otrzyma exitedRoom, w przyszłości ma updatować GUI aby wyświetlaćzmiany na planszy
-
-TODO ConnectListener - podstawowy listener, bedzie działał z GUI przy łaczeniu się z serwerem, gdy się połaczy zmieni listenera na ClientLobbyListener i zmieni odpowiednio GUI
-Wszystkie wiadomosci wysyłane przez klienta są póki co czytane ze standardowego wejscia. W finalnym produkcie bedą wysyłane przez GUI.
-W tym stanie występuje dużo śmieci w komunikacji, które były potrzebne do testowania, wszystko się posprząta, gdy zaczniemy wprowadzać gui i logikę gry.
-Możesz przetestować serwer to w kilku oknach linii poleceń. W jednym uruchom server.Server, który wypisze IP i port. W pozostałych uruchom client.Client i przetestuj komendy (list, create, join, quit).
+## Inne
+* [online-go.com](/online-go.com) to lepsza wersja tego, co budujemy, warto brać od nich pomysły

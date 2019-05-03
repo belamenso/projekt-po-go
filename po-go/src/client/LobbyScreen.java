@@ -99,6 +99,7 @@ public class LobbyScreen implements Initializable {
 
         rooms.getColumns().clear();
         rooms.getColumns().addAll(nameColumn, stanColumn);
+        rooms.setPlaceholder(new Label("No active rooms available"));
     }
 
     public void returnToConnecting() throws IOException {
