@@ -49,3 +49,12 @@
     -fx-background-color: -fx-outer-border, -fx-inner-border, #ffffff;
     -fx-background-insets: 0, 1, 2;
 }
+
+.area {
+    -fx-fill: #ffff00;
+    -fx-opacity: 0.0;
+}
+
+.area:hover {
+    -fx-opacity: 0.5;
+}

@@ -2,6 +2,7 @@ package client;
 
 import go.*;
 import javafx.application.Platform;
+import javafx.beans.binding.Bindings;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
@@ -15,6 +16,7 @@ import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableView;
 import javafx.scene.control.TextField;
 import javafx.scene.control.cell.PropertyValueFactory;
+import javafx.scene.layout.Pane;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.Circle;
 import javafx.scene.shape.Line;
@@ -38,8 +40,9 @@ public class RoomGUI implements Initializable {
     private Scene scene;
     private ClientRoomListener crl;
 
-    @FXML private Group boardGroup;
-    @FXML private Circle[][] stones;
+    @FXML private Pane boardPane;
+    private GoBoardGUI board;
+
     @FXML private TableView<Message> messageTable;
     @FXML private Label infoLabel;
     @FXML private TextField chatField;
@@ -61,32 +64,20 @@ public class RoomGUI implements Initializable {
         crl = new ClientRoomListener(client, color, this);
         client.setListener(crl);
 
-        int size = crl.getSize();
-        double r = 250.0 / size;
+        board = new GoBoardGUI(boardPane, crl.getBoard());
+        boardPane.setMinHeight(300);
+        boardPane.setMinWidth(300);
+        boardPane.prefHeightProperty().bind(boardPane.prefWidthProperty());
+        boardPane.prefWidthProperty().bind(Bindings.min(scene.widthProperty().multiply(0.7), scene.heightProperty().subtract(80)));
 
-        stones = new Circle[size][size];
-
-        for(int i = 0; i < size; ++ i) {
-            boardGroup.getChildren().add(new Line(r, (2 * i + 1) * r, (2 * size - 1) * r, (2 * i + 1) * r));
-            boardGroup.getChildren().add(new Line((2 * i + 1) * r, r, (2 * i + 1) * r, (2 * size - 1) * r));
-
-            Text text = new Text(crl.getBoard().columnNumeral(i));
-            text.setX((2 * i + 1) * r-3);
-            text.setY(-2);
-            boardGroup.getChildren().add(text);
-            Text text2 = new Text(Integer.toString(i+1));
-            text2.setY((2 * (size-i-1) + 1) * r+5);
-            text2.setX(-10);
-            boardGroup.getChildren().add(text2);
-        }
-
-        for(int i = 0; i < size; ++ i) {
-            for(int j = 0; j < size; ++ j) {
+        for(int i = 0; i < board.getSize(); ++ i) {
+            for(int j = 0; j < board.getSize(); ++ j) {
 
                 final int x = j;
                 final int y = i;
-                Rectangle rect = new Rectangle(2*x*r, 2*y*r, 2*r, 2*r);
-                rect.setStyle("-fx-fill: transparent");
+
+                Rectangle rect = board.getArea(x, y);
+
                 rect.setOnMouseClicked(e -> {
                     System.out.println("click " + y + " " + x);
                     crl.attemptedToMakeMove(x, y);
@@ -101,8 +92,7 @@ public class RoomGUI implements Initializable {
                             ArrayList<Pair<Integer, Integer>> potentiallyCaptured = gameLogic.captured(boardCopy, crl.getColor());
                             for (Pair<Integer, Integer> pos : potentiallyCaptured) {
                                 Platform.runLater(() -> {
-                                    stones[pos.x][pos.y].getStyleClass().clear();
-                                    stones[pos.x][pos.y].getStyleClass().add(colorToCapturedClass(crl.getColor().opposite));
+                                    board.colorStone(pos.x, pos.y, colorToCapturedClass(crl.getColor().opposite));
                                 });
                             }
                         }
@@ -110,13 +100,6 @@ public class RoomGUI implements Initializable {
                 });
 
                 rect.setOnMouseExited(e -> renderBoard());
-
-                Circle stone = new Circle((2*x+1)*r, (2*y+1)*r, r*0.8);
-                stones[x][y] = stone;
-                stone.setMouseTransparent(true);
-                stone.getStyleClass().clear();
-                stone.getStyleClass().add("stone-invisible");
-                boardGroup.getChildren().addAll(rect, stone);
             }
         }
     }
@@ -128,8 +111,7 @@ public class RoomGUI implements Initializable {
         for (GameLogic.Territory t : ts) {
             for (Pair<Integer, Integer> pos : t.territory) {
                 Platform.runLater(() -> {
-                    stones[pos.x][pos.y].getStyleClass().clear();
-                    stones[pos.x][pos.y].getStyleClass().add(colorToTerritoryClass(t.captor.get())); // TODO zmienić to optional tam
+                    board.colorStone(pos.x, pos.y, colorToTerritoryClass(t.captor.get())); // TODO zmienić to optional tam
                 });
             }
         }
@@ -161,21 +143,7 @@ public class RoomGUI implements Initializable {
 
         final Board toRender = crl.getBoard();
         Platform.runLater(() -> {
-            for(int i = 0; i < toRender.getSize(); ++ i) {
-                for(int j = 0; j < toRender.getSize(); ++ j) {
-                    Optional<Stone> stone = toRender.get(i, j);
-                    if(stone.isEmpty()) {
-                        stones[i][j].getStyleClass().clear();
-                        stones[i][j].getStyleClass().add("stone-invisible");
-                    } else if(stone.get().equals(Stone.White)){
-                        stones[i][j].getStyleClass().clear();
-                        stones[i][j].getStyleClass().add("stone-white");
-                    } else {
-                        stones[i][j].getStyleClass().clear();
-                        stones[i][j].getStyleClass().add("stone-black");
-                    }
-                }
-            }
+            board.render(toRender);
         });
 
         if (crl.manager.finished()) markTerritories();
