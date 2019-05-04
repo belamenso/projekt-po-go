@@ -13,7 +13,6 @@ import javafx.scene.text.Text;
 
 import java.util.Optional;
 
-
 class GoBoardGUI {
     private Circle[][] stones;
     private Rectangle[][] rects;
@@ -42,6 +41,7 @@ class GoBoardGUI {
             line1.startYProperty().bind(r.multiply(2*i + 1));
             line1.endXProperty().bind(r.multiply(2*size - 1));
             line1.endYProperty().bind(r.multiply(2*i + 1));
+            //line1.setStrokeWidth(2);
 
             // Linia pionowa
             Line line2 = new Line();
@@ -49,15 +49,17 @@ class GoBoardGUI {
             line2.startYProperty().bind(r);
             line2.endXProperty().bind(r.multiply(2*i + 1));
             line2.endYProperty().bind(r.multiply(2*size - 1));
+            //line2.setStrokeWidth(2);
 
-            //
+            // Tekst u góry
             Text text1 = new Text(board.columnNumeral(i));
-            text1.xProperty().bind(r.multiply(2*i+1).subtract(3));
-            text1.setY(-2);
+            text1.xProperty().bind(r.multiply(2*i+1).subtract(text1.getBoundsInLocal().getWidth()/2.0));
+            text1.setY(-3);
 
+            // Tekst po lewej
             Text text2 = new Text(Integer.toString(i+1));
-            text2.yProperty().bind(r.multiply(2 * (size-i-1) + 1).add(5));
-            text2.setX(-10);
+            text2.yProperty().bind(r.multiply(2 * (size-i-1) + 1).add(text2.getBoundsInLocal().getHeight()/2.0-2));
+            text2.setX(-text2.getBoundsInLocal().getWidth()-3);
 
             boardGroup.getChildren().addAll(line1, line2, text1, text2);
         }
