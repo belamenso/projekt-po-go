@@ -51,10 +51,10 @@
 }
 
 .area {
-    -fx-fill: #ffff00;
+    -fx-fill: #999999;
     -fx-opacity: 0.0;
 }
 
 .area:hover {
-    -fx-opacity: 0.5;
+    -fx-opacity: 0.2;
 }
