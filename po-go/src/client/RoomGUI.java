@@ -227,5 +227,6 @@ public class RoomGUI implements Initializable {
         messageTable.setSelectionModel(null);
 
         nameColumn.prefWidthProperty().bind(messageTable.widthProperty().subtract(54));
+        chatField.prefWidthProperty().bind(messageTable.widthProperty().subtract(60));
     }
 }
