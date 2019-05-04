@@ -4,11 +4,9 @@ import java.io.IOException;
 import java.io.BufferedReader;
 import java.io.PrintWriter;
 import java.io.InputStreamReader;
-import java.net.InetAddress;
-import java.net.ServerSocket;
-import java.net.Socket;
-import java.net.UnknownHostException;
-import java.util.ArrayList;
+import java.net.*;
+import java.util.LinkedList;
+import java.util.List;
 import java.util.Scanner;
 
 /**
@@ -19,34 +17,34 @@ import java.util.Scanner;
 public class Server {
     public static void main(String[] args) {
         Server s = new Server(33107, new LobbyListener());
-        System.out.println("The server started at " + s.getIp() + " : " + s.port);
+        System.out.println("The server started at " + s.ip + " : " + s.port);
 
         Scanner sc = new Scanner(System.in);
         while(sc.hasNext()) {
             String in = sc.nextLine();
             if(in.equals("close"))
                 break;
-            else if(in.equals("clients")) {
-
-            }
         }
 
-        s.dispose();
+        s.close();
     }
 
     private ServerListener defaultListener;
+    private String ip;
     private int port;
     private boolean open = true;
     private ServerSocket ss;
-    private ArrayList<Socket> clients = new ArrayList<>();
+    private List<Socket> clients = new LinkedList<>();
 
-    public Server(int port, ServerListener defaultListener) {
+    Server(int port, ServerListener defaultListener) {
         this.defaultListener = defaultListener;
         try {
+            this.port = port;
             ss = new ServerSocket(port);
-            this.port = port == 0 ? ss.getLocalPort() : port;
+            ss.getInetAddress();
+            ip = InetAddress.getLocalHost().getHostAddress();
 
-            Thread serverThread = new Thread(() -> {
+            Thread st = new Thread(() -> {
                 while(open){
                     try {
                         createClientThread();
@@ -56,15 +54,14 @@ public class Server {
                 }
             });
 
-            serverThread.setDaemon(true);
-            serverThread.setName("Server");
-            serverThread.start();
+            st.setDaemon(true);
+            st.setName("Server thread");
+            st.start();
 
         } catch(IOException e){ e.printStackTrace(); }
     }
 
     private void createClientThread() throws IOException {
-        @SuppressWarnings("resource")
         final Socket socket = ss.accept();
         Thread clientThread = new Thread(() -> {
             try {
@@ -81,24 +78,26 @@ public class Server {
                         String line = in.readLine();
                         if (line == null) throw new IOException();
                         client.listener.receivedInput(client, line);
-                    } catch(IOException e) {
+                    } catch (IOException e) {
                         client.listener.clientDisconnected(client);
 
                         try {
-                            if(!socket.isClosed()){
+                            if (!socket.isClosed()) {
                                 socket.shutdownOutput();
                                 socket.close();
                             }
-                        } catch(Exception e2) { e2.printStackTrace(); }
+                        } catch (Exception e2) {
+                            e2.printStackTrace();
+                        }
                         clients.remove(socket);
                         return;
                     }
                 }
-            } catch(Exception e){ e.printStackTrace(); }
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
 
-            try {
-                socket.close();
-            } catch(Exception e){ e.printStackTrace(); }
+            try { socket.close(); } catch (Exception e) { e.printStackTrace(); }
 
             clients.remove(socket);
         });
@@ -107,30 +106,17 @@ public class Server {
         clientThread.start();
     }
 
-    public void dispose() {
+    private void close() {
         open = false;
-        try{
-            ss.close();
-        } catch(IOException e){ e.printStackTrace(); }
+        try{ ss.close(); } catch(IOException e){ e.printStackTrace(); }
 
-        for(Socket s : clients) {
-            try{
-                s.close();
-            } catch(Exception exception){ exception.printStackTrace(); }
-        }
+        for(Socket s : clients)
+            try{ s.close(); } catch(Exception e){ e.printStackTrace(); }
 
         clients.clear();
         clients = null;
         ss = null;
         defaultListener.serverClosed();
         defaultListener = null;
-    }
-
-    public String getIp(){
-        try{
-            ss.getInetAddress();
-            return InetAddress.getLocalHost().getHostAddress();
-        } catch(UnknownHostException e){ e.printStackTrace(); }
-        return null;
     }
 }

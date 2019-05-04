@@ -153,9 +153,6 @@ public class ClientRoomListener implements ClientListener {
     }
 
     @Override
-    public void unknownHost() {}
-
-    @Override
     public void couldNotConnect() {}
 
     @Override

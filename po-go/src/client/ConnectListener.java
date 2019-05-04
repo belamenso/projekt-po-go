@@ -12,11 +12,6 @@ public class ConnectListener implements ClientListener {
     }
 
     @Override
-    public void unknownHost() {
-        Platform.runLater(() -> cp.setMessage("Nieznany host"));
-    }
-
-    @Override
     public void couldNotConnect() {
         Platform.runLater(() -> cp.setMessage("Nie udało się nawiązać połączenia"));
     }

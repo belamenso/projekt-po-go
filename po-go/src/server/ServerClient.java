@@ -12,13 +12,13 @@ import java.net.InetAddress;
 public class ServerClient {
     private static int ids = 0;
 
-    public final InetAddress ip;
-    public final int port;
-    public final PrintWriter out;
-    public final int id;
-    public ServerListener listener;
+    private final InetAddress ip;
+    private final int port;
+    private final PrintWriter out;
+    private final int id;
+    ServerListener listener;
 
-    public ServerClient(InetAddress ip, int port, PrintWriter out, ServerListener listener) {
+    ServerClient(InetAddress ip, int port, PrintWriter out, ServerListener listener) {
         this.ip = ip;
         this.port = port;
         this.out = out;
@@ -26,16 +26,19 @@ public class ServerClient {
         this.listener = listener;
     }
 
-    public void setListener(ServerListener listener) {
+    void setListener(ServerListener listener) {
         System.out.println(this + " changing listener to " + listener);
         this.listener = listener;
     }
 
-    public void sendMessage(String message) {
+    void sendMessage(String message) {
         try {
             out.println(message);
         } catch(Exception e) { e.printStackTrace(); }
     }
 
-    @Override public String toString(){ return "client " + id + " @ " + this.listener; } //+ " @ " + ip.toString() + ":" + port; }
+    @Override
+    public String toString() {
+        return "client " + id + " @ " + this.listener;
+    } //+ " @ " + ip.toString() + ":" + port; }
 }

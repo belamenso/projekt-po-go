@@ -4,99 +4,84 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.PrintWriter;
-import java.net.Socket;
-import java.net.UnknownHostException;
+import java.net.*;
 
-/**
- * Klient, lączy się z serwerem, w finalnej wersji uruchaminy bedzie przez GUI
- * z podanymi w nim IP i portem
- */
 public class Client {
     private Socket socket;
     private BufferedReader in;
     private PrintWriter out;
-    private ClientListener listener;
 
     private boolean open;
 
-    @SuppressWarnings("WeakerAccess")
-    public Client() {
+    private ClientListener listener;
+
+    Client() {
         open = false;
         listener = null;
+        socket = null;
+        in = null;
+        out = null;
     }
 
-    @SuppressWarnings("WeakerAccess")
-    public void startConnection(String ip, int port) {
-        if(open) return;
-        open = true;
+    void startConnection(String ip, int port) {
+        if (open) return;
 
-        try{
-            socket = new Socket(ip, port);
-            in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
-            out = new PrintWriter(socket.getOutputStream(), true);
+        Thread ct = new Thread(() -> {
+            try {
+                socket = new Socket();
+                socket.connect(new InetSocketAddress(ip, port), 2000);
+                in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
+                out = new PrintWriter(socket.getOutputStream(), true);
+                open = true;
+                listener.connectedToServer();
 
-            Thread clientThread = new Thread(() -> {
-                while(open) {
+                while (open) {
                     try {
-                        String s = in.readLine();
-                        if (s == null) {
-                            listener.disconnected();
+                        String input = in.readLine();
+
+                        if (input == null) {
                             close();
+                            listener.disconnected();
                             return;
                         }
-                        listener.receivedInput(s);
+
+                        listener.receivedInput(input);
                     } catch (IOException ex) {
                         listener.serverClosed();
                         close();
                         return;
-                    } catch (Exception e) {
-                        e.printStackTrace();
                     }
                 }
-            });
+            } catch (IOException e) {
+                open = false;
+                listener.couldNotConnect();
+            }
+        });
 
-            clientThread.setName("Client Connection");
-            clientThread.setDaemon(true);
-            clientThread.start();
-
-            listener.connectedToServer();
-
-        }catch(UnknownHostException e){
-            open=false;
-            listener.unknownHost();
-        }catch(IOException e){
-            open=false;
-            listener.couldNotConnect();
-        }catch(Exception e){
-            open=false;
-            e.printStackTrace();
-        }
+        ct.setName("client thread");
+        ct.setDaemon(true);
+        ct.start();
     }
 
-    @SuppressWarnings("WeakerAccess")
-    public void setListener(ClientListener listener) {
+    void setListener(ClientListener listener) {
         this.listener = listener;
     }
 
-    @SuppressWarnings("WeakerAccess")
-    public void close() {
-        try {
-            if(open) {
-                open = false;
-                socket.close();
-                in.close();
-                out.close();
-                if(listener != null) listener.disconnected();
-            }
-            socket = null;
-            in = null;
-            out = null;
-            listener = null;
-        } catch(Exception e) { e.printStackTrace(); }
+     void close() {
+        if(open) {
+            open = false;
+            try { socket.close(); } catch (IOException e) { e.printStackTrace(); }
+            try { if(in != null) in.close(); } catch (IOException e) { e.printStackTrace(); }
+            if(out != null) out.close();
+            if(listener != null) listener.disconnected();
+        }
+        socket = null;
+        in = null;
+        out = null;
+        listener = null;
+     }
+
+    void sendMessage(String msg) {
+        if(open) out.println(msg);
     }
-
-    @SuppressWarnings("WeakerAccess")
-    public void sendMessage(String msg){ if(open) out.println(msg); }
-
-    public boolean isConnected(){ return open; }
 }

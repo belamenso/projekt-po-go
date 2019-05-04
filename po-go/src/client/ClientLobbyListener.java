@@ -23,9 +23,6 @@ public class ClientLobbyListener implements ClientListener {
     }
 
     @Override
-    public void unknownHost() {}
-
-    @Override
     public void couldNotConnect() {}
 
     @Override
