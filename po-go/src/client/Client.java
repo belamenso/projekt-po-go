@@ -1,6 +1,6 @@
 package client;
 
-import server.Message;
+import shared.Message;
 
 import java.io.*;
 import java.net.*;

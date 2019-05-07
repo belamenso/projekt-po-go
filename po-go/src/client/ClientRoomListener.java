@@ -5,7 +5,7 @@ import go.GameplayManager;
 import go.ReasonMoveImpossible;
 import go.Stone;
 import javafx.application.Platform;
-import server.Message;
+import shared.Message;
 import util.Pair;
 
 import java.util.Date;

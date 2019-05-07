@@ -8,6 +8,7 @@ import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.scene.control.*;
 import javafx.scene.control.cell.PropertyValueFactory;
+import shared.RoomData;
 
 import java.net.URL;
 import java.util.List;
@@ -32,7 +33,7 @@ public class LobbyScreen implements Initializable {
         nameField.clear();
         setMessage("");
 
-        if(name == null || name == "") {
+        if(name == null || name.equals("")) {
             setMessage("Nazwa nie może być pusta");
             return;
         }

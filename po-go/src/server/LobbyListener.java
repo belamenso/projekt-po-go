@@ -1,7 +1,9 @@
 package server;
 
-import client.RoomData;
-import go.Stone;
+import shared.LobbyMsg;
+import shared.RoomData;
+import go.Board;
+import shared.Message;
 
 import java.util.ArrayList;
 import java.util.LinkedList;
@@ -40,7 +42,7 @@ public class LobbyListener implements ServerListener {
     private LobbyMsg.ListMsg roomListing() {
         List<RoomData> data = new ArrayList<>();
         for(RoomListener room : rooms)
-            data.add(new RoomData(room.getName(), room.getRoomState().name()));
+            data.add(new RoomData(room.getName(), room.getRoomState().name(), room.getBoardSize()));
         return new LobbyMsg.ListMsg(data);
     }
 
@@ -71,7 +73,9 @@ public class LobbyListener implements ServerListener {
                 break;
 
             case CREATE:
-                String toCreate = ((LobbyMsg.CreateMessage) lobbyMessage).roomName;
+                String          toCreate = ((LobbyMsg.CreateMessage) lobbyMessage).roomName;
+                Board.BoardSize size     = ((LobbyMsg.CreateMessage) lobbyMessage).size;
+
                 for(RoomListener room : rooms) {
                     if(room.getName().equals(toCreate)) {
                         client.sendMessage(new LobbyMsg(LobbyMsg.Type.NAME_TAKEN));
@@ -80,7 +84,7 @@ public class LobbyListener implements ServerListener {
                 }
 
                 System.out.println("Adding room " + toCreate);
-                rooms.add(new RoomListener(toCreate, this));
+                rooms.add(new RoomListener(toCreate, size, this));
 
                 broadcastRoomUpdate();
                 break;
@@ -108,51 +112,6 @@ public class LobbyListener implements ServerListener {
 
             default:
                 System.out.println("Unsopported lobby message " + lobbyMessage.type.name());
-        }
-    }
-
-    public static class LobbyMsg extends Message {
-        public enum Type {
-              LIST                 // Lobby       -> ClientLobby
-            , ROOM_NOT_FOUND       // Lobby       -> ClientLobby
-            , NAME_TAKEN           // Lobby       -> ClientLobby
-            , LOBBY_JOINED         // Lobby       -> ClientLobby / ClientRoom
-            , CREATE               // ClientLobby -> Lobby
-            , JOIN                 // ClientLobby -> Lobby
-            , LIST_REQUEST         // ClientLobby -> Lobby
-            , REMOVE               // Room        -> Lobby
-            , CONNECTION_REFUSED   // Room        -> ClientLobby
-            , CONNECTED            // Room        -> ClientLobby
-        }
-
-        public Type type;
-        public LobbyMsg(Type type) { super(type.name()); this.type = type; }
-
-        // Trochę to syf może da się lepiej?
-
-        static public class CreateMessage extends LobbyMsg {
-            String roomName;
-            public CreateMessage(String roomName) { super(Type.CREATE); this.roomName = roomName; }
-        }
-
-        static public class JoinMsg extends LobbyMsg {
-            String roomName;
-            public JoinMsg(String roomName) { super(Type.JOIN); this.roomName = roomName; }
-        }
-
-        static class RemoveMsg extends LobbyMsg {
-            String roomName;
-            RemoveMsg(String roomName) { super(Type.REMOVE); this.roomName = roomName; }
-        }
-
-        static public class ListMsg extends LobbyMsg {
-            public List<RoomData> data;
-            ListMsg(List<RoomData> data) { super(Type.LIST); this.data = data; }
-        }
-
-        static public class ConnectedMsg extends LobbyMsg {
-            public Stone color;
-            ConnectedMsg(Stone color) { super(Type.CONNECTED); this.color = color; }
         }
     }
 

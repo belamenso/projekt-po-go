@@ -1,10 +1,10 @@
-package client;
+package shared;
 
 import java.io.Serializable;
 
 public class RoomData implements Serializable {
-    String name, state;
-    Integer size;
+    public String name, state;
+    public Integer size;
 
     public RoomData(String name, String state, Integer size) {
         this.name  =  name;

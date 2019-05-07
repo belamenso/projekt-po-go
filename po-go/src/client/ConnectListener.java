@@ -1,7 +1,7 @@
 package client;
 
 import javafx.application.Platform;
-import server.Message;
+import shared.Message;
 
 public class ConnectListener implements ClientListener {
     ConnectionPrompt cp;

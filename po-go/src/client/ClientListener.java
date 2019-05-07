@@ -1,6 +1,6 @@
 package client;
 
-import server.Message;
+import shared.Message;
 
 /**
  * Interfejs umozliwiajacy komunikacje miedzy serwerem a klientem

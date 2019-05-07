@@ -1,5 +1,7 @@
 package server;
 
+import shared.Message;
+
 /**
  * Intefrfers uzywany do komunikacji miedzy klientem a
  * czescia serwera - lobby, pokój

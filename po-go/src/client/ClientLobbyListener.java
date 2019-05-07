@@ -3,8 +3,9 @@ package client;
 import go.Board;
 import go.Stone;
 import javafx.application.Platform;
-import server.LobbyListener;
-import server.Message;
+import shared.LobbyMsg;
+import shared.Message;
+import shared.RoomData;
 
 import java.util.List;
 
@@ -27,20 +28,20 @@ public class ClientLobbyListener implements ClientListener {
 
         System.out.println("receivedInput >"+msg+"<");
 
-        if(!(message instanceof LobbyListener.LobbyMsg)) { System.out.println("Received incorrect message"); return; }
+        if(!(message instanceof LobbyMsg)) { System.out.println("Received incorrect message"); return; }
 
-        LobbyListener.LobbyMsg lobbyMsg = (LobbyListener.LobbyMsg) message;
+        LobbyMsg lobbyMsg = (LobbyMsg) message;
 
         switch (lobbyMsg.type) {
             case CONNECTED:
-                Stone           color = ((LobbyListener.LobbyMsg.ConnectedMsg) lobbyMsg).color;
-                Board.BoardSize size  = ((LobbyListener.LobbyMsg.ConnectedMsg) lobbyMsg).size;
+                Stone           color = ((LobbyMsg.ConnectedMsg) lobbyMsg).color;
+                Board.BoardSize size  = ((LobbyMsg.ConnectedMsg) lobbyMsg).size;
 
                 ls.moveToRoom(color, size);
                 break;
 
             case LIST:
-                List<RoomData> data = ((LobbyListener.LobbyMsg.ListMsg) lobbyMsg).data;
+                List<RoomData> data = ((LobbyMsg.ListMsg) lobbyMsg).data;
 
                 Platform.runLater(() -> ls.updateList(data));
                 break;
@@ -63,15 +64,15 @@ public class ClientLobbyListener implements ClientListener {
     }
 
     void sendCreateRequest(String roomName, Board.BoardSize size) {
-        client.sendMessage(new LobbyListener.LobbyMsg.CreateMessage(roomName, size)); // CREATE roomName -> LobbyListener
+        client.sendMessage(new LobbyMsg.CreateMessage(roomName, size)); // CREATE roomName -> LobbyListener
     }
 
     void sendJoinRoomRequest(String roomName) {
-        client.sendMessage(new LobbyListener.LobbyMsg.JoinMsg(roomName)); // JOIN roomName -> LobbyListener
+        client.sendMessage(new LobbyMsg.JoinMsg(roomName)); // JOIN roomName -> LobbyListener
     }
 
     void sendUpdateRequest() {
-        client.sendMessage(new LobbyListener.LobbyMsg(LobbyListener.LobbyMsg.Type.LIST_REQUEST)); // LIST_REQUEST -> LobbyListener
+        client.sendMessage(new LobbyMsg(LobbyMsg.Type.LIST_REQUEST)); // LIST_REQUEST -> LobbyListener
     }
 
     @Override

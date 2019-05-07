@@ -1,8 +1,11 @@
 package server;
 
+import go.Board;
 import go.GameplayManager;
 import go.ReasonMoveImpossible;
 import go.Stone;
+import shared.LobbyMsg;
+import shared.Message;
 
 import java.util.LinkedList;
 import java.util.List;
@@ -18,13 +21,14 @@ public class RoomListener implements ServerListener {
     private String name;
     private LobbyListener lobby;
 
-    private GameplayManager manager = new GameplayManager();
+    private GameplayManager manager;
     private boolean gameInterrupted = false;
 
-    RoomListener(String name, LobbyListener lobby) {
-        clients = new LinkedList<>();
+    RoomListener(String name, Board.BoardSize size, LobbyListener lobby) {
         this.name = name;
         this.lobby = lobby;
+        clients = new LinkedList<>();
+        manager = new GameplayManager(size, 6.5);
     }
 
     /**
@@ -92,7 +96,7 @@ public class RoomListener implements ServerListener {
     public synchronized boolean clientConnected(ServerClient client) {
         // TODO spectators
         if (clients.size() >= 2 || gameInterrupted || manager.finished()) {
-            client.sendMessage(new LobbyListener.LobbyMsg(LobbyListener.LobbyMsg.Type.CONNECTION_REFUSED)); // -> ClientLobbyListener // TODO Reason
+            client.sendMessage(new LobbyMsg(LobbyMsg.Type.CONNECTION_REFUSED)); // -> ClientLobbyListener // TODO Reason
             return false;
         }
 
@@ -101,12 +105,12 @@ public class RoomListener implements ServerListener {
             client.setListener(this);
             clients.add(client);
             assert getRoomState() == RoomState.WaitingForWhite;
-            client.sendMessage(new LobbyListener.LobbyMsg.ConnectedMsg(Stone.Black)); // -> ClientLobbyListener
+            client.sendMessage(new LobbyMsg.ConnectedMsg(Stone.Black, manager.getSize())); // -> ClientLobbyListener
             lobby.broadcastRoomUpdate(); // !!!!!! uwaga na kolejność, roomState zależy od zawartości clients !!!
         } else if (clients.size() == 1) {
             client.setListener(this);
             clients.add(client);
-            client.sendMessage(new LobbyListener.LobbyMsg.ConnectedMsg(Stone.White)); // -> ClientLobbyListener
+            client.sendMessage(new LobbyMsg.ConnectedMsg(Stone.White, manager.getSize())); // -> ClientLobbyListener
             clients.get(0).sendMessage("OPPONENT_JOINED"); // -> ClientRoomListener
             assert getRoomState() == RoomState.GameInProgress;
             lobby.broadcastRoomUpdate();

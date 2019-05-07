@@ -1,5 +1,7 @@
 package server;
 
+import shared.Message;
+
 import java.io.ObjectOutputStream;
 import java.net.InetAddress;
 
