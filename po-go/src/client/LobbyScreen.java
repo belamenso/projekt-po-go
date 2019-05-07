@@ -1,26 +1,20 @@
 package client;
 
 import go.Stone;
-import javafx.application.Platform;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
-import javafx.fxml.FXMLLoader;
 import javafx.fxml.Initializable;
-import javafx.scene.Parent;
-import javafx.scene.Scene;
 import javafx.scene.control.*;
 import javafx.scene.control.cell.PropertyValueFactory;
 import server.LobbyListener;
 
-import java.io.IOException;
 import java.net.URL;
 import java.util.List;
 import java.util.ResourceBundle;
 
 public class LobbyScreen implements Initializable {
     Client client;
-    Scene scene;
 
     @FXML private TableView<RoomData> rooms;
     @FXML private TextField nameField;
@@ -30,10 +24,6 @@ public class LobbyScreen implements Initializable {
         this.client = client;
         client.setListener(new ClientLobbyListener(this));
         update();
-    }
-
-    public void setScene(Scene scene) {
-        this.scene = scene;
     }
 
     @FXML
@@ -104,27 +94,10 @@ public class LobbyScreen implements Initializable {
     }
 
     void returnToConnecting() {
-        try {
-            FXMLLoader loader = new FXMLLoader(getClass().getResource("ConnectionPrompt.fxml"));
-            final Parent root = loader.load();
-            ConnectionPrompt controller = loader.getController();
-            controller.setScene(scene);
-            controller.setClient(client);
-            Platform.runLater(() -> scene.setRoot(root));
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+        SceneManager.loadConnectionScreen();
     }
 
     void moveToRoom(Stone color) {
-        try {
-            FXMLLoader loader = new FXMLLoader(getClass().getResource("RoomGUI.fxml"));
-            final Parent root = loader.load();
-            RoomGUI controller = loader.getController();
-            controller.setup(scene, client, color);
-            Platform.runLater(() -> scene.setRoot(root));
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+        SceneManager.loadRoomScreen(color);
     }
 }

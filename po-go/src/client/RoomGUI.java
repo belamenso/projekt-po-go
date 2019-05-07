@@ -8,9 +8,7 @@ import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.fxml.Initializable;
-import javafx.scene.Group;
 import javafx.scene.Parent;
-import javafx.scene.Scene;
 import javafx.scene.control.Label;
 import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableView;
@@ -18,16 +16,11 @@ import javafx.scene.control.TextField;
 import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.scene.layout.Pane;
 import javafx.scene.paint.Color;
-import javafx.scene.shape.Circle;
-import javafx.scene.shape.Line;
 import javafx.scene.shape.Rectangle;
-import javafx.scene.text.Text;
 import util.Pair;
 
 import java.io.IOException;
 import java.net.URL;
-import java.text.DateFormat;
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.Optional;
@@ -37,7 +30,6 @@ import static go.GameLogic.gameLogic;
 
 public class RoomGUI implements Initializable {
     private Client client;
-    private Scene scene;
     private ClientRoomListener crl;
 
     @FXML private Pane boardPane;
@@ -58,8 +50,7 @@ public class RoomGUI implements Initializable {
         return color == Stone.White ? "white-territory" : "black-territory";
     }
 
-    public void setup(Scene scene, Client client, Stone color) {
-        this.scene = scene;
+    public void setup(Client client, Stone color) {
         this.client = client;
         crl = new ClientRoomListener(client, color, this);
         client.setListener(crl);
@@ -68,7 +59,8 @@ public class RoomGUI implements Initializable {
         boardPane.setMinHeight(300);
         boardPane.setMinWidth(300);
         boardPane.prefHeightProperty().bind(boardPane.prefWidthProperty());
-        boardPane.prefWidthProperty().bind(Bindings.min(scene.widthProperty().multiply(0.7), scene.heightProperty().subtract(80)));
+        boardPane.prefWidthProperty().bind(Bindings.min(SceneManager.getWidthProperty().multiply(0.7),
+                                                        SceneManager.getHeightProperty().subtract(80)));
 
         for(int i = 0; i < board.getSize(); ++ i) {
             for(int j = 0; j < board.getSize(); ++ j) {
@@ -146,10 +138,6 @@ public class RoomGUI implements Initializable {
         if(crl.manager.finished()) markTerritories();
     }
 
-    public void setInfo(String info) {
-        infoLabel.setText(info);
-    }
-
     public void addMessage(String msg, Date start) {
         if (start == null) {
             messages.add(new Message(msg, ""));
@@ -180,13 +168,8 @@ public class RoomGUI implements Initializable {
         crl.sendChat(msg);
     }
 
-    public void returnToLobby() throws IOException {
-        FXMLLoader loader = new FXMLLoader(getClass().getResource("LobbyScreen.fxml"));
-        Parent root = loader.load();
-        LobbyScreen controller = loader.getController();
-        controller.setScene(scene);
-        controller.setClient(client);
-        Platform.runLater(()->scene.setRoot(root));
+    public void returnToLobby() {
+        SceneManager.loadLobbyScreen();
     }
 
     public class Message {

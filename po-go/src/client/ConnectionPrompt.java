@@ -1,21 +1,16 @@
 package client;
 
 import javafx.fxml.FXML;
-import javafx.fxml.FXMLLoader;
 import javafx.fxml.Initializable;
-import javafx.scene.Parent;
-import javafx.scene.Scene;
 import javafx.scene.control.Label;
 import javafx.scene.control.TextField;
 import javafx.scene.paint.Color;
 
-import java.io.IOException;
 import java.net.URL;
 import java.util.ResourceBundle;
 
 public class ConnectionPrompt implements Initializable {
     private Client client;
-    private Scene scene;
     private Settings settings;
 
     @FXML private Label messageLabel;
@@ -26,8 +21,6 @@ public class ConnectionPrompt implements Initializable {
         this.client = client;
         client.setListener(new ConnectListener(this));
     }
-
-    void setScene(Scene scene) { this.scene = scene; }
 
     void setMessage(String msg) { messageLabel.setText(msg); }
 
@@ -43,13 +36,8 @@ public class ConnectionPrompt implements Initializable {
         }
     }
 
-    void switchToLobby() throws IOException {
-        FXMLLoader loader = new FXMLLoader(getClass().getResource("LobbyScreen.fxml"));
-        Parent root = loader.load();
-        LobbyScreen controller = loader.getController();
-        controller.setScene(scene);
-        controller.setClient(client);
-        scene.setRoot(root);
+    void switchToLobby()  {
+        SceneManager.loadLobbyScreen();
     }
 
     @Override

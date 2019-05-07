@@ -10,7 +10,6 @@ import util.Pair;
 
 import java.util.Date;
 import java.util.Optional;
-import java.io.IOException;
 
 import static go.GameLogic.gameLogic;
 
@@ -92,11 +91,8 @@ public class ClientRoomListener implements ClientListener {
             assert false;
 
         } else if (msg.equals("LOBBY_JOINED")) {
-            try {
-                rg.returnToLobby();
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
+
+            rg.returnToLobby();
 
         } else if (msg.equals("OPPONENT_JOINED")) {
             Platform.runLater(() -> rg.addMessage(myColor.opposite.pictogram + " has joined the game", null));

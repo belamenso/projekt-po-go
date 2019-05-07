@@ -3,8 +3,6 @@ package client;
 import javafx.application.Platform;
 import server.Message;
 
-import java.io.IOException;
-
 public class ConnectListener implements ClientListener {
     ConnectionPrompt cp;
 
@@ -27,12 +25,6 @@ public class ConnectListener implements ClientListener {
     public void connectedToServer() {
         Platform.runLater(() -> cp.setMessage("Polączono z serwerem"));
 
-        Platform.runLater(() -> {
-            try {
-                cp.switchToLobby();
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-        });
+        cp.switchToLobby();
     }
 }

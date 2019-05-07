@@ -45,7 +45,6 @@ public class Client {
 
                         listener.receivedInput(msg);
                     } catch (IOException ex) {
-                        listener.disconnected();
                         close();
                         return;
                     }
@@ -62,10 +61,12 @@ public class Client {
     }
 
     void setListener(ClientListener listener) {
+        System.out.println("Setting listener: " + listener.toString());
         this.listener = listener;
     }
 
      void close() {
+        System.out.println("close client");
         if(open) {
             open = false;
 
@@ -78,7 +79,6 @@ public class Client {
         socket = null;
         inputStream = null;
         outputStream = null;
-        listener = null;
      }
 
     void sendMessage(String msg) {
