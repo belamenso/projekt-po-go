@@ -30,11 +30,14 @@ public class LobbyScreen implements Initializable {
         nameField.clear();
         setMessage("");
 
-        for(int i = 0; i < name.length(); ++ i) {
-            if(!Character.isLetter(name.charAt(i))) {
-                setMessage("Nazwa moze skladać się tylko z liter");
-                return;
-            }
+        if(name == null || name == "") {
+            setMessage("Nazwa nie może być pusta");
+            return;
+        }
+
+        if(!name.matches("[a-zA-Z0-9 _]+")) {
+            setMessage("Nazwa może składać się jedynie z liter, cyfr i spacji");
+            return;
         }
 
         cl.sendCreateRequest(name);

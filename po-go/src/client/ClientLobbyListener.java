@@ -47,6 +47,14 @@ public class ClientLobbyListener implements ClientListener {
                 Platform.runLater(() -> ls.setMessage("Nie udało się połączyć z pokojem"));
                 break;
 
+            case NAME_TAKEN:
+                Platform.runLater(() -> ls.setMessage("Nazwa zajęta"));
+                break;
+
+            case ROOM_NOT_FOUND:
+                Platform.runLater(() -> ls.setMessage("Nie znalezino pokoju"));
+                break;
+
             default:
                 System.out.println("Unsopported message: " + lobbyMsg.type.name());
         }

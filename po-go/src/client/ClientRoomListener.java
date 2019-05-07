@@ -160,10 +160,12 @@ public class ClientRoomListener implements ClientListener {
     }
 
     @Override
-    public void couldNotConnect() {}
+    public void disconnected() {
+        SceneManager.loadConnectionScreen();
+    }
 
     @Override
-    public void disconnected() {}
+    public void couldNotConnect() {}
 
     @Override
     public void connectedToServer() {}
