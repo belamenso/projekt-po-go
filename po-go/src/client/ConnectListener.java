@@ -1,6 +1,7 @@
 package client;
 
 import javafx.application.Platform;
+import server.Message;
 
 import java.io.IOException;
 
@@ -17,10 +18,7 @@ public class ConnectListener implements ClientListener {
     }
 
     @Override
-    public void receivedInput(String msg) {}
-
-    @Override
-    public void serverClosed() {}
+    public void receivedInput(Message message) {}
 
     @Override
     public void disconnected() {}

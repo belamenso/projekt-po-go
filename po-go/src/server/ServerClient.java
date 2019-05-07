@@ -1,6 +1,6 @@
 package server;
 
-import java.io.PrintWriter;
+import java.io.ObjectOutputStream;
 import java.net.InetAddress;
 
 /**
@@ -14,14 +14,14 @@ public class ServerClient {
 
     private final InetAddress ip;
     private final int port;
-    private final PrintWriter out;
+    private final ObjectOutputStream outputStream;
     private final int id;
     ServerListener listener;
 
-    ServerClient(InetAddress ip, int port, PrintWriter out, ServerListener listener) {
+    ServerClient(InetAddress ip, int port, ObjectOutputStream outputStream, ServerListener listener) {
         this.ip = ip;
         this.port = port;
-        this.out = out;
+        this.outputStream = outputStream;
         this.id = ids ++;
         this.listener = listener;
     }
@@ -32,8 +32,13 @@ public class ServerClient {
     }
 
     void sendMessage(String message) {
+        sendMessage(new Message(message));
+    }
+
+    void sendMessage(Message message) {
         try {
-            out.println(message);
+            outputStream.writeObject(message);
+            outputStream.flush();
         } catch(Exception e) { e.printStackTrace(); }
     }
 

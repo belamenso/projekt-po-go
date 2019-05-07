@@ -141,12 +141,9 @@ public class RoomGUI implements Initializable {
             infoLabel.setText("Waiting for opponent's move");
         } else assert false;
 
-        final Board toRender = crl.getBoard();
-        Platform.runLater(() -> {
-            board.render(toRender);
-        });
+        Platform.runLater(() -> board.render(crl.getBoard()) );
 
-        if (crl.manager.finished()) markTerritories();
+        if(crl.manager.finished()) markTerritories();
     }
 
     public void setInfo(String info) {
@@ -193,12 +190,14 @@ public class RoomGUI implements Initializable {
     }
 
     public class Message {
-        private String name;
-        private String time;
+        private String name, time;
+
         public Message(){ this.name = ""; this.time=""; }
         public Message(String name, String time){ this.name = name; this.time = time; }
+
         public String getName() { return name; }
         public String getTime() { return time; }
+
         public void setName(String name) { this.name = name; }
         public void setTime(String time) { this.time = time; }
     }

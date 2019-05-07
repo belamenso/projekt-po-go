@@ -5,6 +5,7 @@ import go.GameplayManager;
 import go.ReasonMoveImpossible;
 import go.Stone;
 import javafx.application.Platform;
+import server.Message;
 import util.Pair;
 
 import java.util.Date;
@@ -22,7 +23,7 @@ public class ClientRoomListener implements ClientListener {
     GameplayManager manager = new GameplayManager();
     private RoomGUI rg;
     private boolean gameStarted = false;
-    private boolean gameInterruped = false;
+    private boolean gameInterrupted = false;
     Date start;
 
     ClientRoomListener(Client client, Stone color, RoomGUI rg) {
@@ -32,19 +33,15 @@ public class ClientRoomListener implements ClientListener {
         this.myColor = color;
     }
 
-    int getSize() {
-        return manager.getBoard().getSize();
-    }
-
     Stone getColor() { return myColor; }
 
     Board getBoard() { return manager.getBoard(); }
 
     boolean myTurn() {
-        return gameStarted && !gameInterruped && manager.inProgress() && manager.nextTurn().equals(myColor);
+        return gameStarted && !gameInterrupted && manager.inProgress() && manager.nextTurn().equals(myColor);
     }
 
-    boolean wasInterruped() { return gameInterruped; }
+    boolean wasInterruped() { return gameInterrupted; }
 
     private synchronized void makeMyMove(GameplayManager.Move move) {
         manager.registerMove(move);
@@ -52,55 +49,67 @@ public class ClientRoomListener implements ClientListener {
     }
 
     @Override
-    public void receivedInput(String msg) {
+    public void receivedInput(Message message) {
+        String msg = message.msg;
 
         if (msg.startsWith("list")) {
             System.out.println("Received an unsolicited room listing");
-        } else if (msg.startsWith("exitedRoom")) {
-            //client.setListener(new ClientLobbyListener(client));
         } else if (msg.startsWith("GAME_BEGINS")) {
             gameStarted = true;
             start = new Date();
+
             Platform.runLater(() -> rg.addMessage("The game begins, you are " + myColor.pictogram, start));
+
         } else if (msg.startsWith("GAME_FINISHED")) {
             String[] parts = msg.split(" ");
             Platform.runLater(() -> rg.addMessage((parts[1].equals(myColor.toString()) ? myColor.pictogram : myColor.opposite.pictogram) + " won", start));
+
         } else if (msg.startsWith("MOVE_ACCEPTED")) {
             System.out.println("# move was accepted");
+
         } else if (msg.startsWith("MOVE_REJECTED")) {
             System.out.println("# move was rejected"); // TODO reason
             Platform.runLater(() -> rg.addMessage("ERROR: move rejected by the server", start));
+
         } else if (msg.startsWith("OPPONENT_DISCONNECTED")) {
-            gameInterruped = true;
+            gameInterrupted = true;
             Platform.runLater(() -> rg.addMessage(myColor.pictogram + " has disconnected", start));
+
         } else if (msg.startsWith("MOVE ") && msg.split(" ").length == 3) { // MOVE Player PASS
             assert msg.split(" ")[1] == myColor.opposite.toString();
             Optional<ReasonMoveImpossible> reason = manager.registerMove(new GameplayManager.Pass(myColor.opposite));
             Platform.runLater(() -> rg.addMessage(myColor.opposite.pictogram + " has passed their turn", start));
             assert reason.isEmpty();
+
         } else if (msg.startsWith("MOVE ") && msg.split(" ").length == 4) { // MOVE Player 1 2
             String[] parts = msg.split(" ");
             int x = Integer.parseInt(parts[2]), y = Integer.parseInt(parts[3]);
             Platform.runLater(() -> rg.addMessage(myColor.opposite.pictogram + " places stone at " + getBoard().positionToNumeral(new Pair<>(y, x)), start));
             Optional<ReasonMoveImpossible> reason = manager.registerMove(new GameplayManager.StonePlacement(myColor.opposite, x, y));
             assert reason.isEmpty();
+
         } else if (msg.startsWith("MOVE ")) {
             assert false;
-        } else if (msg.equals("lobbyJoined")) {
+
+        } else if (msg.equals("LOBBY_JOINED")) {
             try {
                 rg.returnToLobby();
             } catch (IOException e) {
                 e.printStackTrace();
             }
+
         } else if (msg.equals("OPPONENT_JOINED")) {
             Platform.runLater(() -> rg.addMessage(myColor.opposite.pictogram + " has joined the game", null));
+
         } else if(msg.startsWith("chat")) {
             String chat = msg.split(";")[1];
             Platform.runLater(() -> rg.addMessage("("+myColor.opposite.pictogram + "): " + chat, start));
+
         } else {
             System.out.println("UNRECOGNIZED MSG: " + msg);
             Platform.runLater(() -> rg.addMessage("UNRECOGNIZED MESSAGE: " + msg, null));
         }
+
         Platform.runLater(() -> rg.renderBoard());
     }
 
@@ -145,11 +154,6 @@ public class ClientRoomListener implements ClientListener {
 
     private void handleAttemptToSkipTurn() { // TODO
         System.out.println("Not your turn!");
-    }
-
-    @Override
-    public void serverClosed() {
-        System.out.println("server was closed (ClientRoomListener " + this + ")");
     }
 
     @Override

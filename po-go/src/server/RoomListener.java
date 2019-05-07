@@ -1,11 +1,9 @@
 package server;
 
-import go.Board;
 import go.GameplayManager;
 import go.ReasonMoveImpossible;
 import go.Stone;
 
-import javax.crypto.spec.OAEPParameterSpec;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Optional;
@@ -94,7 +92,7 @@ public class RoomListener implements ServerListener {
     public synchronized boolean clientConnected(ServerClient client) {
         // TODO spectators
         if (clients.size() >= 2 || gameInterrupted || manager.finished()) {
-            client.sendMessage("CONNECTION_REFUSED"); // -> ClientLobbyListener // TODO Reason
+            client.sendMessage(new LobbyListener.LobbyMsg(LobbyListener.LobbyMsg.Type.CONNECTION_REFUSED)); // -> ClientLobbyListener // TODO Reason
             return false;
         }
 
@@ -103,12 +101,12 @@ public class RoomListener implements ServerListener {
             client.setListener(this);
             clients.add(client);
             assert getRoomState() == RoomState.WaitingForWhite;
-            client.sendMessage("CONNECTED BLACK"); // -> ClientLobbyListener
+            client.sendMessage(new LobbyListener.LobbyMsg.ConnectedMsg(Stone.Black)); // -> ClientLobbyListener
             lobby.broadcastRoomUpdate(); // !!!!!! uwaga na kolejność, roomState zależy od zawartości clients !!!
         } else if (clients.size() == 1) {
             client.setListener(this);
             clients.add(client);
-            client.sendMessage("CONNECTED WHITE"); // -> ClientLobbyListener
+            client.sendMessage(new LobbyListener.LobbyMsg.ConnectedMsg(Stone.White)); // -> ClientLobbyListener
             clients.get(0).sendMessage("OPPONENT_JOINED"); // -> ClientRoomListener
             assert getRoomState() == RoomState.GameInProgress;
             lobby.broadcastRoomUpdate();
@@ -139,7 +137,8 @@ public class RoomListener implements ServerListener {
     }
 
     @Override
-    public synchronized void receivedInput(ServerClient client, String msg) {
+    public synchronized void receivedInput(ServerClient client, Message message) {
+        String msg = message.msg;
 
         if(msg.equals("quit")) {
             /// QUITTING
@@ -210,5 +209,5 @@ public class RoomListener implements ServerListener {
     }
 
     @Override
-    public String toString() { return "R " + name + "(" + clients.size() + "/2)"; }
+    public String toString() { return "[Room " + name + "]"; }
 }

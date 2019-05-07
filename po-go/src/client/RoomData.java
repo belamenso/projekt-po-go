@@ -1,26 +1,18 @@
 package client;
 
-public class RoomData {
-    String name, stan;
+import java.io.Serializable;
 
-    public RoomData(String name, String stan) {
-        this.name = name;
-        this.stan = stan;
+public class RoomData implements Serializable {
+    String name, state;
+
+    public RoomData(String name, String state) {
+        this.name  =  name;
+        this.state = state;
     }
 
-    public String getName() {
-        return name;
-    }
+    public String  getName() { return  name; }
+    public String getState() { return state; }
 
-    public void setName(String name) {
-        this.name = name;
-    }
-
-    public String getStan() {
-        return stan;
-    }
-
-    public void setStan(String stan) {
-        this.stan = stan;
-    }
+    public void  setName(String  name) { this.name  =  name; }
+    public void setState(String state) { this.state = state; }
 }

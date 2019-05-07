@@ -1,5 +1,9 @@
 package server;
 
+import client.RoomData;
+import go.Stone;
+
+import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
 
@@ -23,7 +27,7 @@ public class LobbyListener implements ServerListener {
         System.out.println(client + " connected to lobby");
         clients.add(client);
         client.setListener(this);
-        client.sendMessage("lobbyJoined");
+        client.sendMessage(new LobbyMsg(LobbyMsg.Type.LOBBY_JOINED));
         return true;
     }
 
@@ -33,15 +37,15 @@ public class LobbyListener implements ServerListener {
         clients.remove(client);
     }
 
-    private String roomListing() {
-        String message = "list";
+    private LobbyMsg.ListMsg roomListing() {
+        List<RoomData> data = new ArrayList<>();
         for(RoomListener room : rooms)
-            message = message + ";" + room.getName() + "," + room.getRoomState().name();
-        return message;
+            data.add(new RoomData(room.getName(), room.getRoomState().name()));
+        return new LobbyMsg.ListMsg(data);
     }
 
     public void broadcastRoomUpdate() {
-        String msg = roomListing();
+        Message msg = roomListing();
         for (ServerClient c : clients) {
             if (c == null) {
                 System.out.println("dlaczego null tutaj?");
@@ -51,61 +55,104 @@ public class LobbyListener implements ServerListener {
         }
     }
 
-    /**
-     * Obsluguje operacje:
-     * list - zwraca liste pokoi
-     * create [name]- tworzy nowy pokoj o danej nazwie
-     * join [name] - laczy klienta z pokojem o danej nazwie
-     * remove [name] - usuwa pokoj o danej nazwie wysylana tylko przez roomlistener
-     *                  gdy skonczy sie w nim gra
-     *
-     * @param client
-     * @param msg
-     */
     @Override
-    public synchronized void receivedInput(ServerClient client, String msg) {
+    public synchronized void receivedInput(ServerClient client, Message message) {
+        String msg = message.msg;
+
         System.out.println("Lobby received " + msg + " from " + client);
 
-        if(msg.equals("list")) {
-            client.sendMessage(roomListing());
-        } else if(msg.startsWith("create")) {
-            if(msg.split(" ").length < 2) return;
+        if(!(message instanceof LobbyMsg)) { System.out.println("Lobby received incorrect message"); return; }
 
-            String name = msg.split(" ")[1];
-            for(RoomListener room : rooms) {
-                if(room.getName().equals(name)) {
-                    client.sendMessage("nameTaken");
-                    return;
+        LobbyMsg lobbyMessage = (LobbyMsg) message;
+
+        switch(lobbyMessage.type) {
+            case LIST_REQUEST:
+                client.sendMessage(roomListing());
+                break;
+
+            case CREATE:
+                String toCreate = ((LobbyMsg.CreateMessage) lobbyMessage).roomName;
+                for(RoomListener room : rooms) {
+                    if(room.getName().equals(toCreate)) {
+                        client.sendMessage(new LobbyMsg(LobbyMsg.Type.NAME_TAKEN));
+                        return;
+                    }
                 }
-            }
 
-            System.out.println("Adding room " + name);
-            rooms.add(new RoomListener(name, this));
+                System.out.println("Adding room " + toCreate);
+                rooms.add(new RoomListener(toCreate, this));
 
-            for(ServerClient sc : clients) {
-                sc.sendMessage("changeAccured");
-            }
-
-        } else if(msg.startsWith("join")) {
-
-            String name = msg.split(" ")[1];
-            for(RoomListener room : rooms) {
-                if(room.getName().equals(name)) {
-                    if(room.clientConnected(client))
-                        clients.remove(client);
-                    return;
-                }
-            }
-
-            client.sendMessage("roomNotFound");
-
-        } else if(msg.startsWith("remove")) {
-            final String name = msg.split(" ")[1];
-            int sizeBefore = rooms.size();
-            rooms.removeIf(roomListener -> roomListener.getName().equals(name));
-            int sizeAfter = rooms.size();
-            if (sizeBefore != sizeAfter)
                 broadcastRoomUpdate();
+                break;
+
+            case JOIN:
+                String toJoin = ((LobbyMsg.JoinMsg) lobbyMessage).roomName;
+
+                for(RoomListener room : rooms) {
+                    if(room.getName().equals(toJoin)) {
+                        if(room.clientConnected(client))
+                            clients.remove(client);
+                        return;
+                    }
+                }
+
+                client.sendMessage(new LobbyMsg(LobbyMsg.Type.ROOM_NOT_FOUND));
+                break;
+
+            case REMOVE:
+                final String name = msg.split(" ")[1];
+
+                if(rooms.removeIf(roomListener -> roomListener.getName().equals(name)))
+                    broadcastRoomUpdate();
+                break;
+
+            default:
+                System.out.println("Unsopported lobby message " + lobbyMessage.type.name());
+        }
+    }
+
+    public static class LobbyMsg extends Message {
+        public enum Type {
+              LIST                 // Lobby       -> ClientLobby
+            , ROOM_NOT_FOUND       // Lobby       -> ClientLobby
+            , NAME_TAKEN           // Lobby       -> ClientLobby
+            , LOBBY_JOINED         // Lobby       -> ClientLobby / ClientRoom
+            , CREATE               // ClientLobby -> Lobby
+            , JOIN                 // ClientLobby -> Lobby
+            , LIST_REQUEST         // ClientLobby -> Lobby
+            , REMOVE               // Room        -> Lobby
+            , CONNECTION_REFUSED   // Room        -> ClientLobby
+            , CONNECTED            // Room        -> ClientLobby
+        }
+
+        public Type type;
+        public LobbyMsg(Type type) { super(type.name()); this.type = type; }
+
+        // Trochę to syf może da się lepiej?
+
+        static public class CreateMessage extends LobbyMsg {
+            String roomName;
+            public CreateMessage(String roomName) { super(Type.CREATE); this.roomName = roomName; }
+        }
+
+        static public class JoinMsg extends LobbyMsg {
+            String roomName;
+            public JoinMsg(String roomName) { super(Type.JOIN); this.roomName = roomName; }
+        }
+
+        static class RemoveMsg extends LobbyMsg {
+            String roomName;
+            RemoveMsg(String roomName) { super(Type.REMOVE); this.roomName = roomName; }
+        }
+
+        static public class ListMsg extends LobbyMsg {
+            public List<RoomData> data;
+            ListMsg(List<RoomData> data) { super(Type.LIST); this.data = data; }
+        }
+
+        static public class ConnectedMsg extends LobbyMsg {
+            public Stone color;
+            ConnectedMsg(Stone color) { super(Type.CONNECTED); this.color = color; }
         }
     }
 

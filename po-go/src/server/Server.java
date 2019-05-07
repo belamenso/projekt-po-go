@@ -1,9 +1,6 @@
 package server;
 
-import java.io.IOException;
-import java.io.BufferedReader;
-import java.io.PrintWriter;
-import java.io.InputStreamReader;
+import java.io.*;
 import java.net.*;
 import java.util.LinkedList;
 import java.util.List;
@@ -33,15 +30,15 @@ public class Server {
     private String ip;
     private int port;
     private boolean open = true;
-    private ServerSocket ss;
+    private ServerSocket serverSocket;
     private List<Socket> clients = new LinkedList<>();
 
     Server(int port, ServerListener defaultListener) {
         this.defaultListener = defaultListener;
         try {
             this.port = port;
-            ss = new ServerSocket(port);
-            ss.getInetAddress();
+            serverSocket = new ServerSocket(port);
+            serverSocket.getInetAddress();
             ip = InetAddress.getLocalHost().getHostAddress();
 
             Thread st = new Thread(() -> {
@@ -62,22 +59,28 @@ public class Server {
     }
 
     private void createClientThread() throws IOException {
-        final Socket socket = ss.accept();
+        final Socket socket = serverSocket.accept();
         Thread clientThread = new Thread(() -> {
             try {
                 clients.add(socket);
 
-                BufferedReader in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
-                PrintWriter out = new PrintWriter(socket.getOutputStream(), true);
+                ObjectInputStream inputStream = new ObjectInputStream(socket.getInputStream());
+                ObjectOutputStream out = new ObjectOutputStream(socket.getOutputStream());
                 ServerClient client = new ServerClient(socket.getInetAddress(), socket.getPort(), out, defaultListener);
                 client.listener.clientConnected(client);
                 Thread.currentThread().setName("Thread for " + client);
 
                 while (open) {
                     try {
-                        String line = in.readLine();
-                        if (line == null) throw new IOException();
-                        client.listener.receivedInput(client, line);
+                        Message msg = null;
+                        try {
+                            msg = (Message) inputStream.readObject();
+                        } catch (ClassNotFoundException e) { e.printStackTrace(); } // Powinno byc niemożliwe
+
+                        if (msg == null) throw new IOException();
+
+                        client.listener.receivedInput(client, msg);
+
                     } catch (IOException e) {
                         client.listener.clientDisconnected(client);
 
@@ -89,7 +92,9 @@ public class Server {
                         } catch (Exception e2) {
                             e2.printStackTrace();
                         }
+
                         clients.remove(socket);
+
                         return;
                     }
                 }
@@ -108,14 +113,14 @@ public class Server {
 
     private void close() {
         open = false;
-        try{ ss.close(); } catch(IOException e){ e.printStackTrace(); }
+        try{ serverSocket.close(); } catch(IOException e){ e.printStackTrace(); }
 
         for(Socket s : clients)
             try{ s.close(); } catch(Exception e){ e.printStackTrace(); }
 
         clients.clear();
         clients = null;
-        ss = null;
+        serverSocket = null;
         defaultListener.serverClosed();
         defaultListener = null;
     }

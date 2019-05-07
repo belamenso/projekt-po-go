@@ -2,16 +2,13 @@ package client;
 
 import go.Stone;
 import javafx.application.Platform;
+import server.LobbyListener;
+import server.Message;
 
-import java.io.IOException;
-import java.util.ArrayList;
 import java.util.List;
 
 /**
  * Listener obsulugujacy lobby po stronie gracza
- * póki co wypisuje otrzymane wiadomosci
- * w finalnej wersji ma wyswietlac na gui liste pokoi
- * i inofrmacje o tym czy dalo sie polaczyc
  */
 public class ClientLobbyListener implements ClientListener {
     private Client client;
@@ -23,51 +20,45 @@ public class ClientLobbyListener implements ClientListener {
     }
 
     @Override
-    public void couldNotConnect() {}
+    public void receivedInput(Message message) {
+        String msg = message.msg;
 
-    @Override
-    public void receivedInput(String msg) {
         System.out.println("receivedInput >"+msg+"<");
 
-        if(msg.startsWith("CONNECTED ")) {
-            String[] parts = msg.split(" ");
-            assert parts.length == 2;
-            try {
-                ls.moveToRoom(parts[1].equals("WHITE") ? Stone.White : Stone.Black);
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-        } else if(msg.startsWith("list")){
-            List<RoomData> data = new ArrayList<>();
-            String[] rooms = msg.split(";");
-            for(int i = 1; i < rooms.length; ++ i) {
-                String[] roomData = rooms[i].split(",");
-                data.add(new RoomData(roomData[0], roomData[1]));
-            }
-            Platform.runLater(() -> ls.updateList(data));
-        } else if(msg.equals("changeAccured")) {
-            Platform.runLater(() -> ls.update());
-        } else if(msg.equals("CONNECTION_REFUSED")) {
-            Platform.runLater(() -> ls.setMessage("Nie udało się połączyć z pokojem"));
-        }
-    }
+        if(!(message instanceof LobbyListener.LobbyMsg)) { System.out.println("Received incorrect message"); return; }
 
-    @Override
-    public void serverClosed() {
-        System.out.println("serverClosed");
+        LobbyListener.LobbyMsg lobbyMsg = (LobbyListener.LobbyMsg) message;
+
+        switch (lobbyMsg.type) {
+            case CONNECTED:
+                Stone color = ((LobbyListener.LobbyMsg.ConnectedMsg) lobbyMsg).color;
+
+                ls.moveToRoom(color);
+                break;
+
+            case LIST:
+                List<RoomData> data = ((LobbyListener.LobbyMsg.ListMsg) lobbyMsg).data;
+
+                Platform.runLater(() -> ls.updateList(data));
+                break;
+
+            case CONNECTION_REFUSED:
+                Platform.runLater(() -> ls.setMessage("Nie udało się połączyć z pokojem"));
+                break;
+
+            default:
+                System.out.println("Unsopported message: " + lobbyMsg.type.name());
+        }
     }
 
     @Override
     public void disconnected() {
         System.out.println("disconnected");
-        Platform.runLater(() -> {
-            try {
-                ls.returnToConnecting();
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-        });
+        ls.returnToConnecting();
     }
+
+    @Override
+    public void couldNotConnect() {}
 
     @Override
     public void connectedToServer() {}

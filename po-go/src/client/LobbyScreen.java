@@ -11,6 +11,7 @@ import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.control.*;
 import javafx.scene.control.cell.PropertyValueFactory;
+import server.LobbyListener;
 
 import java.io.IOException;
 import java.net.URL;
@@ -48,11 +49,11 @@ public class LobbyScreen implements Initializable {
             }
         }
 
-        client.sendMessage("create " + name);
+        client.sendMessage(new LobbyListener.LobbyMsg.CreateMessage(name)); // CREATE name -> LobbyListener
     }
 
     private void sendJoinRoomRequest(String roomName) {
-        client.sendMessage("join " + roomName);
+        client.sendMessage(new LobbyListener.LobbyMsg.JoinMsg(roomName)); // JOIN name -> LobbyListener
     }
 
     @FXML
@@ -63,10 +64,10 @@ public class LobbyScreen implements Initializable {
 
     @FXML
     public void update() {
-        client.sendMessage("list");
+        client.sendMessage(new LobbyListener.LobbyMsg(LobbyListener.LobbyMsg.Type.LIST_REQUEST)); // LIST_REQUEST -> LobbyListener
     }
 
-    public void updateList(List<RoomData> data) {
+    void updateList(List<RoomData> data) {
         ObservableList<RoomData> list = FXCollections.observableArrayList();
         list.addAll(data);
         rooms.setItems(list);
@@ -82,9 +83,9 @@ public class LobbyScreen implements Initializable {
         nameColumn.setMinWidth(200);
         nameColumn.setCellValueFactory(new PropertyValueFactory<>("name"));
 
-        TableColumn<RoomData, String> stanColumn = new TableColumn<>("Stan");
+        TableColumn<RoomData, String> stanColumn = new TableColumn<>("State");
         stanColumn.setMinWidth(150);
-        stanColumn.setCellValueFactory(new PropertyValueFactory<>("stan"));
+        stanColumn.setCellValueFactory(new PropertyValueFactory<>("state"));
 
         rooms.setRowFactory(tv -> {
             TableRow<RoomData> row = new TableRow<>();
@@ -102,20 +103,28 @@ public class LobbyScreen implements Initializable {
         rooms.setPlaceholder(new Label("No active rooms available"));
     }
 
-    public void returnToConnecting() throws IOException {
-        FXMLLoader loader = new FXMLLoader(getClass().getResource("ConnectionPrompt.fxml"));
-        Parent root = loader.load();
-        ConnectionPrompt controller = loader.getController();
-        controller.setScene(scene);
-        controller.setClient(client);
-        scene.setRoot(root);
+    void returnToConnecting() {
+        try {
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("ConnectionPrompt.fxml"));
+            final Parent root = loader.load();
+            ConnectionPrompt controller = loader.getController();
+            controller.setScene(scene);
+            controller.setClient(client);
+            Platform.runLater(() -> scene.setRoot(root));
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 
-    public void moveToRoom(Stone color) throws IOException {
-        FXMLLoader loader = new FXMLLoader(getClass().getResource("RoomGUI.fxml"));
-        final Parent root = loader.load();
-        RoomGUI controller = loader.getController();
-        controller.setup(scene, client, color);
-        Platform.runLater(() -> scene.setRoot(root));
+    void moveToRoom(Stone color) {
+        try {
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("RoomGUI.fxml"));
+            final Parent root = loader.load();
+            RoomGUI controller = loader.getController();
+            controller.setup(scene, client, color);
+            Platform.runLater(() -> scene.setRoot(root));
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 }

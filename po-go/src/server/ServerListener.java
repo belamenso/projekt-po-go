@@ -7,6 +7,6 @@ package server;
 public interface ServerListener  {
     boolean clientConnected(ServerClient client);
     void clientDisconnected(ServerClient client);
-    void receivedInput(ServerClient client, String msg);
+    void receivedInput(ServerClient client, Message msg);
     void serverClosed();
 }
