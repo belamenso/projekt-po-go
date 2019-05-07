@@ -1,5 +1,6 @@
 package client;
 
+import go.Board;
 import go.Stone;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
@@ -18,6 +19,7 @@ public class LobbyScreen implements Initializable {
     @FXML private TableView<RoomData> rooms;
     @FXML private TextField nameField;
     @FXML private Label messageLabel;
+    @FXML private ChoiceBox<String> sizeDropdown;
 
     public void setup(ClientLobbyListener cl) {
         this.cl = cl;
@@ -40,7 +42,14 @@ public class LobbyScreen implements Initializable {
             return;
         }
 
-        cl.sendCreateRequest(name);
+        Board.BoardSize size = null;
+        switch (sizeDropdown.getValue()) {
+            case   "9x9" : size = Board.BoardSize.Size9;  break;
+            case "13x13" : size = Board.BoardSize.Size13; break;
+            case "19x19" : size = Board.BoardSize.Size19; break;
+        }
+
+        cl.sendCreateRequest(name, size);
     }
 
 
@@ -72,9 +81,13 @@ public class LobbyScreen implements Initializable {
         nameColumn.setMinWidth(200);
         nameColumn.setCellValueFactory(new PropertyValueFactory<>("name"));
 
-        TableColumn<RoomData, String> stanColumn = new TableColumn<>("State");
-        stanColumn.setMinWidth(150);
-        stanColumn.setCellValueFactory(new PropertyValueFactory<>("state"));
+        TableColumn<RoomData, String> stateColumn = new TableColumn<>("State");
+        stateColumn.setMinWidth(150);
+        stateColumn.setCellValueFactory(new PropertyValueFactory<>("state"));
+
+        TableColumn<RoomData, Integer> sizeColumn = new TableColumn<>("Board size");
+        sizeColumn.setMinWidth(100);
+        sizeColumn.setCellValueFactory(new PropertyValueFactory<>("size"));
 
         rooms.setRowFactory(tv -> {
             TableRow<RoomData> row = new TableRow<>();
@@ -88,15 +101,18 @@ public class LobbyScreen implements Initializable {
         });
 
         rooms.getColumns().clear();
-        rooms.getColumns().addAll(nameColumn, stanColumn);
+        rooms.getColumns().addAll(nameColumn, stateColumn, sizeColumn);
         rooms.setPlaceholder(new Label("No active rooms available"));
+
+        sizeDropdown.getItems().addAll("9x9", "13x13", "19x19");
+        sizeDropdown.getSelectionModel().clearAndSelect(0);
     }
 
     void returnToConnecting() {
         SceneManager.loadConnectionScreen();
     }
 
-    void moveToRoom(Stone color) {
-        SceneManager.loadRoomScreen(color);
+    void moveToRoom(Stone color, Board.BoardSize size) {
+        SceneManager.loadRoomScreen(color, size);
     }
 }

@@ -22,17 +22,18 @@ public class ClientRoomListener implements ClientListener {
 
     private Stone myColor;
 
-    GameplayManager manager = new GameplayManager();
+    GameplayManager manager;
     private boolean gameStarted = false;
     private boolean gameInterrupted = false;
     Date start;
 
-    ClientRoomListener(RoomGUI rg, Client client, Stone color) {
+    ClientRoomListener(RoomGUI rg, Client client, Stone color, Board.BoardSize size) {
         System.out.println("### ClientRoomListenerCreated");
         this.rg = rg;
         this.client = client;
         client.setListener(this);
         this.myColor = color;
+        manager = new GameplayManager(size, 6.5);
     }
 
     Stone getColor() { return myColor; }

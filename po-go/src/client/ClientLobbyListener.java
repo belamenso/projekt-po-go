@@ -1,5 +1,6 @@
 package client;
 
+import go.Board;
 import go.Stone;
 import javafx.application.Platform;
 import server.LobbyListener;
@@ -32,9 +33,10 @@ public class ClientLobbyListener implements ClientListener {
 
         switch (lobbyMsg.type) {
             case CONNECTED:
-                Stone color = ((LobbyListener.LobbyMsg.ConnectedMsg) lobbyMsg).color;
+                Stone           color = ((LobbyListener.LobbyMsg.ConnectedMsg) lobbyMsg).color;
+                Board.BoardSize size  = ((LobbyListener.LobbyMsg.ConnectedMsg) lobbyMsg).size;
 
-                ls.moveToRoom(color);
+                ls.moveToRoom(color, size);
                 break;
 
             case LIST:
@@ -60,8 +62,8 @@ public class ClientLobbyListener implements ClientListener {
         }
     }
 
-    void sendCreateRequest(String roomName) {
-        client.sendMessage(new LobbyListener.LobbyMsg.CreateMessage(roomName)); // CREATE roomName -> LobbyListener
+    void sendCreateRequest(String roomName, Board.BoardSize size) {
+        client.sendMessage(new LobbyListener.LobbyMsg.CreateMessage(roomName, size)); // CREATE roomName -> LobbyListener
     }
 
     void sendJoinRoomRequest(String roomName) {

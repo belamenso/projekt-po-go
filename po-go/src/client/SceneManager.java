@@ -1,5 +1,6 @@
 package client;
 
+import go.Board;
 import go.Stone;
 import javafx.application.Platform;
 import javafx.beans.property.ReadOnlyDoubleProperty;
@@ -55,13 +56,13 @@ class SceneManager {
         }
     }
 
-    static void loadRoomScreen(Stone color) {
+    static void loadRoomScreen(Stone color, Board.BoardSize size) {
         try {
             FXMLLoader loader = loadFXML("RoomGUI.fxml");
             Parent root = loader.load();
             RoomGUI controller = loader.getController();
 
-            ClientRoomListener crl = new ClientRoomListener(controller, client, color);
+            ClientRoomListener crl = new ClientRoomListener(controller, client, color, size);
             controller.setup(crl);
 
             Platform.runLater(() -> scene.setRoot(root));

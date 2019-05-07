@@ -9,14 +9,14 @@
 
 <BorderPane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="400.0" prefWidth="600.0" xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1" fx:controller="client.LobbyScreen">
    <center>
-      <TableView fx:id="rooms" minHeight="0.0" BorderPane.alignment="CENTER" />
+      <TableView fx:id="rooms" BorderPane.alignment="CENTER" />
    </center>
    <top>
       <HBox spacing="10.0" BorderPane.alignment="CENTER">
          <children>
-            <TextField fx:id="nameField" minWidth="200.0" onAction="#createRoom" promptText="Room name" />
+            <TextField fx:id="nameField" minWidth="150.0" onAction="#createRoom" promptText="Room name" />
+            <ChoiceBox fx:id="sizeDropdown" prefWidth="80.0" />
             <Button fx:id="createButton" mnemonicParsing="false" onAction="#createRoom" text="Create Room" />
-            <Button fx:id="joinButton" mnemonicParsing="false" onAction="#joinRoom" text="Join Selected" />
             <Button mnemonicParsing="false" onAction="#update" text="Refresh" />
          </children>
          <padding>
