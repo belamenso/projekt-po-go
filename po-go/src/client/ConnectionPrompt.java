@@ -10,17 +10,14 @@ import java.net.URL;
 import java.util.ResourceBundle;
 
 public class ConnectionPrompt implements Initializable {
-    private Client client;
+    private ConnectListener cl;
     private Settings settings;
 
     @FXML private Label messageLabel;
     @FXML private TextField ipField;
     @FXML private TextField portField;
 
-    public void setClient(Client client) {
-        this.client = client;
-        client.setListener(new ConnectListener(this));
-    }
+    void setup(ConnectListener cl) { this.cl = cl; }
 
     void setMessage(String msg) { messageLabel.setText(msg); }
 
@@ -29,8 +26,10 @@ public class ConnectionPrompt implements Initializable {
         try {
             String ip = ipField.getText();
             int port = Integer.parseInt(portField.getText());
-            client.startConnection(ip, port);
+            cl.attemptConnection(ip, port);
+
         } catch(RuntimeException ex) {
+            ex.printStackTrace();
             messageLabel.setText("Port musi być liczbą");
             messageLabel.setTextFill(Color.CRIMSON);
         }

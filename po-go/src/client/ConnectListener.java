@@ -5,9 +5,16 @@ import server.Message;
 
 public class ConnectListener implements ClientListener {
     ConnectionPrompt cp;
+    Client client;
 
-    ConnectListener(ConnectionPrompt cp) {
+    ConnectListener(ConnectionPrompt cp, Client client) {
         this.cp = cp;
+        this.client = client;
+        client.setListener(this);
+    }
+
+    void attemptConnection(String ip, int port) {
+        client.startConnection(ip, port);
     }
 
     @Override
@@ -16,15 +23,15 @@ public class ConnectListener implements ClientListener {
     }
 
     @Override
-    public void receivedInput(Message message) {}
-
-    @Override
-    public void disconnected() {}
-
-    @Override
     public void connectedToServer() {
         Platform.runLater(() -> cp.setMessage("Polączono z serwerem"));
 
         cp.switchToLobby();
     }
+
+    @Override
+    public void receivedInput(Message message) {}
+
+    @Override
+    public void disconnected() {}
 }

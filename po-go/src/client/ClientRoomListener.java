@@ -18,17 +18,20 @@ import static go.GameLogic.gameLogic;
  */
 public class ClientRoomListener implements ClientListener {
     private Client client;
-    private Stone myColor;
-    GameplayManager manager = new GameplayManager();
     private RoomGUI rg;
+
+    private Stone myColor;
+
+    GameplayManager manager = new GameplayManager();
     private boolean gameStarted = false;
     private boolean gameInterrupted = false;
     Date start;
 
-    ClientRoomListener(Client client, Stone color, RoomGUI rg) {
+    ClientRoomListener(RoomGUI rg, Client client, Stone color) {
         System.out.println("### ClientRoomListenerCreated");
         this.rg = rg;
         this.client = client;
+        client.setListener(this);
         this.myColor = color;
     }
 
@@ -150,6 +153,10 @@ public class ClientRoomListener implements ClientListener {
 
     private void handleAttemptToSkipTurn() { // TODO
         System.out.println("Not your turn!");
+    }
+
+    void sendQuitRequest() {
+        client.sendMessage("quit");
     }
 
     @Override

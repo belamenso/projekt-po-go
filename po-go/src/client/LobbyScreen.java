@@ -7,22 +7,20 @@ import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.scene.control.*;
 import javafx.scene.control.cell.PropertyValueFactory;
-import server.LobbyListener;
 
 import java.net.URL;
 import java.util.List;
 import java.util.ResourceBundle;
 
 public class LobbyScreen implements Initializable {
-    Client client;
+    ClientLobbyListener cl;
 
     @FXML private TableView<RoomData> rooms;
     @FXML private TextField nameField;
     @FXML private Label messageLabel;
 
-    public void setClient(Client client) {
-        this.client = client;
-        client.setListener(new ClientLobbyListener(this));
+    public void setup(ClientLobbyListener cl) {
+        this.cl = cl;
         update();
     }
 
@@ -39,22 +37,20 @@ public class LobbyScreen implements Initializable {
             }
         }
 
-        client.sendMessage(new LobbyListener.LobbyMsg.CreateMessage(name)); // CREATE name -> LobbyListener
+        cl.sendCreateRequest(name);
     }
 
-    private void sendJoinRoomRequest(String roomName) {
-        client.sendMessage(new LobbyListener.LobbyMsg.JoinMsg(roomName)); // JOIN name -> LobbyListener
-    }
+
 
     @FXML
     public void joinRoom() {
         String name = rooms.getSelectionModel().getSelectedItems().get(0).getName();
-        sendJoinRoomRequest(name);
+        cl.sendJoinRoomRequest(name);
     }
 
     @FXML
     public void update() {
-        client.sendMessage(new LobbyListener.LobbyMsg(LobbyListener.LobbyMsg.Type.LIST_REQUEST)); // LIST_REQUEST -> LobbyListener
+        cl.sendUpdateRequest();
     }
 
     void updateList(List<RoomData> data) {
@@ -82,7 +78,7 @@ public class LobbyScreen implements Initializable {
             row.setOnMouseClicked(event -> {
                 if (event.getClickCount() == 2 && !row.isEmpty()) {
                     RoomData rowData = row.getItem();
-                    sendJoinRoomRequest(rowData.name);
+                    cl.sendJoinRoomRequest(rowData.name);
                 }
             });
             return row;

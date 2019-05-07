@@ -11,12 +11,13 @@ import java.util.List;
  * Listener obsulugujacy lobby po stronie gracza
  */
 public class ClientLobbyListener implements ClientListener {
-    private Client client;
     private LobbyScreen ls;
+    private Client client;
 
-    ClientLobbyListener(LobbyScreen ls) {
+    ClientLobbyListener(LobbyScreen ls, Client client) {
         this.ls = ls;
-        this.client = ls.client;
+        this.client = client;
+        client.setListener(this);
     }
 
     @Override
@@ -49,6 +50,18 @@ public class ClientLobbyListener implements ClientListener {
             default:
                 System.out.println("Unsopported message: " + lobbyMsg.type.name());
         }
+    }
+
+    void sendCreateRequest(String roomName) {
+        client.sendMessage(new LobbyListener.LobbyMsg.CreateMessage(roomName)); // CREATE roomName -> LobbyListener
+    }
+
+    void sendJoinRoomRequest(String roomName) {
+        client.sendMessage(new LobbyListener.LobbyMsg.JoinMsg(roomName)); // JOIN roomName -> LobbyListener
+    }
+
+    void sendUpdateRequest() {
+        client.sendMessage(new LobbyListener.LobbyMsg(LobbyListener.LobbyMsg.Type.LIST_REQUEST)); // LIST_REQUEST -> LobbyListener
     }
 
     @Override

@@ -6,9 +6,7 @@ import javafx.beans.binding.Bindings;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
-import javafx.fxml.FXMLLoader;
 import javafx.fxml.Initializable;
-import javafx.scene.Parent;
 import javafx.scene.control.Label;
 import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableView;
@@ -18,8 +16,6 @@ import javafx.scene.layout.Pane;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.Rectangle;
 import util.Pair;
-
-import java.io.IOException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Date;
@@ -29,7 +25,6 @@ import java.util.ResourceBundle;
 import static go.GameLogic.gameLogic;
 
 public class RoomGUI implements Initializable {
-    private Client client;
     private ClientRoomListener crl;
 
     @FXML private Pane boardPane;
@@ -50,10 +45,8 @@ public class RoomGUI implements Initializable {
         return color == Stone.White ? "white-territory" : "black-territory";
     }
 
-    public void setup(Client client, Stone color) {
-        this.client = client;
-        crl = new ClientRoomListener(client, color, this);
-        client.setListener(crl);
+    public void setup(ClientRoomListener clientRoomListener) {
+        this.crl = clientRoomListener;
 
         board = new GoBoardGUI(boardPane, crl.getBoard());
         boardPane.setMinHeight(300);
@@ -156,8 +149,7 @@ public class RoomGUI implements Initializable {
 
     @FXML
     public void quitButtonPressed() { // TODO
-        System.out.println("quit");
-        client.sendMessage("quit");
+        crl.sendQuitRequest();
     }
 
     @FXML

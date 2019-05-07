@@ -9,6 +9,10 @@ import javafx.scene.Scene;
 
 import java.io.IOException;
 
+/**
+ * Zarządza ładowaniem scen i zmienianiem listenerów klienta
+ */
+
 class SceneManager {
     private static Scene scene;
     private static Client client;
@@ -27,7 +31,8 @@ class SceneManager {
             Parent root = loader.load();
             ConnectionPrompt controller = loader.getController();
 
-            controller.setClient(client);
+            ConnectListener cl = new ConnectListener(controller, client);
+            controller.setup(cl);
 
             Platform.runLater(() -> scene.setRoot(root));
         } catch (IOException e) {
@@ -41,7 +46,8 @@ class SceneManager {
             Parent root = loader.load();
             LobbyScreen controller = loader.getController();
 
-            controller.setClient(client);
+            ClientLobbyListener cl = new ClientLobbyListener(controller, client);
+            controller.setup(cl);
 
             Platform.runLater(() -> scene.setRoot(root));
         } catch (IOException e) {
@@ -55,7 +61,9 @@ class SceneManager {
             Parent root = loader.load();
             RoomGUI controller = loader.getController();
 
-            controller.setup(client, color);
+            ClientRoomListener crl = new ClientRoomListener(controller, client, color);
+            controller.setup(crl);
+
             Platform.runLater(() -> scene.setRoot(root));
         } catch (IOException e) {
             e.printStackTrace();
