@@ -12,29 +12,28 @@ Autorzy: Bartosz Białas, Rafał Kilar
 * Prosty chat między graczami
 * Skrypt z rozgrywki z czasami zdarzeń
 * GUI, które umożliwia grę online od początku do końca
-
-## Możliwe kierunki
-* usuwanie martwych kamieni przed zliczeniem punktów
 * lepsze GUI (eg. wyświetlanie liczby pojmanych kamieni, estetyczny resize)
 * dodanie obsługi plansz różnej wielkości do GUI
-* dodanie możliwości oglądania rozgrywek, bez uczestniczenia w nich
-* lepszy sposób łączenia się z serwerem (eg. stały port)
-* dodanie importu i eksportu plików SGF - integracja z innymi programami do gry w go
-* przechowywanie zakończonych rozgrywek (baza danych)
 * dodanie podglądu historii rozgrywki do GUI + animacja gry
-* bardziej zorganizowany chat
-* możliwość forkowania rozgrywki od dowolnego punktu
-* gra offline (dwóch graczy przed jednym komputerem)
-* dodanie dźwięku
-* dodanie prostego GUI do serwera
+* dźwięki
 
 ## Plany na kolejne spotkanie
 * usuwanie martwych kamieni przed zliczeniem punktów
-* lepsze GUI (eg. wyświetlanie liczby pojmanych kamieni, estetyczny resize)
-* dodanie obsługi plansz różnej wielkości do GUI
 * dodanie możliwości oglądania rozgrywek, bez uczestniczenia w nich
-* dodanie podglądu historii rozgrywki do GUI + animacja gry
 * możliwość forkowania rozgrywki od dowolnego punktu
+* highscore
+* przechowywanie zakończonych rozgrywek
+
+## Możliwe kierunki
+* usuwanie martwych kamieni przed zliczeniem punktów
+* dodanie możliwości oglądania rozgrywek, bez uczestniczenia w nich
+* dodanie importu i eksportu plików SGF - integracja z innymi programami do gry w go
+* bardziej zorganizowany chat
+* możliwość forkowania rozgrywki od dowolnego punktu
+* gra offline (dwóch graczy przed jednym komputerem)
+* dodanie prostego GUI do serwera
+
+
 
 ----
 
