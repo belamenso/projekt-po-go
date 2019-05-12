@@ -112,7 +112,12 @@ public class ClientRoomListener implements ClientListener {
             Platform.runLater(() -> rg.addMessage("UNRECOGNIZED MESSAGE: " + msg, null));
         }
 
-        Platform.runLater(() -> rg.renderBoard());
+        Platform.runLater(() -> {
+            boolean changeToNew = ((int)rg.historySlider.getValue()) == manager.getHistorySize() - 1;
+            rg.historyCount.set(manager.getHistorySize());
+            if(changeToNew) rg.historySlider.setValue(manager.getHistorySize());
+            rg.renderBoard();
+        });
     }
 
     /**

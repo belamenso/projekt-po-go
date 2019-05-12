@@ -14,18 +14,17 @@ public class Main extends Application {
     @Override
     public void start(Stage window) {
         window.setTitle("Pogo");
-        window.setMinWidth(600);
-        window.setMinHeight(400);
+        window.setMinWidth(640);
+        window.setMinHeight(480);
 
         Client client = new Client();
         Scene scene = new Scene(new Pane(), 800, 600);
         scene.getStylesheets().add(getClass().getResource("style.css").toString());
         scene.setOnKeyPressed(keyEvent -> {
-            System.out.println("keyPressed " + keyEvent.getCode().getChar());
             if(keyEvent.getCode().equals(KeyCode.M)) {
                 Settings.assertConfigurationExists();
-                System.out.println(Settings.readSettings().soundOn);
                 Settings.setSoundOn(!Settings.readSettings().soundOn);
+                System.out.println("sound on: " + Settings.readSettings().soundOn);
             }
         });
 

@@ -3,14 +3,12 @@ package client;
 import go.*;
 import javafx.application.Platform;
 import javafx.beans.binding.Bindings;
+import javafx.beans.property.SimpleIntegerProperty;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
-import javafx.scene.control.Label;
-import javafx.scene.control.TableColumn;
-import javafx.scene.control.TableView;
-import javafx.scene.control.TextField;
+import javafx.scene.control.*;
 import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.scene.layout.Pane;
 import javafx.scene.paint.Color;
@@ -38,6 +36,10 @@ public class RoomGUI implements Initializable {
     @FXML private Label capturedLabel;
     @FXML private Label lostLabel;
 
+    @FXML Slider historySlider;
+    @FXML private Label current;
+    SimpleIntegerProperty historyCount;
+
     private Optional<GameplayManager.Result> cachedGameResult = Optional.empty();
 
     private String colorToCapturedClass(Stone color) {
@@ -56,7 +58,25 @@ public class RoomGUI implements Initializable {
         boardPane.setMinWidth(300);
         boardPane.prefHeightProperty().bind(boardPane.prefWidthProperty());
         boardPane.prefWidthProperty().bind(Bindings.min(SceneManager.getWidthProperty().multiply(0.7),
-                                                        SceneManager.getHeightProperty().subtract(80)));
+                                                        SceneManager.getHeightProperty().subtract(100)));
+
+        historyCount = new SimpleIntegerProperty(1);
+        historySlider.setMin(1);
+        historySlider.setBlockIncrement(1);
+        historySlider.setMajorTickUnit(1);
+        historySlider.setMinorTickCount(0);
+        historySlider.setShowTickMarks(true);
+        historySlider.setSnapToTicks(true);
+        historySlider.maxProperty().bind(historyCount);
+        historySlider.valueProperty().addListener(observable -> renderBoard());
+        historySlider.prefWidthProperty().bind(boardPane.prefWidthProperty().subtract(60));
+        historySlider.visibleProperty().bind(Bindings.greaterThan(historyCount, 1));
+        current.visibleProperty().bind(Bindings.greaterThan(historyCount, 1));
+        current.textProperty().bind(Bindings.format(
+                "%.0f / %d",
+                historySlider.valueProperty(),
+                historyCount
+        ));
 
         for(int i = 0; i < board.getSize(); ++ i) {
             for(int j = 0; j < board.getSize(); ++ j) {
@@ -67,11 +87,15 @@ public class RoomGUI implements Initializable {
                 Rectangle rect = board.getArea(x, y);
 
                 rect.setOnMouseClicked(e -> {
+                    if((int) historySlider.getValue() != historyCount.getValue()) return;
+
                     System.out.println("click " + y + " " + x);
                     crl.attemptedToMakeMove(x, y);
                 });
 
                 rect.setOnMouseEntered(e -> {
+                    if((int) historySlider.getValue() != historyCount.getValue()) return;
+
                     if (crl.myTurn()) {
                         Optional<ReasonMoveImpossible> reason = gameLogic.movePossible(crl.getBoard(), x, y, crl.getColor());
                         if (reason.isEmpty()) {
@@ -129,12 +153,15 @@ public class RoomGUI implements Initializable {
             infoLabel.setText("Waiting for opponent's move");
         } else assert false;
 
-        if(crl.manager.finished()) markTerritories();
-
         capturedLabel.setText(Integer.toString(crl.manager.getCapturedBy(crl.getColor())));
         lostLabel    .setText(Integer.toString(crl.manager.getCapturedBy(crl.getColor().opposite)));
 
-        board.render(crl.getBoard());
+        int boardNum = (int) historySlider.getValue();
+        System.out.println("board " + boardNum);
+
+        if(crl.manager.finished() && boardNum == historyCount.getValue()) markTerritories();
+
+        board.render(crl.manager.getBoardByNumber(boardNum));
     }
 
     public void addMessage(String msg, Date start) {

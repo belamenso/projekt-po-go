@@ -181,9 +181,13 @@ public class GameplayManager {
         return boards.get(boards.size() - 1);
     }
 
+    public Board getBoardByNumber(int n) { return boards.get(n - 1); }
+
     public boolean inProgress() { return inProgress; }
 
     public boolean finished() { return !inProgress(); }
+
+    public int getHistorySize() { return boards.size(); }
 
     /**
      * <b>może być wywołane tylko jeśli gra jest w trakcie!</b>
