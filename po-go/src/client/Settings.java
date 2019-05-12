@@ -20,27 +20,33 @@ public class Settings implements Serializable {
 
     String port;
     String host;
+    boolean soundOn;
 
-
-    private Settings(String host, String port) {
+    private Settings(String host, String port, boolean soundOn) {
         this.port = port;
         this.host = host;
+        this.soundOn = soundOn;
     }
 
     /**
      * zaklada, że jest już po assertConfigurationExists()
      * TODO tak mają wyglądać settery w tej klasie
      */
-    void setPort(String port) {
+    static void setPort(String port) {
         Settings s = readSettings();
         s.port = port;
         writeConfiguration(s);
     }
 
+    static void setSoundOn(boolean soundOn) {
+        Settings s = readSettings();
+        s.soundOn = soundOn;
+        writeConfiguration(s);
+    }
     // /USTAWIENIA
 
     static Settings getDefaultSettings() {
-        return new Settings("localhost", "33107");
+        return new Settings("localhost", "33107", true);
     }
 
     private static String getSettingsFilePath() {

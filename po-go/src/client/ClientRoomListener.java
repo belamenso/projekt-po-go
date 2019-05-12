@@ -62,7 +62,7 @@ public class ClientRoomListener implements ClientListener {
             start = new Date();
 
             Platform.runLater(() -> rg.addMessage("The game begins, you are " + myColor.pictogram, start));
-
+            Sounds.playSound("dingdong");
         } else if (msg.startsWith("GAME_FINISHED")) {
             String[] parts = msg.split(" ");
             Platform.runLater(() -> rg.addMessage((parts[1].equals(myColor.toString()) ? myColor.pictogram : myColor.opposite.pictogram) + " won", start));
@@ -82,6 +82,7 @@ public class ClientRoomListener implements ClientListener {
             assert msg.split(" ")[1] == myColor.opposite.toString();
             Optional<ReasonMoveImpossible> reason = manager.registerMove(new GameplayManager.Pass(myColor.opposite));
             Platform.runLater(() -> rg.addMessage(myColor.opposite.pictogram + " has passed their turn", start));
+            Sounds.playSound("pass");
             assert reason.isEmpty();
 
         } else if (msg.startsWith("MOVE ") && msg.split(" ").length == 4) { // MOVE Player 1 2
@@ -89,6 +90,7 @@ public class ClientRoomListener implements ClientListener {
             int x = Integer.parseInt(parts[2]), y = Integer.parseInt(parts[3]);
             Platform.runLater(() -> rg.addMessage(myColor.opposite.pictogram + " places stone at " + getBoard().positionToNumeral(new Pair<>(y, x)), start));
             Optional<ReasonMoveImpossible> reason = manager.registerMove(new GameplayManager.StonePlacement(myColor.opposite, x, y));
+            Sounds.playSound("stone");
             assert reason.isEmpty();
 
         } else if (msg.startsWith("MOVE ")) {
@@ -120,6 +122,7 @@ public class ClientRoomListener implements ClientListener {
         if (myTurn()) {
             makeMyMove(new GameplayManager.Pass(myColor));
             rg.addMessage("You (" + myColor.pictogram + ") passed", start);
+            Sounds.playSound("pass");
         } else {
             handleAttemptToSkipTurn();
         }
@@ -137,6 +140,7 @@ public class ClientRoomListener implements ClientListener {
                 makeMyMove(new GameplayManager.StonePlacement(myColor, x, y));
                 rg.addMessage("You (" + myColor.pictogram + ") moved to " + getBoard().positionToNumeral(new Pair<>(y, x)), start); // nie ruszać kolejności
                 rg.renderBoard();
+                Sounds.playSound("stone");
             }
         } else {
             handleAttemptToSkipTurn();
