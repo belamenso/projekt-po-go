@@ -35,6 +35,9 @@ public class RoomGUI implements Initializable {
     @FXML private TextField chatField;
     private ObservableList<Message> messages;
 
+    @FXML private Label capturedLabel;
+    @FXML private Label lostLabel;
+
     private Optional<GameplayManager.Result> cachedGameResult = Optional.empty();
 
     private String colorToCapturedClass(Stone color) {
@@ -126,9 +129,12 @@ public class RoomGUI implements Initializable {
             infoLabel.setText("Waiting for opponent's move");
         } else assert false;
 
-        Platform.runLater(() -> board.render(crl.getBoard()) );
-
         if(crl.manager.finished()) markTerritories();
+
+        capturedLabel.setText(Integer.toString(crl.manager.getCapturedBy(crl.getColor())));
+        lostLabel    .setText(Integer.toString(crl.manager.getCapturedBy(crl.getColor().opposite)));
+
+        board.render(crl.getBoard());
     }
 
     public void addMessage(String msg, Date start) {

@@ -18,7 +18,7 @@
    <center>
       <BorderPane BorderPane.alignment="CENTER">
          <top>
-            <HBox prefWidth="200.0" spacing="10.0" BorderPane.alignment="CENTER">
+            <HBox alignment="CENTER_LEFT" prefWidth="200.0" spacing="10.0" BorderPane.alignment="CENTER">
                <children>
                   <Button mnemonicParsing="false" onAction="#passButtonPressed" text="Pass" />
                   <Button mnemonicParsing="false" onAction="#quitButtonPressed" text="Quit" />
@@ -54,13 +54,18 @@
       </BorderPane>
    </center>
    <top>
-      <VBox alignment="CENTER" prefHeight="60.0" BorderPane.alignment="CENTER">
+      <HBox alignment="CENTER_LEFT" prefHeight="60.0" spacing="20.0" BorderPane.alignment="BOTTOM_RIGHT">
          <children>
-            <Label fx:id="infoLabel" text="Info o ruchach itp">
-               <VBox.margin>
-                  <Insets top="-8.0" />
-               </VBox.margin></Label>
+            <Label fx:id="infoLabel" text="Info o ruchach itp" />
+            <Region HBox.hgrow="ALWAYS" />
+            <Label alignment="TOP_RIGHT" text="Captured:" />
+            <Label fx:id="capturedLabel" text="0" />
+            <Label text="Lost:" />
+            <Label fx:id="lostLabel" text="0" />
          </children>
-      </VBox>
+         <padding>
+            <Insets bottom="10.0" left="10.0" right="10.0" top="10.0" />
+         </padding>
+      </HBox>
    </top>
 </BorderPane>
