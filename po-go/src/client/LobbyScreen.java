@@ -1,6 +1,7 @@
 package client;
 
 import go.Board;
+import go.GameplayManager;
 import go.Stone;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
@@ -9,6 +10,7 @@ import javafx.fxml.Initializable;
 import javafx.scene.control.*;
 import javafx.scene.control.cell.PropertyValueFactory;
 import shared.RoomData;
+import shared.RoomEvent;
 
 import java.net.URL;
 import java.util.List;
@@ -57,8 +59,14 @@ public class LobbyScreen implements Initializable {
 
     @FXML
     public void joinRoom() {
-        String name = rooms.getSelectionModel().getSelectedItems().get(0).getName();
+        String name = rooms.getSelectionModel().getSelectedItem().getName();
         cl.sendJoinRoomRequest(name);
+    }
+
+    @FXML
+    public void spectateRoom() {
+        String name = rooms.getSelectionModel().getSelectedItem().getName();
+        cl.sendSpectateRequest(name);
     }
 
     @FXML
@@ -115,5 +123,9 @@ public class LobbyScreen implements Initializable {
 
     void moveToRoom(Stone color, Board.BoardSize size) {
         SceneManager.loadRoomScreen(color, size);
+    }
+
+    void moveToRoomSpectator(Board.BoardSize size, List<GameplayManager.Move> moves, List<RoomEvent> events) {
+        SceneManager.loadRoomScreenAsSpectator(size, moves, events);
     }
 }

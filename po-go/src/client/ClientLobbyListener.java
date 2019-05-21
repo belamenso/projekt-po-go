@@ -1,11 +1,13 @@
 package client;
 
 import go.Board;
+import go.GameplayManager;
 import go.Stone;
 import javafx.application.Platform;
 import shared.LobbyMsg;
 import shared.Message;
 import shared.RoomData;
+import shared.RoomEvent;
 
 import java.util.List;
 
@@ -34,14 +36,22 @@ public class ClientLobbyListener implements ClientListener {
 
         switch (lobbyMsg.type) {
             case CONNECTED:
-                Stone           color = ((LobbyMsg.ConnectedMsg) lobbyMsg).color;
-                Board.BoardSize size  = ((LobbyMsg.ConnectedMsg) lobbyMsg).size;
+                Stone           color = ((LobbyMsg.Connected) lobbyMsg).color;
+                Board.BoardSize size  = ((LobbyMsg.Connected) lobbyMsg).size;
 
                 ls.moveToRoom(color, size);
                 break;
 
-            case LIST:
-                List<RoomData> data = ((LobbyMsg.ListMsg) lobbyMsg).data;
+            case CONNECTED_SPECTATOR:
+                Board.BoardSize             bsize = ((LobbyMsg.ConnectedSpectator) lobbyMsg).size;
+                List<GameplayManager.Move>  moves = ((LobbyMsg.ConnectedSpectator) lobbyMsg).moves;
+                List<RoomEvent>            events = ((LobbyMsg.ConnectedSpectator) lobbyMsg).events;
+
+                ls.moveToRoomSpectator(bsize, moves, events);
+                break;
+
+            case LISTING:
+                List<RoomData> data = ((LobbyMsg.Listing) lobbyMsg).data;
 
                 Platform.runLater(() -> ls.updateList(data));
                 break;
@@ -64,11 +74,15 @@ public class ClientLobbyListener implements ClientListener {
     }
 
     void sendCreateRequest(String roomName, Board.BoardSize size) {
-        client.sendMessage(new LobbyMsg.CreateMessage(roomName, size)); // CREATE roomName -> LobbyListener
+        client.sendMessage(new LobbyMsg.Create(roomName, size)); // CREATE roomName -> LobbyListener
     }
 
     void sendJoinRoomRequest(String roomName) {
-        client.sendMessage(new LobbyMsg.JoinMsg(roomName)); // JOIN roomName -> LobbyListener
+        client.sendMessage(new LobbyMsg.Join(roomName)); // JOIN roomName -> LobbyListener
+    }
+
+    void sendSpectateRequest(String roomName) {
+        client.sendMessage(new LobbyMsg.Spectate(roomName)); // SPECTATE roomName -> LobbyListener
     }
 
     void sendUpdateRequest() {

@@ -2,8 +2,10 @@ package go;
 
 import util.Pair;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Comparator;
+import java.util.List;
 import java.util.Optional;
 
 import static go.GameLogic.gameLogic;
@@ -18,8 +20,8 @@ public class GameplayManager {
     /**
      * Reprezentuje jeden ruch w historii gry
      */
-    public static abstract class Move {
-        Stone player;
+    public static abstract class Move implements Serializable {
+        public Stone player;
 
         Move(Stone color) {
             player = color;
@@ -43,7 +45,7 @@ public class GameplayManager {
      * Gracz player umieścił swój kamień na pozycji position
      */
     public static class StonePlacement extends Move {
-        Pair<Integer, Integer> position;
+        public Pair<Integer, Integer> position;
 
         public StonePlacement(Stone color, int x, int y) {
             super(color);
@@ -177,11 +179,17 @@ public class GameplayManager {
         return color.equals(Stone.White) ? getCapturedByWhite() : getCapturedByBlack();
     }
 
+    public int getCapturedBy(Stone color, int time) {
+        return color.equals(Stone.White) ? capturedByWhite.get(time-1) : capturedByBlack.get(time-1);
+    }
+
     public Board getBoard() {
         return boards.get(boards.size() - 1);
     }
 
     public Board getBoardByNumber(int n) { return boards.get(n - 1); }
+
+    public List<Move> getMoveHistory() { return moves; }
 
     public boolean inProgress() { return inProgress; }
 
@@ -214,6 +222,7 @@ public class GameplayManager {
                 inProgress = false;
             moves.add(m);
             extendCapturedHistory();
+            boards.add(getBoard().cloneBoard());
             return Optional.empty();
         } else {
             StonePlacement placement = (StonePlacement) m;
@@ -243,7 +252,7 @@ public class GameplayManager {
      * Wynik gry, remisy są niemożliwe
      * TODO czy ta klasa na pewno powinna być tutaj?
      */
-    public class Result {
+    public class Result implements Serializable {
         public Stone winner;
         public double whitePoints;
         public double blackPoints;

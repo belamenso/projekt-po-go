@@ -127,4 +127,15 @@ class GoBoardGUI {
         if(x < 0 || x >= size || y < 0 || y >= size) throw new ArrayIndexOutOfBoundsException();
         return rects[x][y];
     }
+
+    /**
+     * Zwracają nazwy klas css odpowiednich stanów kamieni
+     */
+    String colorToCapturedClass(Stone color) {
+        return color == Stone.White ? "stone-potentially-captured-white" : "stone-potentially-captured-black";
+    }
+
+    String colorToTerritoryClass(Stone color) {
+        return color == Stone.White ? "white-territory" : "black-territory";
+    }
 }

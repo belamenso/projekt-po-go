@@ -39,11 +39,11 @@ public class LobbyListener implements ServerListener {
         clients.remove(client);
     }
 
-    private LobbyMsg.ListMsg roomListing() {
+    private LobbyMsg.Listing roomListing() {
         List<RoomData> data = new ArrayList<>();
         for(RoomListener room : rooms)
             data.add(new RoomData(room.getName(), room.getRoomState().name(), room.getBoardSize()));
-        return new LobbyMsg.ListMsg(data);
+        return new LobbyMsg.Listing(data);
     }
 
     public void broadcastRoomUpdate() {
@@ -73,8 +73,8 @@ public class LobbyListener implements ServerListener {
                 break;
 
             case CREATE:
-                String          toCreate = ((LobbyMsg.CreateMessage) lobbyMessage).roomName;
-                Board.BoardSize size     = ((LobbyMsg.CreateMessage) lobbyMessage).size;
+                String          toCreate = ((LobbyMsg.Create) lobbyMessage).roomName;
+                Board.BoardSize size     = ((LobbyMsg.Create) lobbyMessage).size;
 
                 for(RoomListener room : rooms) {
                     if(room.getName().equals(toCreate)) {
@@ -90,12 +90,26 @@ public class LobbyListener implements ServerListener {
                 break;
 
             case JOIN:
-                String toJoin = ((LobbyMsg.JoinMsg) lobbyMessage).roomName;
+                String toJoin = ((LobbyMsg.Join) lobbyMessage).roomName;
 
                 for(RoomListener room : rooms) {
                     if(room.getName().equals(toJoin)) {
                         if(room.clientConnected(client))
                             clients.remove(client);
+                        return;
+                    }
+                }
+
+                client.sendMessage(new LobbyMsg(LobbyMsg.Type.ROOM_NOT_FOUND));
+                break;
+
+            case SPECTATE:
+                String toSpectate = ((LobbyMsg.Spectate) lobbyMessage).roomName;
+
+                for(RoomListener room : rooms) {
+                    if(room.getName().equals(toSpectate)) {
+                        room.joinSpectator(client);
+                        clients.remove(client);
                         return;
                     }
                 }

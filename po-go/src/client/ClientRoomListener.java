@@ -5,10 +5,13 @@ import go.GameplayManager;
 import go.ReasonMoveImpossible;
 import go.Stone;
 import javafx.application.Platform;
+import shared.LobbyMsg;
 import shared.Message;
-import util.Pair;
+import shared.RoomEvent;
+import shared.RoomMsg;
 
 import java.util.Date;
+import java.util.List;
 import java.util.Optional;
 
 import static go.GameLogic.gameLogic;
@@ -17,18 +20,23 @@ import static go.GameLogic.gameLogic;
  * Listener obsugujacy pokoj po stronie gracza
  */
 public class ClientRoomListener implements ClientListener {
-    private Client client;
-    private RoomGUI rg;
+    private final Client client;
+    private final RoomGUI rg;
 
-    private Stone myColor;
+    private final Stone myColor;
 
-    GameplayManager manager;
+    final GameplayManager manager;
     private boolean gameStarted = false;
     private boolean gameInterrupted = false;
-    Date start;
 
+    private final boolean spectator;
+
+    /**
+     * Tworz listener dla gracza
+     */
     ClientRoomListener(RoomGUI rg, Client client, Stone color, Board.BoardSize size) {
-        System.out.println("### ClientRoomListenerCreated");
+        System.out.println("### Listener for player");
+        spectator = false;
         this.rg = rg;
         this.client = client;
         client.setListener(this);
@@ -36,86 +44,117 @@ public class ClientRoomListener implements ClientListener {
         manager = new GameplayManager(size, 6.5);
     }
 
-    Stone getColor() { return myColor; }
+    /**
+     * Tworzy listener dla spectatora
+     */
+    ClientRoomListener(RoomGUI rg, Client client, Board.BoardSize size, List<GameplayManager.Move> moves, List<RoomEvent> events)  {
+        System.out.println("### Listener for spectator");
+        spectator = true;
+        this.rg = rg;
+        this.client = client;
+        client.setListener(this);
+        this.myColor = null;
+        manager = new GameplayManager(size, 6.5);
+        moves.forEach(manager::registerMove);
+        System.out.println("Spectator joined: " + moves.size() + " " + events.size());
+        moves.forEach(System.out::println);
+        Platform.runLater(() -> events.forEach(rg::addMessage));
+    }
 
-    Board getBoard() { return manager.getBoard(); }
+    synchronized int getTurnCount() { return manager.getHistorySize(); }
 
-    boolean myTurn() {
+    synchronized boolean isSpectator() { return spectator; }
+
+    synchronized Stone getColor() { return myColor; }
+
+    synchronized Board getBoard() { return manager.getBoard(); }
+
+    synchronized boolean myTurn() {
         return gameStarted && !gameInterrupted && manager.inProgress() && manager.nextTurn().equals(myColor);
     }
 
-    boolean wasInterruped() { return gameInterrupted; }
+    synchronized boolean wasInterruped() { return gameInterrupted; }
 
     private synchronized void makeMyMove(GameplayManager.Move move) {
         manager.registerMove(move);
-        client.sendMessage(move.toString());
+        client.sendMessage(new RoomMsg.Move(move));
     }
 
     @Override
-    public void receivedInput(Message message) {
+    public synchronized void receivedInput(Message message) {
         String msg = message.msg;
 
-        if (msg.startsWith("list")) {
-            System.out.println("Received an unsolicited room listing");
-        } else if (msg.startsWith("GAME_BEGINS")) {
-            gameStarted = true;
-            start = new Date();
+        if(!(message instanceof RoomMsg)) {
+            if(message instanceof LobbyMsg && ((LobbyMsg) message).type == LobbyMsg.Type.LOBBY_JOINED) {
+                rg.returnToLobby();
+            } else {
+                System.out.println("Unrecognized message " + message.msg);
+            }
+            return;
+        }
 
-            Platform.runLater(() -> rg.addMessage("The game begins, you are " + myColor.pictogram, start));
-            Sounds.playSound("dingdong");
-        } else if (msg.startsWith("GAME_FINISHED")) {
-            String[] parts = msg.split(" ");
-            Platform.runLater(() -> rg.addMessage((parts[1].equals(myColor.toString()) ? myColor.pictogram : myColor.opposite.pictogram) + " won", start));
+        RoomMsg roomMsg = (RoomMsg) message;
 
-        } else if (msg.startsWith("MOVE_ACCEPTED")) {
-            System.out.println("# move was accepted");
+        switch (roomMsg.type) {
+            case GAME_BEGINS:
+                gameStarted = true;
 
-        } else if (msg.startsWith("MOVE_REJECTED")) {
-            System.out.println("# move was rejected"); // TODO reason
-            Platform.runLater(() -> rg.addMessage("ERROR: move rejected by the server", start));
+                //Platform.runLater(() -> rg.addMessage("The game begins, you are " + myColor.pictogram, start));
 
-        } else if (msg.startsWith("OPPONENT_DISCONNECTED")) {
-            gameInterrupted = true;
-            Platform.runLater(() -> rg.addMessage(myColor.pictogram + " has disconnected", start));
+                Sounds.playSound("dingdong");
+                break;
 
-        } else if (msg.startsWith("MOVE ") && msg.split(" ").length == 3) { // MOVE Player PASS
-            assert msg.split(" ")[1] == myColor.opposite.toString();
-            Optional<ReasonMoveImpossible> reason = manager.registerMove(new GameplayManager.Pass(myColor.opposite));
-            Platform.runLater(() -> rg.addMessage(myColor.opposite.pictogram + " has passed their turn", start));
-            Sounds.playSound("pass");
-            assert reason.isEmpty();
+            case GAME_FINISHED:
+                //Platform.runLater(() -> rg.addMessage( ((RoomMsg.GameFinished)roomMsg).result.winner + " won", start));
+                break;
 
-        } else if (msg.startsWith("MOVE ") && msg.split(" ").length == 4) { // MOVE Player 1 2
-            String[] parts = msg.split(" ");
-            int x = Integer.parseInt(parts[2]), y = Integer.parseInt(parts[3]);
-            Platform.runLater(() -> rg.addMessage(myColor.opposite.pictogram + " places stone at " + getBoard().positionToNumeral(new Pair<>(y, x)), start));
-            Optional<ReasonMoveImpossible> reason = manager.registerMove(new GameplayManager.StonePlacement(myColor.opposite, x, y));
-            Sounds.playSound("stone");
-            assert reason.isEmpty();
+            case MOVE_ACCEPTED:
+                break;
 
-        } else if (msg.startsWith("MOVE ")) {
-            assert false;
+            case MOVE_REJECTED:
+                //Platform.runLater(() -> rg.addMessage("ERROR: move rejected by the server", start));
+                break;
 
-        } else if (msg.equals("LOBBY_JOINED")) {
+            case OPPONENT_DISCONNECTED:
+                gameInterrupted = true;
+                //Platform.runLater(() -> rg.addMessage(myColor.pictogram + " has disconnected", start));
+                break;
 
-            rg.returnToLobby();
+            case MOVE:
+                GameplayManager.Move move = ((RoomMsg.Move) roomMsg).move;
+                Optional<ReasonMoveImpossible> reason = manager.registerMove(move);
+                assert reason.isEmpty();
 
-        } else if (msg.equals("OPPONENT_JOINED")) {
-            Platform.runLater(() -> rg.addMessage(myColor.opposite.pictogram + " has joined the game", null));
+                if(move instanceof GameplayManager.Pass) {
+                    //Platform.runLater(() -> rg.addMessage(myColor.opposite.pictogram + " has passed their turn", start));
+                    Sounds.playSound("pass");
+                } else {
 
-        } else if(msg.startsWith("chat")) {
-            String chat = msg.split(";")[1];
-            Platform.runLater(() -> rg.addMessage("("+myColor.opposite.pictogram + "): " + chat, start));
+                    //Platform.runLater(() -> rg.addMessage(myColor.opposite.pictogram + " places stone at " +
+                            //getBoard().positionToNumeral(((GameplayManager.StonePlacement) move).position), start));
+                    Sounds.playSound("stone");
+                }
+                break;
 
-        } else {
-            System.out.println("UNRECOGNIZED MSG: " + msg);
-            Platform.runLater(() -> rg.addMessage("UNRECOGNIZED MESSAGE: " + msg, null));
+            case OPPONENT_JOINED:
+                //Platform.runLater(() -> rg.addMessage(myColor.opposite.pictogram + " has joined the game", null));
+                break;
+
+            case CHAT:
+                RoomMsg.Chat chatmsg = (RoomMsg.Chat) roomMsg;
+                //Platform.runLater(() -> rg.addMessage("(" + chatmsg.player + "): " + chatmsg.msg, start));
+                break;
+
+            case ADD_EVENT:
+                Platform.runLater(() -> rg.addMessage(((RoomMsg.AddEvent)roomMsg).event));
+                //System.out.println("Add event!");
+                break;
+
+            default:
+                System.out.println("UNRECOGNIZED MSG: " + roomMsg.msg);
         }
 
         Platform.runLater(() -> {
-            boolean changeToNew = ((int)rg.historySlider.getValue()) == manager.getHistorySize() - 1;
-            rg.historyCount.set(manager.getHistorySize());
-            if(changeToNew) rg.historySlider.setValue(manager.getHistorySize());
             rg.renderBoard();
         });
     }
@@ -123,10 +162,10 @@ public class ClientRoomListener implements ClientListener {
     /**
      * called from the GUI thread
      */
-    void attemptedToPass() {
+    synchronized void attemptedToPass() {
         if (myTurn()) {
             makeMyMove(new GameplayManager.Pass(myColor));
-            rg.addMessage("You (" + myColor.pictogram + ") passed", start);
+            //rg.addMessage("You (" + myColor.pictogram + ") passed", start);
             Sounds.playSound("pass");
         } else {
             handleAttemptToSkipTurn();
@@ -136,14 +175,14 @@ public class ClientRoomListener implements ClientListener {
     /**
      * called from the GUI thread
      */
-    void attemptedToMakeMove(int x, int y) {
+    synchronized void attemptedToMakeMove(int x, int y) {
         if (myTurn()) {
             Optional<ReasonMoveImpossible> reason = gameLogic.movePossible(getBoard(), x, y, myColor);
             if (reason.isPresent()) {
                 System.out.println("Move impossible: " + reason.get());
             } else {
                 makeMyMove(new GameplayManager.StonePlacement(myColor, x, y));
-                rg.addMessage("You (" + myColor.pictogram + ") moved to " + getBoard().positionToNumeral(new Pair<>(y, x)), start); // nie ruszać kolejności
+                //rg.addMessage("You (" + myColor.pictogram + ") moved to " + getBoard().positionToNumeral(new Pair<>(y, x)), start); // nie ruszać kolejności
                 rg.renderBoard();
                 Sounds.playSound("stone");
             }
@@ -155,28 +194,26 @@ public class ClientRoomListener implements ClientListener {
     /**
      * Sends chat message
      */
-    void sendChat(String msg) {
-        if(msg == null || msg.length()==0) return;
-        Platform.runLater(() -> rg.addMessage("("+myColor.pictogram+"): " + msg, start));
-        client.sendMessage("chat;"+msg);
+    synchronized void sendChat(String msg) {
+        client.sendMessage(new RoomMsg.Chat(myColor, msg));
     }
 
-    private void handleAttemptToSkipTurn() { // TODO
+    private synchronized void handleAttemptToSkipTurn() { // TODO
         System.out.println("Not your turn!");
     }
 
-    void sendQuitRequest() {
-        client.sendMessage("quit");
+    synchronized void sendQuitRequest() {
+        client.sendMessage(new RoomMsg(RoomMsg.Type.QUIT));
     }
 
     @Override
-    public void disconnected() {
+    public synchronized void disconnected() {
         SceneManager.loadConnectionScreen();
     }
 
     @Override
-    public void couldNotConnect() {}
+    public synchronized void couldNotConnect() {}
 
     @Override
-    public void connectedToServer() {}
+    public synchronized void connectedToServer() {}
 }

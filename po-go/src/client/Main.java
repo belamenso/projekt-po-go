@@ -18,7 +18,7 @@ public class Main extends Application {
         window.setMinHeight(480);
 
         Client client = new Client();
-        Scene scene = new Scene(new Pane(), 800, 600);
+        Scene scene = new Scene(new Pane(), 640, 480);
         scene.getStylesheets().add(getClass().getResource("style.css").toString());
         scene.setOnKeyPressed(keyEvent -> {
             if(keyEvent.getCode().equals(KeyCode.M)) {

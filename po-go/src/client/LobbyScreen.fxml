@@ -17,6 +17,7 @@
             <TextField fx:id="nameField" minWidth="150.0" onAction="#createRoom" promptText="Room name" />
             <ChoiceBox fx:id="sizeDropdown" prefWidth="80.0" />
             <Button fx:id="createButton" mnemonicParsing="false" onAction="#createRoom" text="Create Room" />
+            <Button mnemonicParsing="false" onAction="#spectateRoom" text="Spectate" />
             <Button mnemonicParsing="false" onAction="#update" text="Refresh" />
          </children>
          <padding>

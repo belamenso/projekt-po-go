@@ -6,7 +6,10 @@ import go.ReasonMoveImpossible;
 import go.Stone;
 import shared.LobbyMsg;
 import shared.Message;
+import shared.RoomEvent;
+import shared.RoomMsg;
 
+import java.util.Date;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Optional;
@@ -18,24 +21,29 @@ import java.util.Optional;
  */
 public class RoomListener implements ServerListener {
     private List<ServerClient> clients;
+    private List<ServerClient> spectators;
     private String name;
     private LobbyListener lobby;
 
     private GameplayManager manager;
     private boolean gameInterrupted = false;
 
+    private List<RoomEvent> events;
+    private Date start;
+
     RoomListener(String name, Board.BoardSize size, LobbyListener lobby) {
         this.name = name;
         this.lobby = lobby;
+        start = null;
+        events = new LinkedList<>();
         clients = new LinkedList<>();
+        spectators = new LinkedList<>();
         manager = new GameplayManager(size, 6.5);
     }
 
     /**
      * @return nazwa pokoju
-     * TODO ona chyba nie powinna być dowolna, może coś bez spacji czy coś?
      */
-    @SuppressWarnings("WeakerAccess")
     public String getName() { return name; }
 
     /**
@@ -46,7 +54,7 @@ public class RoomListener implements ServerListener {
     /**
      * @return Rozmiar planszy do Go w rozgrywce
      */
-    public int getBoardSize() { return manager.getBoard().getSize(); }
+    int getBoardSize() { return manager.getBoard().getSize(); }
 
     /**
      * @return może się zdarzyć, że klient i serwer mają różne implementacje zasad gry
@@ -63,7 +71,7 @@ public class RoomListener implements ServerListener {
         WaitingForWhite;
     }
 
-    public RoomState getRoomState() {
+    public synchronized RoomState getRoomState() {
         // kolejność sprawdzania jest ważna
         if (gameInterrupted) return RoomState.GameInterrupted;
         if (manager.finished()) return RoomState.GameFinished;
@@ -77,14 +85,32 @@ public class RoomListener implements ServerListener {
     }
 
     /**
-     * @return TODO Późniejsza wersja będzie to implementowała
+     * @return Aktualna liczba spectatorów
      */
-    public int numberOfSpectators() { return 0; }
+    public synchronized int numberOfSpectators() { return spectators.size(); }
 
     /**
      * @return TODO Późniejsza wersja będzie to implementowała
      */
-    public int durationInSeconds() { return 0; }
+    public synchronized int durationInSeconds() { return 0; }
+
+
+
+    private synchronized void registerEvent(String event) {
+        RoomEvent toAdd;
+        if (start == null) {
+            events.add(toAdd = new RoomEvent(event, "", manager.getHistorySize()));
+        } else {
+            long interval = (new Date().getTime() - start.getTime()) / 1000;
+            String seconds = Long.toString(interval % 60);
+            if (seconds.length() == 1) seconds = "0" + seconds;
+            String timestamp = interval / 60 + ":" + seconds;
+            events.add(toAdd = new RoomEvent(event, timestamp, manager.getHistorySize()));
+        }
+
+        clients.forEach(c -> c.sendMessage(new RoomMsg.AddEvent(toAdd)));
+        spectators.forEach(s -> s.sendMessage(new RoomMsg.AddEvent(toAdd)));
+    }
 
     /**
      * Pokój nie akceptuje już żadnych graczy w stanie interrupted.
@@ -94,7 +120,6 @@ public class RoomListener implements ServerListener {
      */
     @Override
     public synchronized boolean clientConnected(ServerClient client) {
-        // TODO spectators
         if (clients.size() >= 2 || gameInterrupted || manager.finished()) {
             client.sendMessage(new LobbyMsg(LobbyMsg.Type.CONNECTION_REFUSED)); // -> ClientLobbyListener // TODO Reason
             return false;
@@ -104,106 +129,128 @@ public class RoomListener implements ServerListener {
         if (clients.size() == 0) {
             client.setListener(this);
             clients.add(client);
+
+            client.sendMessage(new LobbyMsg.Connected(Stone.Black, manager.getSize())); // -> ClientLobbyListener
+
+            registerEvent(Stone.Black.pictogram + " joined the game");
+
             assert getRoomState() == RoomState.WaitingForWhite;
-            client.sendMessage(new LobbyMsg.ConnectedMsg(Stone.Black, manager.getSize())); // -> ClientLobbyListener
-            lobby.broadcastRoomUpdate(); // !!!!!! uwaga na kolejność, roomState zależy od zawartości clients !!!
         } else if (clients.size() == 1) {
             client.setListener(this);
             clients.add(client);
-            client.sendMessage(new LobbyMsg.ConnectedMsg(Stone.White, manager.getSize())); // -> ClientLobbyListener
-            clients.get(0).sendMessage("OPPONENT_JOINED"); // -> ClientRoomListener
+            client.sendMessage(new LobbyMsg.Connected(Stone.White, manager.getSize())); // -> ClientLobbyListener
+            clients.get(0).sendMessage(new RoomMsg(RoomMsg.Type.OPPONENT_JOINED)); // -> ClientRoomListener
+
+            registerEvent(Stone.White.pictogram + " joined the game");
+
             assert getRoomState() == RoomState.GameInProgress;
-            lobby.broadcastRoomUpdate();
         } else {
             assert false;
         }
 
+        lobby.broadcastRoomUpdate();
+
 
         if (clients.size() >= 2) {
-            clients.forEach(c -> c.sendMessage("GAME_BEGINS"));
+            clients.forEach(c -> c.sendMessage(new RoomMsg(RoomMsg.Type.GAME_BEGINS)));
+            spectators.forEach(s -> s.sendMessage(new RoomMsg(RoomMsg.Type.GAME_BEGINS)));
+
+            start = new Date();
+            registerEvent("Game begins!");
         }
 
         return true;
     }
 
+    public synchronized void joinSpectator(ServerClient client) {
+        client.setListener(this);
+        spectators.add(client);
+
+        System.out.println(client + " joined " + this + " sending " +
+                manager.getMoveHistory().size() + " of " + manager.getHistorySize() + " movess, and " +
+                events.size() + " events");
+
+        client.sendMessage(new LobbyMsg.ConnectedSpectator(manager.getMoveHistory(), events, manager.getSize()));
+    }
+
     @Override
     public synchronized void clientDisconnected(ServerClient client) {
-        clients.removeIf(c -> c == client);
 
-        if (manager.inProgress() && !gameInterrupted) {
-            gameInterrupted = true;
-            for (ServerClient c : clients) {
-                c.sendMessage("OPPONENT_DISCONNECTED");
-                lobby.clientConnected(client);
-                lobby.broadcastRoomUpdate();
+
+        if(clients.contains(client)) {
+            Stone color = client == clients.get(0) ? Stone.White : Stone.Black;
+
+            if (manager.inProgress() && !gameInterrupted) {
+                gameInterrupted = true;
+                for (ServerClient c : clients)
+                    c.sendMessage(new RoomMsg(RoomMsg.Type.OPPONENT_DISCONNECTED));
             }
+
+            registerEvent(color.pictogram + " left the game");
+
+            lobby.broadcastRoomUpdate();
+        } else {
+            spectators.remove(client);
         }
     }
 
     @Override
     public synchronized void receivedInput(ServerClient client, Message message) {
-        String msg = message.msg;
+        if(!(message instanceof RoomMsg)) { System.out.println("Unrecognized message in " + this); return; }
 
-        if(msg.equals("quit")) {
-            /// QUITTING
+        RoomMsg roomMsg = (RoomMsg) message;
 
-            clientDisconnected(client);
-            lobby.clientConnected(client);
+        switch(roomMsg.type) {
+            case QUIT:
+                clientDisconnected(client);
+                lobby.clientConnected(client);
+                break;
 
-        } else if (msg.startsWith("MOVE ")) {
-            /// MOVES
-
-            String[] xs = msg.split(" ");
-            GameplayManager.Move move;
-
-            if (clients.size() <= 1) {
-                clients.forEach(c -> c.sendMessage("MOVE_REJECTED"));
-                return;
-            }
-
-            Stone color = clients.get(0) == client ? Stone.Black : Stone.White; // TODO ugly
-
-            if (manager.finished() || gameInterrupted) {
-                client.sendMessage("MOVE_REJECTED");
-            } else if (manager.inProgress()) {
-
-                // parse move
-                if (xs.length == 3) { // MOVE Player PASS
-                    assert xs[2].equals("PASS");
-                    move = new GameplayManager.Pass(color);
-                } else { // MOVE Player 1 4
-                    assert xs.length == 4;
-                    int pos_x = Integer.parseInt(xs[2]), pos_y = Integer.parseInt(xs[3]);
-                    move = new GameplayManager.StonePlacement(color, pos_x, pos_y);
+            case MOVE:
+                if (clients.size() <= 1) {
+                    clients.forEach(c -> c.sendMessage(new RoomMsg(RoomMsg.Type.MOVE_REJECTED)));
+                    return;
                 }
 
-                Optional<ReasonMoveImpossible> result = manager.registerMove(move);
-                if (result.isEmpty()) {
-                    client.sendMessage("MOVE_ACCEPTED");
+                GameplayManager.Move move = ((RoomMsg.Move) roomMsg).move;
 
-                    clients.forEach(c -> {
-                        if (c != client) c.sendMessage(move.toString());
-                    });
+                if (manager.finished() || gameInterrupted) {
+                    client.sendMessage(new RoomMsg(RoomMsg.Type.MOVE_REJECTED));
+                } else if (manager.inProgress()) {
 
-                    if (manager.finished()) {
-                        GameplayManager.Result gameResult = manager.result();
-                        clients.forEach(c -> c.sendMessage("GAME_FINISHED " + gameResult.winner + " "
-                                + gameResult.blackPoints + " " + gameResult.whitePoints));
+                    Optional<ReasonMoveImpossible> result = manager.registerMove(move);
+                    if (result.isEmpty()) {
+                        client.sendMessage(new RoomMsg(RoomMsg.Type.MOVE_ACCEPTED));
+
+                        clients.forEach(c -> { if(c != client) c.sendMessage(message); });
+                        spectators.forEach(s -> s.sendMessage(message));
+
+                        if (manager.finished()) {
+                            GameplayManager.Result r = manager.result();
+                            clients.forEach(c -> c.sendMessage(new RoomMsg.GameFinished(r)));
+                            spectators.forEach(s -> s.sendMessage(new RoomMsg.GameFinished(r)));
+
+                            registerEvent("Game is finished: " + manager.result().winner + " won!");
+                        }
+
+                        if(move instanceof GameplayManager.Pass) {
+                            registerEvent(move.player.pictogram + " has passed their turn");
+                        } else {
+                            registerEvent(move.player.pictogram + " places stone at " +
+                                    manager.getBoard().positionToNumeral(((GameplayManager.StonePlacement) move).position));
+                        }
+                    } else {
+                        client.sendMessage(new RoomMsg(RoomMsg.Type.MOVE_REJECTED));
                     }
-                } else {
-                    client.sendMessage("MOVE_REJECTED"); // TODO send reason
                 }
-            }
-        } else if(msg.startsWith("chat")) {
-            clients.forEach(c -> {
-                if (c != client) c.sendMessage(msg);
-            });
-        } else {
-            // UNRECOGNIZED COMMAND
+                break;
 
-            String out = this + " received unrecognized <<" + msg + ">> from <<" + client + ">>";
-            for (ServerClient c : clients)
-                c.sendMessage(out);
+            case CHAT:
+                RoomMsg.Chat msg = (RoomMsg.Chat) message;
+                registerEvent("(" + msg.player.pictogram + "): " + msg.msg);
+
+            default:
+                System.out.println("Unrecognized message: " + message.msg);
         }
     }
 

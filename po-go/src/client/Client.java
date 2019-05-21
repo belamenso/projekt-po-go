@@ -41,10 +41,11 @@ public class Client {
                             msg = (Message) inputStream.readObject();
                         } catch (ClassNotFoundException e) { e.printStackTrace(); } // Powinno byc niemożliwe
 
-                        if (msg == null) throw new IOException();
+                        if (msg == null) { throw new IOException(); }
 
                         listener.receivedInput(msg);
                     } catch (IOException ex) {
+                        //ex.printStackTrace();
                         close();
                         return;
                     }
@@ -81,16 +82,18 @@ public class Client {
         outputStream = null;
      }
 
-    void sendMessage(String msg) {
+    /*void sendMessage(String msg) {
         sendMessage(new Message(msg));
-    }
+    }*/
 
     void sendMessage(Message msg) {
         if(open) try {
+            outputStream.reset();
             outputStream.writeObject(msg);
             outputStream.flush();
         } catch (IOException e) {
             e.printStackTrace();
+            close();
         }
     }
 }

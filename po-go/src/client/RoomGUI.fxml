@@ -13,7 +13,7 @@
          <top>
             <HBox alignment="CENTER_LEFT" prefWidth="200.0" spacing="10.0" BorderPane.alignment="CENTER">
                <children>
-                  <Button mnemonicParsing="false" onAction="#passButtonPressed" text="Pass" />
+                  <Button fx:id="passButton" mnemonicParsing="false" onAction="#passButtonPressed" text="Pass" />
                   <Button mnemonicParsing="false" onAction="#quitButtonPressed" text="Quit" />
                </children>
                <BorderPane.margin>
@@ -28,7 +28,7 @@
             <HBox prefWidth="240.0" spacing="10.0" BorderPane.alignment="CENTER">
                <children>
                   <TextField fx:id="chatField" onAction="#sendChat" />
-                  <Button minWidth="50.0" mnemonicParsing="false" onAction="#sendChat" prefWidth="50.0" text="Send" />
+                  <Button fx:id="sendButton" minWidth="50.0" mnemonicParsing="false" onAction="#sendChat" prefWidth="50.0" text="Send" />
                </children>
                <padding>
                   <Insets top="10.0" />
@@ -51,9 +51,9 @@
          <children>
             <Label fx:id="infoLabel" text="Info o ruchach itp" />
             <Region HBox.hgrow="ALWAYS" />
-            <Label alignment="TOP_RIGHT" text="Captured:" />
+            <Label fx:id="captureLabelA" alignment="TOP_RIGHT" text="Captured:" />
             <Label fx:id="capturedLabel" text="0" />
-            <Label text="Lost:" />
+            <Label fx:id="captureLabelB" text="Lost:" />
             <Label fx:id="lostLabel" text="0" />
          </children>
          <padding>
@@ -65,9 +65,9 @@
       <VBox spacing="15.0" BorderPane.alignment="CENTER">
          <children>
             <Pane fx:id="boardPane" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="300.0" minWidth="300.0" prefHeight="500.0" prefWidth="500.0" />
-            <HBox alignment="CENTER_LEFT" minWidth="40.0" prefWidth="40.0">
+            <HBox alignment="CENTER_LEFT" minWidth="40.0" prefWidth="40.0" spacing="15.0">
                <children>
-                  <Slider fx:id="historySlider" />
+                  <Slider fx:id="historySlider" blockIncrement="1.0" majorTickUnit="1.0" max="1.0" min="1.0" minorTickCount="0" showTickMarks="true" snapToTicks="true" />
                   <Label fx:id="current" text="Label" />
                </children>
                <VBox.margin>

@@ -28,12 +28,12 @@ public class Server {
         s.close();
     }
 
-    private ServerListener defaultListener;
+    ServerListener defaultListener;
     private String ip;
     private int port;
-    private boolean open = true;
+    boolean open = true;
     private ServerSocket serverSocket;
-    private List<Socket> clients = new LinkedList<>();
+    List<ServerClient> clients = new LinkedList<>();
 
     Server(int port, ServerListener defaultListener) {
         this.defaultListener = defaultListener;
@@ -46,9 +46,10 @@ public class Server {
             Thread st = new Thread(() -> {
                 while(open){
                     try {
-                        createClientThread();
+                        Socket socket = serverSocket.accept();
+                        ServerClient client = new ServerClient(socket, this);
                     } catch(Exception e) {
-                        e.printStackTrace();
+                        //e.printStackTrace();
                     }
                 }
             });
@@ -60,65 +61,11 @@ public class Server {
         } catch(IOException e){ e.printStackTrace(); }
     }
 
-    private void createClientThread() throws IOException {
-        final Socket socket = serverSocket.accept();
-        Thread clientThread = new Thread(() -> {
-            try {
-                clients.add(socket);
-
-                ObjectInputStream inputStream = new ObjectInputStream(socket.getInputStream());
-                ObjectOutputStream out = new ObjectOutputStream(socket.getOutputStream());
-                ServerClient client = new ServerClient(socket.getInetAddress(), socket.getPort(), out, defaultListener);
-                client.listener.clientConnected(client);
-                Thread.currentThread().setName("Thread for " + client);
-
-                while (open) {
-                    try {
-                        Message msg = null;
-                        try {
-                            msg = (Message) inputStream.readObject();
-                        } catch (ClassNotFoundException e) { e.printStackTrace(); } // Powinno byc niemożliwe
-
-                        if (msg == null) throw new IOException();
-
-                        client.listener.receivedInput(client, msg);
-
-                    } catch (IOException e) {
-                        client.listener.clientDisconnected(client);
-
-                        try {
-                            if (!socket.isClosed()) {
-                                socket.shutdownOutput();
-                                socket.close();
-                            }
-                        } catch (Exception e2) {
-                            e2.printStackTrace();
-                        }
-
-                        clients.remove(socket);
-
-                        return;
-                    }
-                }
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
-
-            try { socket.close(); } catch (Exception e) { e.printStackTrace(); }
-
-            clients.remove(socket);
-        });
-
-        clientThread.setDaemon(true);
-        clientThread.start();
-    }
-
     private void close() {
         open = false;
         try{ serverSocket.close(); } catch(IOException e){ e.printStackTrace(); }
 
-        for(Socket s : clients)
-            try{ s.close(); } catch(Exception e){ e.printStackTrace(); }
+        for(ServerClient s : clients) s.close();
 
         clients.clear();
         clients = null;

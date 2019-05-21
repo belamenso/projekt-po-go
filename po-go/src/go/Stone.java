@@ -1,9 +1,11 @@
 package go;
 
+import java.io.Serializable;
+
 /**
  * Klasa reprezentująca kolor kamienia. Nie ma kamieni pustych, gra reprezentuje je jako Optional.empty()
  */
-public enum Stone {
+public enum Stone implements Serializable {
     White, Black;
 
     /**

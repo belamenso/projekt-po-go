@@ -1,14 +1,17 @@
 package client;
 
 import go.Board;
+import go.GameplayManager;
 import go.Stone;
 import javafx.application.Platform;
 import javafx.beans.property.ReadOnlyDoubleProperty;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
+import shared.RoomEvent;
 
 import java.io.IOException;
+import java.util.List;
 
 /**
  * Zarządza ładowaniem scen i zmienianiem listenerów klienta
@@ -70,6 +73,22 @@ class SceneManager {
             e.printStackTrace();
         }
     }
+
+    static void loadRoomScreenAsSpectator(Board.BoardSize size, List<GameplayManager.Move> moves, List<RoomEvent> events) {
+        try {
+            FXMLLoader loader = loadFXML("RoomGUI.fxml");
+            Parent root = loader.load();
+            RoomGUI controller = loader.getController();
+
+            ClientRoomListener crl = new ClientRoomListener(controller, client, size, moves, events);
+            controller.setup(crl);
+
+            Platform.runLater(() -> scene.setRoot(root));
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
 
     private static FXMLLoader loadFXML(String name) {
         return new FXMLLoader(SceneManager.class.getResource(name));
