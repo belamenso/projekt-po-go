@@ -17,12 +17,13 @@ import java.util.List;
 import java.util.ResourceBundle;
 
 public class LobbyScreen implements Initializable {
-    ClientLobbyListener cl;
+    private ClientLobbyListener cl;
 
     @FXML private TableView<RoomData> rooms;
     @FXML private TextField nameField;
     @FXML private Label messageLabel;
     @FXML private ChoiceBox<String> sizeDropdown;
+    @FXML private ChoiceBox<String> colorDropdown;
 
     public void setup(ClientLobbyListener cl) {
         this.cl = cl;
@@ -53,14 +54,6 @@ public class LobbyScreen implements Initializable {
         }
 
         cl.sendCreateRequest(name, size);
-    }
-
-
-
-    @FXML
-    public void joinRoom() {
-        String name = rooms.getSelectionModel().getSelectedItem().getName();
-        cl.sendJoinRoomRequest(name);
     }
 
     @FXML
@@ -98,23 +91,44 @@ public class LobbyScreen implements Initializable {
         sizeColumn.setMinWidth(100);
         sizeColumn.setCellValueFactory(new PropertyValueFactory<>("size"));
 
+        TableColumn<RoomData, Integer> specColumn = new TableColumn<>("Spectators");
+        specColumn.setMinWidth(100);
+        specColumn.setCellValueFactory(new PropertyValueFactory<>("spectatorNo"));
+
         rooms.setRowFactory(tv -> {
             TableRow<RoomData> row = new TableRow<>();
             row.setOnMouseClicked(event -> {
                 if (event.getClickCount() == 2 && !row.isEmpty()) {
                     RoomData rowData = row.getItem();
-                    cl.sendJoinRoomRequest(rowData.name);
+                    switch (rowData.getState()) {
+                        case "EmptyRoom":
+                            cl.sendJoinRoomRequest(rowData.name, getColorSelection());
+                            break;
+                        case "WaitingForWhite":
+                            cl.sendJoinRoomRequest(rowData.name, Stone.White);
+                            break;
+                        default:
+                            cl.sendJoinRoomRequest(rowData.name, Stone.Black);
+                    }
+
                 }
             });
             return row;
         });
 
         rooms.getColumns().clear();
-        rooms.getColumns().addAll(nameColumn, stateColumn, sizeColumn);
+        rooms.getColumns().addAll(nameColumn, stateColumn, sizeColumn, specColumn);
         rooms.setPlaceholder(new Label("No active rooms available"));
 
         sizeDropdown.getItems().addAll("9x9", "13x13", "19x19");
         sizeDropdown.getSelectionModel().clearAndSelect(0);
+
+        colorDropdown.getItems().addAll("Black", "White");
+        colorDropdown.getSelectionModel().clearAndSelect(0);
+    }
+
+    Stone getColorSelection() {
+        return colorDropdown.getValue().equals("White") ? Stone.White : Stone.Black;
     }
 
     void returnToConnecting() {

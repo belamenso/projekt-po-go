@@ -21,6 +21,8 @@ import java.util.Optional;
  */
 public class RoomListener implements ServerListener {
     private List<ServerClient> clients;
+    private ServerClient blackPlayer;
+    private ServerClient whitePlayer;
     private List<ServerClient> spectators;
     private String name;
     private LobbyListener lobby;
@@ -39,6 +41,8 @@ public class RoomListener implements ServerListener {
         clients = new LinkedList<>();
         spectators = new LinkedList<>();
         manager = new GameplayManager(size, 6.5);
+        whitePlayer = null;
+        blackPlayer = null;
     }
 
     /**
@@ -67,7 +71,7 @@ public class RoomListener implements ServerListener {
         GameInterrupted,
         GameFinished,
         EmptyRoom,
-        WaitingForBlack, // TODO późniejsza wersja może pozwolić na wybór koloru
+        WaitingForBlack,
         WaitingForWhite;
     }
 
@@ -76,7 +80,7 @@ public class RoomListener implements ServerListener {
         if (gameInterrupted) return RoomState.GameInterrupted;
         if (manager.finished()) return RoomState.GameFinished;
         if (clients.size() == 0) return RoomState.EmptyRoom;
-        if (clients.size() == 1) return RoomState.WaitingForWhite; // TODO wybór koloru
+        if (clients.size() == 1) return whitePlayer == null ? RoomState.WaitingForWhite : RoomState.WaitingForBlack;
         if (manager.inProgress()) return RoomState.GameInProgress;
         else {
             assert false;
@@ -94,8 +98,6 @@ public class RoomListener implements ServerListener {
      */
     public synchronized int durationInSeconds() { return 0; }
 
-
-
     private synchronized void registerEvent(String event) {
         RoomEvent toAdd;
         if (start == null) {
@@ -112,46 +114,34 @@ public class RoomListener implements ServerListener {
         spectators.forEach(s -> s.sendMessage(new RoomMsg.AddEvent(toAdd)));
     }
 
+    ServerClient getPlayer(Stone color) { return color == Stone.White ? whitePlayer : blackPlayer; }
+
     /**
      * Pokój nie akceptuje już żadnych graczy w stanie interrupted.
      * Pierwszy gracz w pokoju zawsze jest czasny (TODO)
      * Drugi gracz zawsze biały
-     * Chwilowo pokoje wcale nie obsługują spectators (TODO)
      */
-    @Override
-    public synchronized boolean clientConnected(ServerClient client) {
-        if (clients.size() >= 2 || gameInterrupted || manager.finished()) {
+    synchronized boolean joinPlayer(ServerClient client, Stone color) {
+        if (clients.size() >= 2 || gameInterrupted || manager.finished() || getPlayer(color) != null) {
             client.sendMessage(new LobbyMsg(LobbyMsg.Type.CONNECTION_REFUSED)); // -> ClientLobbyListener // TODO Reason
             return false;
         }
 
-        // not interrupted and game in progress
-        if (clients.size() == 0) {
-            client.setListener(this);
-            clients.add(client);
+        clients.forEach(c -> c.sendMessage(new RoomMsg(RoomMsg.Type.OPPONENT_JOINED))); // -> ClientRoomListener
 
-            client.sendMessage(new LobbyMsg.Connected(Stone.Black, manager.getSize())); // -> ClientLobbyListener
+        if(color == Stone.White) whitePlayer = client;
+        else blackPlayer = client;
 
-            registerEvent(Stone.Black.pictogram + " joined the game");
+        client.setListener(this);
+        clients.add(client);
 
-            assert getRoomState() == RoomState.WaitingForWhite;
-        } else if (clients.size() == 1) {
-            client.setListener(this);
-            clients.add(client);
-            client.sendMessage(new LobbyMsg.Connected(Stone.White, manager.getSize())); // -> ClientLobbyListener
-            clients.get(0).sendMessage(new RoomMsg(RoomMsg.Type.OPPONENT_JOINED)); // -> ClientRoomListener
+        client.sendMessage(new LobbyMsg.Connected(color, manager.getSize())); // -> ClientLobbyListener
 
-            registerEvent(Stone.White.pictogram + " joined the game");
-
-            assert getRoomState() == RoomState.GameInProgress;
-        } else {
-            assert false;
-        }
+        registerEvent(color.pictogram + " joined the game");
 
         lobby.broadcastRoomUpdate();
 
-
-        if (clients.size() >= 2) {
+        if (clients.size() == 2) {
             clients.forEach(c -> c.sendMessage(new RoomMsg(RoomMsg.Type.GAME_BEGINS)));
             spectators.forEach(s -> s.sendMessage(new RoomMsg(RoomMsg.Type.GAME_BEGINS)));
 
@@ -162,7 +152,7 @@ public class RoomListener implements ServerListener {
         return true;
     }
 
-    public synchronized void joinSpectator(ServerClient client) {
+    synchronized void joinSpectator(ServerClient client) {
         client.setListener(this);
         spectators.add(client);
 
@@ -171,14 +161,19 @@ public class RoomListener implements ServerListener {
                 events.size() + " events");
 
         client.sendMessage(new LobbyMsg.ConnectedSpectator(manager.getMoveHistory(), events, manager.getSize()));
+
+        lobby.broadcastRoomUpdate();
     }
 
     @Override
     public synchronized void clientDisconnected(ServerClient client) {
-
-
         if(clients.contains(client)) {
-            Stone color = client == clients.get(0) ? Stone.White : Stone.Black;
+            Stone color = client == whitePlayer ? Stone.White : Stone.Black;
+
+            clients.remove(client);
+
+            if(client == whitePlayer) whitePlayer = null;
+            if(client == blackPlayer) blackPlayer = null;
 
             if (manager.inProgress() && !gameInterrupted) {
                 gameInterrupted = true;
@@ -188,10 +183,11 @@ public class RoomListener implements ServerListener {
 
             registerEvent(color.pictogram + " left the game");
 
-            lobby.broadcastRoomUpdate();
         } else {
             spectators.remove(client);
         }
+
+        lobby.broadcastRoomUpdate();
     }
 
     @Override
@@ -217,7 +213,6 @@ public class RoomListener implements ServerListener {
                 if (manager.finished() || gameInterrupted) {
                     client.sendMessage(new RoomMsg(RoomMsg.Type.MOVE_REJECTED));
                 } else if (manager.inProgress()) {
-
                     Optional<ReasonMoveImpossible> result = manager.registerMove(move);
                     if (result.isEmpty()) {
                         client.sendMessage(new RoomMsg(RoomMsg.Type.MOVE_ACCEPTED));
@@ -225,19 +220,19 @@ public class RoomListener implements ServerListener {
                         clients.forEach(c -> { if(c != client) c.sendMessage(message); });
                         spectators.forEach(s -> s.sendMessage(message));
 
+                        if(move instanceof GameplayManager.Pass) {
+                            registerEvent(move.player.pictogram + " has passed their turn");
+                        } else {
+                            registerEvent(move.player.pictogram + " places stone at " +
+                                    manager.getBoard().positionToNumeral(((GameplayManager.StonePlacement) move).position));
+                        }
+
                         if (manager.finished()) {
                             GameplayManager.Result r = manager.result();
                             clients.forEach(c -> c.sendMessage(new RoomMsg.GameFinished(r)));
                             spectators.forEach(s -> s.sendMessage(new RoomMsg.GameFinished(r)));
 
                             registerEvent("Game is finished: " + manager.result().winner + " won!");
-                        }
-
-                        if(move instanceof GameplayManager.Pass) {
-                            registerEvent(move.player.pictogram + " has passed their turn");
-                        } else {
-                            registerEvent(move.player.pictogram + " places stone at " +
-                                    manager.getBoard().positionToNumeral(((GameplayManager.StonePlacement) move).position));
                         }
                     } else {
                         client.sendMessage(new RoomMsg(RoomMsg.Type.MOVE_REJECTED));
@@ -253,6 +248,9 @@ public class RoomListener implements ServerListener {
                 System.out.println("Unrecognized message: " + message.msg);
         }
     }
+
+    @Override
+    public synchronized boolean clientConnected(ServerClient client) { return false; }
 
     @Override
     public synchronized void serverClosed() {

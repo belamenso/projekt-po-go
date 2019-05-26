@@ -17,6 +17,7 @@ public class Server {
     public static void main(String[] args) {
         Server s = new Server(33107, new LobbyListener());
         System.out.println("The server started at " + s.ip + " : " + s.port);
+        System.out.println("Type 'close' to close the server");
 
         Scanner sc = new Scanner(System.in);
         while(sc.hasNext()) {
@@ -47,7 +48,7 @@ public class Server {
                 while(open){
                     try {
                         Socket socket = serverSocket.accept();
-                        ServerClient client = new ServerClient(socket, this);
+                        ServerClient.createNewClient(socket, this);
                     } catch(Exception e) {
                         //e.printStackTrace();
                     }

@@ -1,5 +1,6 @@
 package server;
 
+import go.Stone;
 import shared.LobbyMsg;
 import shared.RoomData;
 import go.Board;
@@ -42,7 +43,7 @@ public class LobbyListener implements ServerListener {
     private LobbyMsg.Listing roomListing() {
         List<RoomData> data = new ArrayList<>();
         for(RoomListener room : rooms)
-            data.add(new RoomData(room.getName(), room.getRoomState().name(), room.getBoardSize()));
+            data.add(new RoomData(room.getName(), room.getRoomState().name(), room.getBoardSize(), room.numberOfSpectators()));
         return new LobbyMsg.Listing(data);
     }
 
@@ -91,10 +92,11 @@ public class LobbyListener implements ServerListener {
 
             case JOIN:
                 String toJoin = ((LobbyMsg.Join) lobbyMessage).roomName;
+                Stone   color = ((LobbyMsg.Join) lobbyMessage).color;
 
                 for(RoomListener room : rooms) {
                     if(room.getName().equals(toJoin)) {
-                        if(room.clientConnected(client))
+                        if(room.joinPlayer(client, color))
                             clients.remove(client);
                         return;
                     }

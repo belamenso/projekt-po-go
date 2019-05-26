@@ -77,8 +77,8 @@ public class ClientLobbyListener implements ClientListener {
         client.sendMessage(new LobbyMsg.Create(roomName, size)); // CREATE roomName -> LobbyListener
     }
 
-    void sendJoinRoomRequest(String roomName) {
-        client.sendMessage(new LobbyMsg.Join(roomName)); // JOIN roomName -> LobbyListener
+    void sendJoinRoomRequest(String roomName, Stone color) {
+        client.sendMessage(new LobbyMsg.Join(roomName, color)); // JOIN roomName -> LobbyListener
     }
 
     void sendSpectateRequest(String roomName) {

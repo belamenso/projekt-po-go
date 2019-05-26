@@ -23,57 +23,71 @@ public class ServerClient {
     private ObjectOutputStream outputStream;
     private int id;
     private ServerListener listener;
-    private Socket socket;
     private Server server;
+    private Socket socket;
 
-    ServerClient(Socket socket, Server server) {
+    private ServerClient(ObjectOutputStream out, InetAddress ip, int port, Server server, Socket socket) {
         this.id = ids ++;
-        this.socket = socket;
+        this.outputStream = out;
+        this.ip = ip;
+        this.port = port;
         this.server = server;
+        this.socket = socket;
+    }
 
+    static void createNewClient(Socket socket, Server server) {
         Thread clientThread = new Thread(() -> {
             try {
-                server.clients.add(this);
-
                 ObjectInputStream inputStream = new ObjectInputStream(socket.getInputStream());
-                outputStream = new ObjectOutputStream(socket.getOutputStream());
-                setListener(server.defaultListener);
-                listener.clientConnected(this);
-                Thread.currentThread().setName("Thread for " + this);
+                ObjectOutputStream outputStream = new ObjectOutputStream(socket.getOutputStream());
+                ServerClient clientInstance = new ServerClient(outputStream, socket.getInetAddress(), socket.getPort(), server, socket);
+                clientInstance.setListener(server.defaultListener);
+                clientInstance.listener.clientConnected(clientInstance);
+
+                server.clients.add(clientInstance);
+
+                Thread.currentThread().setName("Thread for " + clientInstance);
 
                 while (server.open) {
                     try {
-                        Message msg = null;
-                        try {
-                            msg = (Message) inputStream.readObject();
-                        } catch (ClassNotFoundException e) { e.printStackTrace(); } // Powinno byc niemożliwe
+                        Message  msg = (Message) inputStream.readObject();
 
                         if (msg == null) throw new IOException();
 
-                        listener.receivedInput(this, msg);
+                        clientInstance.listener.receivedInput(clientInstance, msg);
 
                     } catch (IOException e) {
-                        listener.clientDisconnected(this);
+                        clientInstance.listener.clientDisconnected(clientInstance);
 
-                        close();
+                        clientInstance.close();
 
                         return;
+                    } catch (ClassNotFoundException e) {
+                        e.printStackTrace(); // Nie powwino się stać
                     }
                 }
             } catch (Exception e) {
-                //e.printStackTrace();
+                e.printStackTrace();
+            } finally {
+                try {
+                    if (!socket.isClosed()) {
+                        socket.shutdownOutput();
+                        socket.close();
+                    }
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
             }
-
-            close();
         });
 
         clientThread.setDaemon(true);
         clientThread.start();
     }
 
-    void close()
-    {
+    void close() {
         try {
+            outputStream.close();
+
             if (!socket.isClosed()) {
                 socket.shutdownOutput();
                 socket.close();
@@ -90,10 +104,6 @@ public class ServerClient {
         this.listener = listener;
     }
 
-    /*void sendMessage(String message) {
-        sendMessage(new Message(message));
-    }*/
-
     void sendMessage(Message message) {
         try {
             outputStream.reset();
@@ -104,6 +114,6 @@ public class ServerClient {
 
     @Override
     public String toString() {
-        return "client " + id + " @ " + this.listener;
+        return "[C" + id + "@" + ip + ":" + port + "]";
     }
 }

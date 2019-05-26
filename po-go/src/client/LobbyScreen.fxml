@@ -15,8 +15,9 @@
       <HBox spacing="10.0" BorderPane.alignment="CENTER">
          <children>
             <TextField fx:id="nameField" minWidth="150.0" onAction="#createRoom" promptText="Room name" />
-            <ChoiceBox fx:id="sizeDropdown" prefWidth="80.0" />
+            <ChoiceBox fx:id="sizeDropdown" prefWidth="60.0" />
             <Button fx:id="createButton" mnemonicParsing="false" onAction="#createRoom" text="Create Room" />
+            <ChoiceBox fx:id="colorDropdown" />
             <Button mnemonicParsing="false" onAction="#spectateRoom" text="Spectate" />
             <Button mnemonicParsing="false" onAction="#update" text="Refresh" />
          </children>

@@ -37,7 +37,8 @@ public class LobbyMsg extends Message {
 
     static public class Join extends LobbyMsg {
         public String roomName;
-        public Join(String roomName) { super(Type.JOIN); this.roomName = roomName; }
+        public Stone color;
+        public Join(String roomName, Stone color) { super(Type.JOIN); this.roomName = roomName; this.color = color; }
     }
 
     static public class Spectate extends LobbyMsg {

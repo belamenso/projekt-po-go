@@ -11,6 +11,9 @@ import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.scene.control.*;
 import javafx.scene.control.cell.PropertyValueFactory;
+import javafx.scene.control.skin.TableViewSkin;
+import javafx.scene.control.skin.VirtualFlow;
+import javafx.scene.layout.HBox;
 import javafx.scene.layout.Pane;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.Rectangle;
@@ -40,7 +43,8 @@ public class RoomGUI implements Initializable {
     @FXML private Label capturedLabel;
     @FXML private Label lostLabel;
 
-    @FXML Slider historySlider;
+    @FXML private HBox sliderBox;
+    @FXML private Slider historySlider;
     @FXML private Label current;
     private SimpleIntegerProperty historyCount;
 
@@ -68,9 +72,7 @@ public class RoomGUI implements Initializable {
         historySlider.maxProperty().bind(historyCount);
         historySlider.setValue(historyCount.get());
         historySlider.valueProperty().addListener(observable -> renderBoard());
-        historySlider.prefWidthProperty().bind(boardPane.prefWidthProperty().subtract(90));
-        historySlider.visibleProperty().bind(Bindings.greaterThan(historyCount, 1));
-        current.visibleProperty().bind(Bindings.greaterThan(historyCount, 1));
+        sliderBox.visibleProperty().bind(Bindings.greaterThan(historyCount, 1));
         current.textProperty().bind(Bindings.format(
                 "%.0f / %d",
                 historySlider.valueProperty(),
@@ -199,9 +201,21 @@ public class RoomGUI implements Initializable {
         board.render(crl.manager.getBoardByNumber(boardNum));
     }
 
-    public void addMessage(RoomEvent msg) {
+    void addMessage(RoomEvent msg) {
         messages.add(msg);
         messageTable.scrollTo(messageTable.getItems().size() - 1);
+    }
+
+    @FXML
+    void incSlider() {
+        System.out.println("++ " + historySlider.getValue() + " : " + historyCount.getValue());
+        if(historySlider.getValue() + 1 <= historyCount.get()) historySlider.setValue(historySlider.getValue() + 1);
+    }
+
+    @FXML
+    void decSlider() {
+        System.out.println("-- " + historySlider.getValue() + " : " + historyCount.getValue());
+        if(historySlider.getValue() - 1 >= 0) historySlider.setValue(historySlider.getValue() - 1);
     }
 
     @FXML
@@ -250,8 +264,9 @@ public class RoomGUI implements Initializable {
         messageTable.setItems(messages);
         messageTable.getColumns().addAll(timeColumn, nameColumn);
         messageTable.setPlaceholder(new Label("No messages"));
+        messageTable.setSkin(new TableViewSkin<RoomEvent>(messageTable));
+
 
         nameColumn.prefWidthProperty().bind(messageTable.widthProperty().subtract(54));
-        chatField.prefWidthProperty().bind(messageTable.widthProperty().subtract(60));
     }
 }
