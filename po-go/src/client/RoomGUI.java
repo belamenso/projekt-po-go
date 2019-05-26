@@ -208,13 +208,13 @@ public class RoomGUI implements Initializable {
 
     @FXML
     void incSlider() {
-        System.out.println("++ " + historySlider.getValue() + " : " + historyCount.getValue());
+        //System.out.println("++ " + historySlider.getValue() + " : " + historyCount.getValue());
         if(historySlider.getValue() + 1 <= historyCount.get()) historySlider.setValue(historySlider.getValue() + 1);
     }
 
     @FXML
     void decSlider() {
-        System.out.println("-- " + historySlider.getValue() + " : " + historyCount.getValue());
+        //System.out.println("-- " + historySlider.getValue() + " : " + historyCount.getValue());
         if(historySlider.getValue() - 1 >= 0) historySlider.setValue(historySlider.getValue() - 1);
     }
 

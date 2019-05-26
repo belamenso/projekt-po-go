@@ -10,7 +10,6 @@ import shared.Message;
 import shared.RoomEvent;
 import shared.RoomMsg;
 
-import java.util.Date;
 import java.util.List;
 import java.util.Optional;
 
@@ -99,7 +98,7 @@ public class ClientRoomListener implements ClientListener {
             case GAME_BEGINS:
                 gameStarted = true;
 
-                //Platform.runLater(() -> rg.addMessage("The game begins, you are " + myColor.pictogram, start));
+                Platform.runLater(() -> rg.addMessage(new RoomEvent("You are " + myColor.pictogram, "", 0)));
 
                 Sounds.playSound("dingdong");
                 break;
@@ -154,9 +153,7 @@ public class ClientRoomListener implements ClientListener {
                 System.out.println("UNRECOGNIZED MSG: " + roomMsg.msg);
         }
 
-        Platform.runLater(() -> {
-            rg.renderBoard();
-        });
+        Platform.runLater(rg::renderBoard);
     }
 
     /**

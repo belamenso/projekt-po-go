@@ -74,7 +74,7 @@ public class Settings implements Serializable {
 
         if (configurationFile.exists()) {
             Settings existingConfiguration = readSettings();
-            System.out.println(existingConfiguration.version);
+            //System.out.println(existingConfiguration.version);
             if (existingConfiguration.version == getDefaultSettings().version) return;
         }
 
