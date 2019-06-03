@@ -3,10 +3,7 @@ package go;
 import util.Pair;
 
 import java.io.Serializable;
-import java.util.ArrayList;
-import java.util.Comparator;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 
 import static go.GameLogic.gameLogic;
 
@@ -218,8 +215,6 @@ public class GameplayManager {
         if (!m.player.equals(nextTurn()))
             return Optional.of(ReasonMoveImpossible.NotYourTurn);
         if (m instanceof Pass) {
-            if (!moves.isEmpty() && getLastMove() instanceof Pass)
-                inProgress = false;
             moves.add(m);
             extendCapturedHistory();
             boards.add(getBoard().cloneBoard());
@@ -246,6 +241,27 @@ public class GameplayManager {
             updateCapturedCount(m.player, captured.size());
             return Optional.empty();
         }
+    }
+
+    public boolean hadTwoPasses() {
+        if(moves.size() < 2) return false;
+        return (moves.get(moves.size() - 1) instanceof Pass) &&
+               (moves.get(moves.size() - 2) instanceof Pass);
+    }
+
+    public void removeDeadTerritories(Set<Pair<Integer, Integer>> toRemove) {
+        inProgress = false;
+
+        Board board = getBoard().cloneBoard();
+
+        if(toRemove != null) {
+            for (Pair<Integer, Integer> p : toRemove) {
+                board.getBoard()[p.x][p.y] = Optional.empty();
+            }
+        }
+
+        extendCapturedHistory();
+        boards.add(board);
     }
 
     /**

@@ -9,9 +9,12 @@ import shared.LobbyMsg;
 import shared.Message;
 import shared.RoomEvent;
 import shared.RoomMsg;
+import util.Pair;
 
+import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 
 import static go.GameLogic.gameLogic;
 
@@ -27,6 +30,11 @@ public class ClientRoomListener implements ClientListener {
     final GameplayManager manager;
     private boolean gameStarted = false;
     private boolean gameInterrupted = false;
+    private boolean isRemoval = false;
+    private boolean isNomination = false;
+    private boolean isAcceptance = false;
+
+    private Set<Pair<Integer, Integer>> removalStones;
 
     private final boolean spectator;
 
@@ -71,6 +79,12 @@ public class ClientRoomListener implements ClientListener {
     synchronized boolean myTurn() {
         return gameStarted && !gameInterrupted && manager.inProgress() && manager.nextTurn().equals(myColor);
     }
+
+    synchronized Set<Pair<Integer, Integer>> getRemovalStones() { return removalStones; }
+
+    synchronized boolean isRemovalPhaseOn() { return isRemoval; }
+    synchronized boolean nominating() { return isNomination; }
+    synchronized boolean accepting() { return isAcceptance; }
 
     synchronized boolean wasInterruped() { return gameInterrupted; }
 
@@ -149,6 +163,36 @@ public class ClientRoomListener implements ClientListener {
                 //System.out.println("Add event!");
                 break;
 
+            case BEGIN_REMOVAL:
+                System.out.println("Begin removal");
+                isRemoval = true;
+                break;
+
+            case END_REMOVAL:
+                System.out.println("End removal");
+                isRemoval = false;
+                break;
+
+            case NOMINATE_TO_REMOVE:
+                System.out.println("Nominated to remove");
+                isNomination = true;
+                removalStones = new HashSet<>();
+                Platform.runLater(rg::showNominationButton);
+                break;
+
+            case PROPOSE_REMOVAL:
+                System.out.println("Proposed removal");
+                removalStones = ((RoomMsg.ProposeRemoval) roomMsg).toRemove;
+                isAcceptance = true;
+                Platform.runLater(rg::showAcceptanceButtons);
+                break;
+
+            case REMOVE_DEAD:
+                System.out.println("Removing dead stones");
+                Set<Pair<Integer, Integer>> toRemove = ((RoomMsg.RemoveDead) roomMsg).toRemove;
+                manager.removeDeadTerritories(toRemove);
+                break;
+
             default:
                 System.out.println("UNRECOGNIZED MSG: " + roomMsg.msg);
         }
@@ -160,6 +204,7 @@ public class ClientRoomListener implements ClientListener {
      * called from the GUI thread
      */
     synchronized void attemptedToPass() {
+        if(isRemoval) return;
         if (myTurn()) {
             makeMyMove(new GameplayManager.Pass(myColor));
             //rg.addMessage("You (" + myColor.pictogram + ") passed", start);
@@ -173,6 +218,10 @@ public class ClientRoomListener implements ClientListener {
      * called from the GUI thread
      */
     synchronized void attemptedToMakeMove(int x, int y) {
+        if(isRemoval) {
+            if(isNomination) nominate(x, y);
+            return;
+        }
         if (myTurn()) {
             Optional<ReasonMoveImpossible> reason = gameLogic.movePossible(getBoard(), x, y, myColor);
             if (reason.isPresent()) {
@@ -186,6 +235,49 @@ public class ClientRoomListener implements ClientListener {
         } else {
             handleAttemptToSkipTurn();
         }
+    }
+
+    synchronized void acceptRemoval() {
+        assert isAcceptance;
+        assert isRemoval;
+        client.sendMessage(new RoomMsg(RoomMsg.Type.ACCEPT_REMOVAL));
+        isAcceptance = false;
+
+        Platform.runLater(rg::renderBoard);
+    }
+
+    synchronized void declineRemoval() {
+        assert isAcceptance;
+        assert isRemoval;
+        client.sendMessage(new RoomMsg(RoomMsg.Type.DECLINE_REMOVAL));
+        isAcceptance = false;
+
+        Platform.runLater(rg::renderBoard);
+    }
+
+    synchronized void finishNominating() {
+        assert isNomination;
+        assert isRemoval;
+        client.sendMessage(new RoomMsg.ProposeRemoval(removalStones));
+        removalStones = null;
+        isNomination = false;
+
+        Platform.runLater(rg::renderBoard);
+    }
+
+    synchronized void nominate(int x, int y) {
+        if(manager.getBoard().get(x, y).isEmpty() ||
+           manager.getBoard().get(x, y).get().equals(myColor)) return;
+
+        List<Pair<Integer, Integer>> stones = gameLogic.getStoneGroupAt(manager.getBoard(), x, y);
+
+        if(removalStones.contains(new Pair<>(x, y))) {
+            removalStones.removeAll(stones);
+        } else {
+            removalStones.addAll(stones);
+        }
+
+        Platform.runLater(rg::renderBoard);
     }
 
     /**

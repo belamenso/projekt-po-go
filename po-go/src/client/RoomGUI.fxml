@@ -50,6 +50,9 @@
       <HBox alignment="CENTER_LEFT" prefHeight="60.0" spacing="20.0" BorderPane.alignment="BOTTOM_RIGHT">
          <children>
             <Label fx:id="infoLabel" text="Info o ruchach itp" />
+            <Button fx:id="yesButton" mnemonicParsing="false" onAction="#accept" text="Yes" visible="false" />
+            <Button fx:id="noButton" mnemonicParsing="false" onAction="#decline" text="No" visible="false" />
+            <Button fx:id="doneButton" mnemonicParsing="false" onAction="#doneNominating" text="Done" visible="false" />
             <Region HBox.hgrow="ALWAYS" />
             <Label fx:id="captureLabelA" alignment="TOP_RIGHT" text="Captured:" />
             <Label fx:id="capturedLabel" text="0" />

@@ -12,7 +12,6 @@ import javafx.fxml.Initializable;
 import javafx.scene.control.*;
 import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.scene.control.skin.TableViewSkin;
-import javafx.scene.control.skin.VirtualFlow;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Pane;
 import javafx.scene.paint.Color;
@@ -48,14 +47,16 @@ public class RoomGUI implements Initializable {
     @FXML private Label current;
     private SimpleIntegerProperty historyCount;
 
-    private SimpleBooleanProperty isPlayer;
+    @FXML private Button yesButton;
+    @FXML private Button noButton;
+    @FXML private Button doneButton;
 
     private Optional<GameplayManager.Result> cachedGameResult = Optional.empty();
 
     public void setup(ClientRoomListener clientRoomListener) {
         this.crl = clientRoomListener;
 
-        isPlayer = new SimpleBooleanProperty(!crl.isSpectator());
+        SimpleBooleanProperty isPlayer = new SimpleBooleanProperty(!crl.isSpectator());
 
         if(crl.isSpectator()) {
             infoLabel.setText("You are spectating");
@@ -112,6 +113,8 @@ public class RoomGUI implements Initializable {
                 });
 
                 rect.setOnMouseEntered(e -> {
+                    if(crl.isRemovalPhaseOn()) return;
+
                     if (crl.myTurn()) {
                         Optional<ReasonMoveImpossible> reason = gameLogic.movePossible(crl.getBoard(), x, y, crl.getColor());
                         if (reason.isEmpty()) {
@@ -153,7 +156,7 @@ public class RoomGUI implements Initializable {
     void renderBoard() {
 
         if(historyCount.getValue() != crl.getTurnCount()) {
-            boolean changeToNew = ((int) historySlider.getValue()) == crl.getTurnCount() - 1;
+            boolean changeToNew = historySlider.getValue() == historySlider.getMax();
             historyCount.set(crl.getTurnCount());
             if (changeToNew) historySlider.setValue(crl.getTurnCount());
         }
@@ -179,6 +182,15 @@ public class RoomGUI implements Initializable {
             } else if (crl.manager.inProgress()) {
                 infoLabel.setText("Waiting for opponent's move");
             } else assert false;
+
+            if(crl.isRemovalPhaseOn()) {
+                infoLabel.setText("Stone removal phase");
+            }
+            if(crl.nominating()) {
+                infoLabel.setText("Choose groups to remove");
+            } else if(crl.accepting()) {
+                infoLabel.setText("Do you agree to removal of these groups?");
+            }
         }
 
         int boardNum = (int) historySlider.getValue();
@@ -199,11 +211,45 @@ public class RoomGUI implements Initializable {
         }
 
         board.render(crl.manager.getBoardByNumber(boardNum));
+
+        if(crl.nominating() || crl.accepting()) {
+            crl.getRemovalStones().forEach(p -> board.colorStone(p.x, p.y,
+                        board.colorToCapturedClass(crl.getColor().opposite)));
+        }
     }
 
     void addMessage(RoomEvent msg) {
         messages.add(msg);
         messageTable.scrollTo(messageTable.getItems().size() - 1);
+    }
+
+    void showAcceptanceButtons() {
+        yesButton.setVisible(true);
+        noButton .setVisible(true);
+    }
+
+    void showNominationButton() {
+        doneButton.setVisible(true);
+    }
+
+    @FXML
+    void accept() {
+        crl.acceptRemoval();
+        yesButton.setVisible(false);
+        noButton .setVisible(false);
+    }
+
+    @FXML
+    void decline() {
+        crl.declineRemoval();
+        yesButton.setVisible(false);
+        noButton .setVisible(false);
+    }
+
+    @FXML
+    void doneNominating() {
+        crl.finishNominating();
+        doneButton.setVisible(false);
     }
 
     @FXML

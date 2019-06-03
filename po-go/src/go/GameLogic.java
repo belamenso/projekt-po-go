@@ -2,10 +2,7 @@ package go;
 
 import util.Pair;
 
-import java.util.Queue;
-import java.util.Optional;
-import java.util.ArrayList;
-import java.util.LinkedList;
+import java.util.*;
 
 /**
  * Singleron realizujący podstawowe operacje logiki gdy na obiektach typu Board
@@ -40,6 +37,10 @@ public enum GameLogic {
     private class Group {
         ArrayList<Pair<Integer, Integer>> group = new ArrayList<>();
         int liberties = 0;
+    }
+
+    public List<Pair<Integer, Integer>> getStoneGroupAt(Board board, int i, int j) {
+        return collectGroup(board, i, j, boolMatrix(board)).group;
     }
 
     /**

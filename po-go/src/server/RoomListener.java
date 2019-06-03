@@ -8,11 +8,9 @@ import shared.LobbyMsg;
 import shared.Message;
 import shared.RoomEvent;
 import shared.RoomMsg;
+import util.Pair;
 
-import java.util.Date;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 
 /**
  * Listener obsugujacy pojedynczy pokoj
@@ -29,6 +27,10 @@ public class RoomListener implements ServerListener {
 
     private GameplayManager manager;
     private boolean gameInterrupted = false;
+
+    private boolean removingDeadTerritories = false;
+    private Set<Pair<Integer, Integer>> stonesToRemove = null;
+    private int placementsSinceLastDoublePass = 0;
 
     private List<RoomEvent> events;
     private Date start;
@@ -72,10 +74,10 @@ public class RoomListener implements ServerListener {
         GameFinished,
         EmptyRoom,
         WaitingForBlack,
-        WaitingForWhite;
+        WaitingForWhite
     }
 
-    public synchronized RoomState getRoomState() {
+    synchronized RoomState getRoomState() {
         // kolejność sprawdzania jest ważna
         if (gameInterrupted) return RoomState.GameInterrupted;
         if (manager.finished()) return RoomState.GameFinished;
@@ -91,7 +93,7 @@ public class RoomListener implements ServerListener {
     /**
      * @return Aktualna liczba spectatorów
      */
-    public synchronized int numberOfSpectators() { return spectators.size(); }
+    synchronized int numberOfSpectators() { return spectators.size(); }
 
     /**
      * @return TODO Późniejsza wersja będzie to implementowała
@@ -114,12 +116,11 @@ public class RoomListener implements ServerListener {
         spectators.forEach(s -> s.sendMessage(new RoomMsg.AddEvent(toAdd)));
     }
 
-    ServerClient getPlayer(Stone color) { return color == Stone.White ? whitePlayer : blackPlayer; }
+    private ServerClient getPlayer(Stone color) { return color == Stone.White ? whitePlayer : blackPlayer; }
+    private Stone getPlayerColor(ServerClient player) { return whitePlayer == player ? Stone.White : Stone.Black; }
 
     /**
      * Pokój nie akceptuje już żadnych graczy w stanie interrupted.
-     * Pierwszy gracz w pokoju zawsze jest czasny (TODO)
-     * Drugi gracz zawsze biały
      */
     synchronized boolean joinPlayer(ServerClient client, Stone color) {
         if (clients.size() >= 2 || gameInterrupted || manager.finished() || getPlayer(color) != null) {
@@ -214,30 +215,55 @@ public class RoomListener implements ServerListener {
                     client.sendMessage(new RoomMsg(RoomMsg.Type.MOVE_REJECTED));
                 } else if (manager.inProgress()) {
                     Optional<ReasonMoveImpossible> result = manager.registerMove(move);
-                    if (result.isEmpty()) {
-                        client.sendMessage(new RoomMsg(RoomMsg.Type.MOVE_ACCEPTED));
-
-                        clients.forEach(c -> { if(c != client) c.sendMessage(message); });
-                        spectators.forEach(s -> s.sendMessage(message));
-
-                        if(move instanceof GameplayManager.Pass) {
-                            registerEvent(move.player.pictogram + " has passed their turn");
-                        } else {
-                            registerEvent(move.player.pictogram + " places stone at " +
-                                    manager.getBoard().positionToNumeral(((GameplayManager.StonePlacement) move).position));
-                        }
-
-                        if (manager.finished()) {
-                            GameplayManager.Result r = manager.result();
-                            clients.forEach(c -> c.sendMessage(new RoomMsg.GameFinished(r)));
-                            spectators.forEach(s -> s.sendMessage(new RoomMsg.GameFinished(r)));
-
-                            registerEvent("Game is finished: " + manager.result().winner + " won!");
-                        }
-                    } else {
+                    if (result.isPresent()) {
                         client.sendMessage(new RoomMsg(RoomMsg.Type.MOVE_REJECTED));
+                        break;
+                    }
+
+                    client.sendMessage(new RoomMsg(RoomMsg.Type.MOVE_ACCEPTED));
+
+                    clients.forEach(c -> { if(c != client) c.sendMessage(message); });
+                    spectators.forEach(s -> s.sendMessage(message));
+
+                    if(move instanceof GameplayManager.Pass) {
+                        registerEvent(move.player.pictogram + " has passed their turn");
+                    } else {
+                        ++ placementsSinceLastDoublePass;
+
+                        registerEvent(move.player.pictogram + " places stone at " +
+                                manager.getBoard().positionToNumeral(((GameplayManager.StonePlacement) move).position));
+                    }
+
+                    if(manager.hadTwoPasses()) {
+                        if(placementsSinceLastDoublePass == 0) {
+                            finishTheGame();
+                        } else {
+                            beginRemoval();
+                        }
                     }
                 }
+                break;
+
+            case PROPOSE_REMOVAL:
+                assert removingDeadTerritories;
+                System.out.println("Player " + getPlayerColor(client) + " proposes removal");
+                getPlayer(getPlayerColor(client).opposite).sendMessage(roomMsg);
+                stonesToRemove.addAll(((RoomMsg.ProposeRemoval) roomMsg).toRemove);
+                break;
+
+            case ACCEPT_REMOVAL:
+                System.out.println("Player " + getPlayerColor(client) + " accepts removal");
+                if(getPlayerColor(client) == manager.nextTurn()) {
+                    finishTheGame();
+                } else {
+                    getPlayer(manager.nextTurn().opposite).sendMessage(new RoomMsg(RoomMsg.Type.NOMINATE_TO_REMOVE));
+                    System.out.println("Nominating player " + manager.nextTurn().opposite + " " + this);
+                }
+                break;
+
+            case DECLINE_REMOVAL:
+                System.out.println("Player " + getPlayerColor(client) + " declines removal");
+                cancelRemoval();
                 break;
 
             case CHAT:
@@ -247,6 +273,41 @@ public class RoomListener implements ServerListener {
             default:
                 System.out.println("Unrecognized message: " + message.msg);
         }
+    }
+
+    private void beginRemoval() {
+        System.out.println("Begin removal " + this);
+
+        removingDeadTerritories = true;
+        stonesToRemove = new HashSet<>();
+        clients.forEach(c -> c.sendMessage(new RoomMsg(RoomMsg.Type.BEGIN_REMOVAL)));
+        try { Thread.sleep(200); } catch (InterruptedException e) { e.printStackTrace(); }
+        getPlayer(manager.nextTurn()).sendMessage(new RoomMsg(RoomMsg.Type.NOMINATE_TO_REMOVE));
+
+        System.out.println("Nominating player " + manager.nextTurn() + " " + this);
+    }
+
+    private void cancelRemoval() {
+        System.out.println("Cancel removal " + this);
+
+        removingDeadTerritories = false;
+        stonesToRemove = null;
+        clients.forEach(c -> c.sendMessage(new RoomMsg(RoomMsg.Type.END_REMOVAL)));
+        registerEvent("Players couldn't agree on dead groups");
+    }
+
+    private void finishTheGame() {
+        System.out.println("Finish the game " + this);
+
+        manager.removeDeadTerritories(stonesToRemove);
+        clients.forEach(c -> c.sendMessage(new RoomMsg.RemoveDead(stonesToRemove)));
+        spectators.forEach(s -> s.sendMessage(new RoomMsg.RemoveDead(stonesToRemove)));
+
+        GameplayManager.Result r = manager.result();
+        clients.forEach(c -> c.sendMessage(new RoomMsg.GameFinished(r)));
+        spectators.forEach(s -> s.sendMessage(new RoomMsg.GameFinished(r)));
+
+        registerEvent("Game is finished: " + manager.result().winner + " won!");
     }
 
     @Override

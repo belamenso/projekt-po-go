@@ -12,4 +12,17 @@ public class Pair<T, S> implements Serializable {
         x = f;
         y = s;
     }
+
+    public boolean equals(Object object) {
+        if(object instanceof Pair) {
+            Pair<?,?> p = (Pair<?,?>) object;
+            return p.x.equals(x) && p.y.equals(y);
+        }
+        return false;
+    }
+
+    public int hashCode() {
+        return x.hashCode() * 33 + y.hashCode();
+    }
+
 }
