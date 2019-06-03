@@ -238,6 +238,7 @@ public class RoomListener implements ServerListener {
                         if(placementsSinceLastDoublePass == 0) {
                             finishTheGame();
                         } else {
+                            placementsSinceLastDoublePass = 0;
                             beginRemoval();
                         }
                     }

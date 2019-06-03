@@ -11,7 +11,6 @@ import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.scene.control.*;
 import javafx.scene.control.cell.PropertyValueFactory;
-import javafx.scene.control.skin.TableViewSkin;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Pane;
 import javafx.scene.paint.Color;
@@ -53,7 +52,7 @@ public class RoomGUI implements Initializable {
 
     private Optional<GameplayManager.Result> cachedGameResult = Optional.empty();
 
-    public void setup(ClientRoomListener clientRoomListener) {
+    void setup(ClientRoomListener clientRoomListener) {
         this.crl = clientRoomListener;
 
         SimpleBooleanProperty isPlayer = new SimpleBooleanProperty(!crl.isSpectator());
@@ -121,11 +120,11 @@ public class RoomGUI implements Initializable {
                             Board boardCopy = crl.getBoard().cloneBoard();
                             boardCopy.getBoard()[x][y] = Optional.of(crl.getColor());
                             ArrayList<Pair<Integer, Integer>> potentiallyCaptured = gameLogic.captured(boardCopy, crl.getColor());
-                            for (Pair<Integer, Integer> pos : potentiallyCaptured) {
-                                Platform.runLater(() -> {
-                                    board.colorStone(pos.x, pos.y, board.colorToCapturedClass(crl.getColor().opposite));
+                            Platform.runLater(() -> {
+                                potentiallyCaptured.forEach(pos -> {
+                                        board.colorStone(pos.x, pos.y, board.colorToCapturedClass(crl.getColor().opposite));
                                 });
-                            }
+                            });
                         }
                     }
                 });
@@ -135,19 +134,6 @@ public class RoomGUI implements Initializable {
         }
 
         renderBoard();
-    }
-
-    void markTerritories() {
-        assert crl.manager.finished() && !crl.wasInterruped();
-
-        ArrayList<GameLogic.Territory> ts = gameLogic.capturedTerritories(crl.getBoard());
-        for (GameLogic.Territory t : ts) {
-            for (Pair<Integer, Integer> pos : t.territory) {
-                Platform.runLater(() -> {
-                    board.colorStone(pos.x, pos.y, board.colorToTerritoryClass(t.captor.get())); // TODO zmienić to optional tam
-                });
-            }
-        }
     }
 
     /**
@@ -161,37 +147,7 @@ public class RoomGUI implements Initializable {
             if (changeToNew) historySlider.setValue(crl.getTurnCount());
         }
 
-        if(!crl.isSpectator()) {
-            infoLabel.setTextFill(Color.BLACK);
-            if (crl.myTurn()) {
-                infoLabel.setText("Your move");
-            } else if (crl.wasInterruped()) {
-                infoLabel.setText("Opponent has left the game");
-            } else if (crl.manager.finished()) {
-                if (!cachedGameResult.isPresent())
-                    cachedGameResult = Optional.of(crl.manager.result());
-                if (cachedGameResult.get().winner == crl.getColor()) {
-                    infoLabel.setText("You won");
-                    infoLabel.setTextFill(Color.DARKGREEN);
-                } else {
-                    infoLabel.setText("You lost");
-                    infoLabel.setTextFill(Color.CRIMSON);
-                }
-                infoLabel.setText(infoLabel.getText()
-                        + "\nWhite " + cachedGameResult.get().whitePoints + ", Black: " + cachedGameResult.get().blackPoints);
-            } else if (crl.manager.inProgress()) {
-                infoLabel.setText("Waiting for opponent's move");
-            } else assert false;
-
-            if(crl.isRemovalPhaseOn()) {
-                infoLabel.setText("Stone removal phase");
-            }
-            if(crl.nominating()) {
-                infoLabel.setText("Choose groups to remove");
-            } else if(crl.accepting()) {
-                infoLabel.setText("Do you agree to removal of these groups?");
-            }
-        }
+        renderInfoLabel();
 
         int boardNum = (int) historySlider.getValue();
 
@@ -214,7 +170,64 @@ public class RoomGUI implements Initializable {
 
         if(crl.nominating() || crl.accepting()) {
             crl.getRemovalStones().forEach(p -> board.colorStone(p.x, p.y,
-                        board.colorToCapturedClass(crl.getColor().opposite)));
+                        board.colorToCapturedClass(crl.nominating() ? crl.getColor().opposite : crl.getColor())));
+        }
+    }
+
+    /**
+     * Koloruje teretoria po zakonczeniu gry
+     */
+    private void markTerritories() {
+        assert crl.manager.finished() && !crl.wasInterruped();
+
+        ArrayList<GameLogic.Territory> ts = gameLogic.capturedTerritories(crl.getBoard());
+        for (GameLogic.Territory t : ts) {
+            for (Pair<Integer, Integer> pos : t.territory) {
+                Platform.runLater(() -> {
+                    board.colorStone(pos.x, pos.y, board.colorToTerritoryClass(t.captor.get())); // TODO zmienić to optional tam
+                });
+            }
+        }
+    }
+
+    /**
+     * Ustawia infoLabel w zależności od stanu pokoju
+     */
+    private void renderInfoLabel() {
+        if(crl.isSpectator()) return;
+
+        System.out.println("Render infoLabael");
+
+        infoLabel.setTextFill(Color.BLACK);
+
+        if (crl.myTurn()) {
+            infoLabel.setText("Your move");
+        } else if (crl.wasInterruped()) {
+            infoLabel.setText("Opponent has left the game");
+        } else if (crl.manager.finished()) {
+            if (cachedGameResult.isEmpty())
+                cachedGameResult = Optional.of(crl.manager.result());
+            if (cachedGameResult.get().winner == crl.getColor()) {
+                infoLabel.setText("You won");
+                infoLabel.setTextFill(Color.DARKGREEN);
+            } else {
+                infoLabel.setText("You lost");
+                infoLabel.setTextFill(Color.CRIMSON);
+            }
+            infoLabel.setText(infoLabel.getText()
+                    + "\nWhite " + cachedGameResult.get().whitePoints + ", Black: " + cachedGameResult.get().blackPoints);
+        } else if (crl.manager.inProgress()) {
+            infoLabel.setText("Waiting for opponent's move");
+        } else assert false;
+
+        if(crl.isRemovalPhaseOn()) {
+            infoLabel.setText("Stone removal phase");
+
+            if (crl.nominating()) {
+                infoLabel.setText("Choose groups to remove");
+            } else if (crl.accepting()) {
+                infoLabel.setText("Do you agree to removal of these groups?");
+            }
         }
     }
 
@@ -223,45 +236,42 @@ public class RoomGUI implements Initializable {
         messageTable.scrollTo(messageTable.getItems().size() - 1);
     }
 
-    void showAcceptanceButtons() {
-        yesButton.setVisible(true);
-        noButton .setVisible(true);
-    }
+    private void hideButton(Button button) { button.setManaged(false); button.setVisible(false); }
+    private void showButton(Button button) { button.setVisible(true); button.setManaged(true); }
 
-    void showNominationButton() {
-        doneButton.setVisible(true);
-    }
+    void showAcceptanceButtons() { showButton(yesButton); showButton(noButton); }
+    void showNominationButton() { showButton(doneButton); }
 
     @FXML
     void accept() {
         crl.acceptRemoval();
-        yesButton.setVisible(false);
-        noButton .setVisible(false);
+        hideButton(yesButton);
+        hideButton(noButton);
     }
 
     @FXML
     void decline() {
         crl.declineRemoval();
-        yesButton.setVisible(false);
-        noButton .setVisible(false);
+        hideButton(yesButton);
+        hideButton(noButton);
     }
 
     @FXML
     void doneNominating() {
         crl.finishNominating();
-        doneButton.setVisible(false);
+        hideButton(doneButton);
     }
 
     @FXML
     void incSlider() {
-        //System.out.println("++ " + historySlider.getValue() + " : " + historyCount.getValue());
-        if(historySlider.getValue() + 1 <= historyCount.get()) historySlider.setValue(historySlider.getValue() + 1);
+        if (historySlider.getValue() + 1 <= historyCount.get())
+            historySlider.setValue(historySlider.getValue() + 1);
     }
 
     @FXML
     void decSlider() {
-        //System.out.println("-- " + historySlider.getValue() + " : " + historyCount.getValue());
-        if(historySlider.getValue() - 1 >= 0) historySlider.setValue(historySlider.getValue() - 1);
+        if (historySlider.getValue() - 1 >= 0)
+            historySlider.setValue(historySlider.getValue() - 1);
     }
 
     @FXML
@@ -272,9 +282,7 @@ public class RoomGUI implements Initializable {
     }
 
     @FXML
-    public void quitButtonPressed() {
-        crl.sendQuitRequest();
-    }
+    public void quitButtonPressed() { crl.sendQuitRequest(); }
 
     @FXML
     public void sendChat() {
@@ -286,12 +294,16 @@ public class RoomGUI implements Initializable {
             crl.sendChat(msg);
     }
 
-    public void returnToLobby() {
+    void returnToLobby() {
         SceneManager.loadLobbyScreen();
     }
 
     @Override
     public void initialize(URL url, ResourceBundle resourceBundle) {
+        yesButton .setManaged(false);
+        noButton  .setManaged(false);
+        doneButton.setManaged(false);
+
         TableColumn<RoomEvent, String> nameColumn = new TableColumn<>("Messages");
         nameColumn.setCellValueFactory(new PropertyValueFactory<>("name"));
         nameColumn.setSortable(false);
@@ -310,7 +322,6 @@ public class RoomGUI implements Initializable {
         messageTable.setItems(messages);
         messageTable.getColumns().addAll(timeColumn, nameColumn);
         messageTable.setPlaceholder(new Label("No messages"));
-        messageTable.setSkin(new TableViewSkin<RoomEvent>(messageTable));
 
 
         nameColumn.prefWidthProperty().bind(messageTable.widthProperty().subtract(54));

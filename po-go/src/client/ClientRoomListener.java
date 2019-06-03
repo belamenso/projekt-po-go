@@ -39,7 +39,7 @@ public class ClientRoomListener implements ClientListener {
     private final boolean spectator;
 
     /**
-     * Tworz listener dla gracza
+     * Tworzy listener dla gracza
      */
     ClientRoomListener(RoomGUI rg, Client client, Stone color, Board.BoardSize size) {
         System.out.println("### Listener for player");
@@ -112,7 +112,7 @@ public class ClientRoomListener implements ClientListener {
             case GAME_BEGINS:
                 gameStarted = true;
 
-                Platform.runLater(() -> rg.addMessage(new RoomEvent("You are " + myColor.pictogram, "", 0)));
+                if(!spectator) Platform.runLater(() -> rg.addMessage(new RoomEvent("You are " + myColor.pictogram, "", 0)));
 
                 Sounds.playSound("dingdong");
                 break;
@@ -191,6 +191,7 @@ public class ClientRoomListener implements ClientListener {
                 System.out.println("Removing dead stones");
                 Set<Pair<Integer, Integer>> toRemove = ((RoomMsg.RemoveDead) roomMsg).toRemove;
                 manager.removeDeadTerritories(toRemove);
+                isRemoval = false;
                 break;
 
             default:

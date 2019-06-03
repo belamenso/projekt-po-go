@@ -244,9 +244,12 @@ public class GameplayManager {
     }
 
     public boolean hadTwoPasses() {
-        if(moves.size() < 2) return false;
-        return (moves.get(moves.size() - 1) instanceof Pass) &&
-               (moves.get(moves.size() - 2) instanceof Pass);
+        int count = 0;
+        for(int i = moves.size() - 1; i > 0; -- i)
+            if(moves.get(i) instanceof Pass)
+                ++ count;
+            else break;
+        return count > 0 && count % 2 == 0;
     }
 
     public void removeDeadTerritories(Set<Pair<Integer, Integer>> toRemove) {

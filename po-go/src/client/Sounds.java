@@ -11,9 +11,8 @@ import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.*;
 
-public class Sounds {
+class Sounds {
     private static Random RNG = new Random();
-    private static Settings settings;
 
     private static class Sound {
         List<MediaPlayer> variants;
@@ -39,7 +38,7 @@ public class Sounds {
 
     static void playSound(String name) {
         Settings.assertConfigurationExists();
-        settings = Settings.readSettings();
+        Settings settings = Settings.readSettings();
         if(!settings.soundOn) return;
         Sound s = sounds.get(name);
         System.out.println("playing sound: " + name);
@@ -54,16 +53,19 @@ public class Sounds {
         Object obj = null;
         try {
             obj = new JSONParser().parse(new FileReader("po-go/resources/sounds/sounds.json"));
+        } catch (ParseException e) {
+            System.out.println("Problem parsing sounds.json");
+            e.printStackTrace();
         } catch (IOException e) {
             e.printStackTrace();
-        } catch (ParseException e) {
-            e.printStackTrace();
         }
+
         JSONObject jo = (JSONObject) obj;
 
         Map entries = (Map) jo.get("sounds");
 
         Iterator<Map.Entry> itr1 = entries.entrySet().iterator();
+
         while (itr1.hasNext()) {
             Map.Entry pair = itr1.next();
             sounds.put(pair.getKey().toString(), new Sound((JSONArray) pair.getValue()));
