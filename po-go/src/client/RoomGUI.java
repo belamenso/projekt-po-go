@@ -149,14 +149,13 @@ public class RoomGUI implements Initializable {
 
         renderInfoLabel();
 
-        int boardNum = (int) historySlider.getValue();
+        int boardNum = (int) Math.round(historySlider.getValue());
 
-        if(crl.manager.finished() && boardNum == historyCount.getValue()) markTerritories();
-
-        int idx = messages.size() - 1;
-        while(idx > 0 && messages.get(idx).turnNumber > boardNum) -- idx;
+        double val = historySlider.getValue();
+        int idx = getLastMessageInTurn(boardNum);
         messageTable.getSelectionModel().select(idx);
         messageTable.scrollTo(idx);
+        historySlider.setValue(val);
 
         if(crl.isSpectator()) {
             capturedLabel.setText(Integer.toString(crl.manager.getCapturedBy(Stone.Black, boardNum)));
@@ -170,10 +169,27 @@ public class RoomGUI implements Initializable {
 
         board.render(toRender);
 
+        if(crl.manager.finished() && boardNum == historyCount.getValue()) markTerritories();
+
+        if(boardNum != 1) {
+            GameplayManager.Move m = crl.manager.getMoveHistory().get(boardNum - 2);
+            if(m instanceof GameplayManager.StonePlacement) {
+                GameplayManager.StonePlacement sp = (GameplayManager.StonePlacement) m;
+                board.colorStone(sp.position.x, sp.position.y,
+                                board.colorToLastMoveClass(toRender.get(sp.position.x, sp.position.y).get()));
+            }
+        }
+
         if(crl.isRemovalPhaseOn() && boardNum == historyCount.getValue()) {
             crl.getRemovalStones().forEach(p -> board.colorStone(p.x, p.y,
                         board.colorToCapturedClass(toRender.get(p.x, p.y).get())));
         }
+    }
+
+    private int getLastMessageInTurn(int turn) {
+        int idx = messages.size() - 1;
+        while(idx > 0 && messages.get(idx).turnNumber > turn) -- idx;
+        return idx;
     }
 
     /**
@@ -184,7 +200,9 @@ public class RoomGUI implements Initializable {
 
         ArrayList<GameLogic.Territory> ts = gameLogic.capturedTerritories(crl.getBoard());
         for (GameLogic.Territory t : ts) {
+            System.out.println("Territory: ");
             for (Pair<Integer, Integer> pos : t.territory) {
+                System.out.println(pos.x + " " + pos.y);
                 Platform.runLater(() -> {
                     board.colorStone(pos.x, pos.y, board.colorToTerritoryClass(t.captor.get())); // TODO zmienić to optional tam
                 });
@@ -197,8 +215,6 @@ public class RoomGUI implements Initializable {
      */
     private void renderInfoLabel() {
         if(crl.isSpectator()) return;
-
-        System.out.println("Render infoLabael");
 
         infoLabel.setTextFill(Color.BLACK);
 

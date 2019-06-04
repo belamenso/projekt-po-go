@@ -138,4 +138,8 @@ class GoBoardGUI {
     String colorToTerritoryClass(Stone color) {
         return color == Stone.White ? "white-territory" : "black-territory";
     }
+
+    String colorToLastMoveClass(Stone color) {
+        return color == Stone.White ? "stone-last-move-white" : "stone-last-move-black";
+    }
 }

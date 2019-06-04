@@ -230,8 +230,9 @@ public class RoomListener implements ServerListener {
                     } else {
                         ++ placementsSinceLastDoublePass;
 
+                        Pair<Integer, Integer> pos = ((GameplayManager.StonePlacement) move).position;
                         registerEvent(move.player.pictogram + " places stone at " +
-                                manager.getBoard().positionToNumeral(((GameplayManager.StonePlacement) move).position));
+                                manager.getBoard().positionToNumeral(new Pair<>(pos.y, pos.x)));
                     }
 
                     if(manager.hadTwoPasses()) {

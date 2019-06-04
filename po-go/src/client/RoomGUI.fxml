@@ -67,7 +67,10 @@
    <left>
       <VBox spacing="15.0" BorderPane.alignment="CENTER">
          <children>
-            <Pane fx:id="boardPane" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="300.0" minWidth="300.0" prefHeight="500.0" prefWidth="500.0" />
+            <Pane fx:id="boardPane" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="300.0" minWidth="300.0" prefHeight="500.0" prefWidth="500.0">
+               <VBox.margin>
+                  <Insets left="15.0" />
+               </VBox.margin></Pane>
             <HBox fx:id="sliderBox" alignment="CENTER_LEFT" minWidth="40.0" prefWidth="40.0" spacing="10.0">
                <children>
                   <Button mnemonicParsing="false" onAction="#decSlider" text="&lt;" />

@@ -15,6 +15,18 @@
     -fx-stroke-width: 2px;
 }
 
+.stone-last-move-white {
+    -fx-fill: radial-gradient(center 50% 50%, radius 50%, white 0%, white 40%, black 41%, black 63%, white 64%);
+    -fx-stroke: #dddddd;
+    -fx-stroke-width: 2px;
+}
+
+.stone-last-move-black {
+    -fx-fill: radial-gradient(center 50% 50%, radius 50%, black 0%, black 40%, white 41%, white 63%, black 64%);
+    -fx-stroke: #333333;
+    -fx-stroke-width: 2px;
+}
+
 .stone-potentially-captured-white {
     -fx-fill: linear-gradient(from 0px 0px to 3px 3px, reflect, red 50%, white 51%);
     -fx-stroke: red;
