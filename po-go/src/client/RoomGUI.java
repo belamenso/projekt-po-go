@@ -166,11 +166,13 @@ public class RoomGUI implements Initializable {
             lostLabel    .setText(Integer.toString(crl.manager.getCapturedBy(crl.getColor().opposite, boardNum)));
         }
 
-        board.render(crl.manager.getBoardByNumber(boardNum));
+        Board toRender = crl.manager.getBoardByNumber(boardNum);
 
-        if(crl.nominating() || crl.accepting()) {
+        board.render(toRender);
+
+        if(crl.isRemovalPhaseOn() && boardNum == historyCount.getValue()) {
             crl.getRemovalStones().forEach(p -> board.colorStone(p.x, p.y,
-                        board.colorToCapturedClass(crl.nominating() ? crl.getColor().opposite : crl.getColor())));
+                        board.colorToCapturedClass(toRender.get(p.x, p.y).get())));
         }
     }
 

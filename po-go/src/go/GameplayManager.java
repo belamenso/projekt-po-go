@@ -60,6 +60,19 @@ public class GameplayManager {
     }
 
     /**
+     * Ususniecie martwych kamieni
+     * Jako ruch poniewaz inaczej trzeba by było wysyłać do spectatora czy gra się skończyła i ustawić finished, nie byłoby tego w historii
+     */
+    public static class DeadStonesRemoval extends Move {
+        public Set<Pair<Integer, Integer>> toRemove;
+
+        public DeadStonesRemoval(Set<Pair<Integer, Integer>> toRemove) {
+            super(null);
+            this.toRemove = toRemove;
+        }
+    }
+
+    /**
      * historia gry
      */
     private ArrayList<Board> boards = new ArrayList<>();
@@ -212,6 +225,25 @@ public class GameplayManager {
      * @param m opis ruchu
      */
     public Optional<ReasonMoveImpossible> registerMove(Move m) {
+        if(m instanceof DeadStonesRemoval)
+        {
+            assert hadTwoPasses();
+            Set<Pair<Integer, Integer>> toRemove = ((DeadStonesRemoval) m).toRemove;
+            inProgress = false;
+
+            Board board = getBoard().cloneBoard();
+
+            if(toRemove != null) {
+                for (Pair<Integer, Integer> p : toRemove) {
+                    board.getBoard()[p.x][p.y] = Optional.empty();
+                }
+            }
+
+            moves.add(m);
+            extendCapturedHistory();
+            boards.add(board);
+            return Optional.empty();
+        }
         if (!m.player.equals(nextTurn()))
             return Optional.of(ReasonMoveImpossible.NotYourTurn);
         if (m instanceof Pass) {
@@ -250,21 +282,6 @@ public class GameplayManager {
                 ++ count;
             else break;
         return count > 0 && count % 2 == 0;
-    }
-
-    public void removeDeadTerritories(Set<Pair<Integer, Integer>> toRemove) {
-        inProgress = false;
-
-        Board board = getBoard().cloneBoard();
-
-        if(toRemove != null) {
-            for (Pair<Integer, Integer> p : toRemove) {
-                board.getBoard()[p.x][p.y] = Optional.empty();
-            }
-        }
-
-        extendCapturedHistory();
-        boards.add(board);
     }
 
     /**

@@ -300,7 +300,7 @@ public class RoomListener implements ServerListener {
     private void finishTheGame() {
         System.out.println("Finish the game " + this);
 
-        manager.removeDeadTerritories(stonesToRemove);
+        manager.registerMove(new GameplayManager.DeadStonesRemoval(stonesToRemove));
         clients.forEach(c -> c.sendMessage(new RoomMsg.RemoveDead(stonesToRemove)));
         spectators.forEach(s -> s.sendMessage(new RoomMsg.RemoveDead(stonesToRemove)));
 
