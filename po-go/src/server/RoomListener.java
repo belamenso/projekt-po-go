@@ -112,8 +112,7 @@ public class RoomListener implements ServerListener {
             events.add(toAdd = new RoomEvent(event, timestamp, manager.getHistorySize()));
         }
 
-        clients.forEach(c -> c.sendMessage(new RoomMsg.AddEvent(toAdd)));
-        spectators.forEach(s -> s.sendMessage(new RoomMsg.AddEvent(toAdd)));
+        sendToAll(new RoomMsg.AddEvent(toAdd));
     }
 
     private ServerClient getPlayer(Stone color) { return color == Stone.White ? whitePlayer : blackPlayer; }
@@ -143,8 +142,7 @@ public class RoomListener implements ServerListener {
         lobby.broadcastRoomUpdate();
 
         if (clients.size() == 2) {
-            clients.forEach(c -> c.sendMessage(new RoomMsg(RoomMsg.Type.GAME_BEGINS)));
-            spectators.forEach(s -> s.sendMessage(new RoomMsg(RoomMsg.Type.GAME_BEGINS)));
+            sendToAll(new RoomMsg(RoomMsg.Type.GAME_BEGINS));
 
             start = new Date();
             registerEvent("Game begins!");
@@ -222,8 +220,7 @@ public class RoomListener implements ServerListener {
 
                     client.sendMessage(new RoomMsg(RoomMsg.Type.MOVE_ACCEPTED));
 
-                    clients.forEach(c -> { if(c != client) c.sendMessage(message); });
-                    spectators.forEach(s -> s.sendMessage(message));
+                    sendToAllExcept(message, client);
 
                     if(move instanceof GameplayManager.Pass) {
                         registerEvent(move.player.pictogram + " has passed their turn");
@@ -250,7 +247,7 @@ public class RoomListener implements ServerListener {
                 assert removingDeadTerritories;
                 System.out.println("Player " + getPlayerColor(client) + " proposes removal");
                 getPlayer(getPlayerColor(client).opposite).sendMessage(roomMsg);
-                stonesToRemove.addAll(((RoomMsg.ProposeRemoval) roomMsg).toRemove);
+                stonesToRemove = ((RoomMsg.ProposeRemoval) roomMsg).toRemove;
                 break;
 
             case ACCEPT_REMOVAL:
@@ -268,6 +265,12 @@ public class RoomListener implements ServerListener {
                 cancelRemoval();
                 break;
 
+            case UPDATE_REMOVAL:
+                System.out.println("Player " + getPlayerColor(client) + " updates stones to be removed");
+                stonesToRemove = ((RoomMsg.UpdateRemoval) roomMsg).toRemove;
+                sendToPlayersExcept(message, client);
+                break;
+
             case CHAT:
                 RoomMsg.Chat msg = (RoomMsg.Chat) message;
                 registerEvent("(" + msg.player.pictogram + "): " + msg.msg);
@@ -282,7 +285,7 @@ public class RoomListener implements ServerListener {
 
         removingDeadTerritories = true;
         stonesToRemove = new HashSet<>();
-        clients.forEach(c -> c.sendMessage(new RoomMsg(RoomMsg.Type.BEGIN_REMOVAL)));
+        sendToPlayers(new RoomMsg(RoomMsg.Type.BEGIN_REMOVAL));
         try { Thread.sleep(200); } catch (InterruptedException e) { e.printStackTrace(); }
         getPlayer(manager.nextTurn()).sendMessage(new RoomMsg(RoomMsg.Type.NOMINATE_TO_REMOVE));
 
@@ -294,7 +297,7 @@ public class RoomListener implements ServerListener {
 
         removingDeadTerritories = false;
         stonesToRemove = null;
-        clients.forEach(c -> c.sendMessage(new RoomMsg(RoomMsg.Type.END_REMOVAL)));
+        sendToPlayers(new RoomMsg(RoomMsg.Type.END_REMOVAL));
         registerEvent("Players couldn't agree on dead groups");
     }
 
@@ -302,14 +305,33 @@ public class RoomListener implements ServerListener {
         System.out.println("Finish the game " + this);
 
         manager.registerMove(new GameplayManager.DeadStonesRemoval(stonesToRemove));
-        clients.forEach(c -> c.sendMessage(new RoomMsg.RemoveDead(stonesToRemove)));
-        spectators.forEach(s -> s.sendMessage(new RoomMsg.RemoveDead(stonesToRemove)));
+        sendToAll(new RoomMsg.RemoveDead(stonesToRemove));
 
-        GameplayManager.Result r = manager.result();
-        clients.forEach(c -> c.sendMessage(new RoomMsg.GameFinished(r)));
-        spectators.forEach(s -> s.sendMessage(new RoomMsg.GameFinished(r)));
+        sendToAll(new RoomMsg.GameFinished(manager.result()));
 
-        registerEvent("Game is finished: " + manager.result().winner + " won!");
+        registerEvent("Game is finished: " + manager.result().winner.pictogram + " won!");
+    }
+
+    private void sendToAll(Message msg) {
+        sendToPlayers(msg);
+        sendToSpectators(msg);
+    }
+
+    private void sendToAllExcept(Message msg, ServerClient notTo) {
+        sendToPlayersExcept(msg, notTo);
+        sendToSpectators(msg);
+    }
+
+    private void sendToSpectators(Message msg) {
+        spectators.forEach(s -> s.sendMessage(msg));
+    }
+
+    private void sendToPlayers(Message msg) {
+        clients.forEach(c -> c.sendMessage(msg));
+    }
+
+    private void sendToPlayersExcept(Message msg, ServerClient notTo) {
+        clients.forEach(c -> { if(c != notTo) c.sendMessage(msg); });
     }
 
     @Override

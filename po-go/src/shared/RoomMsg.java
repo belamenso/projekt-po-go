@@ -25,6 +25,7 @@ public class RoomMsg extends Message {
         , ACCEPT_REMOVAL     // Zaakceptuj wskazane
         , DECLINE_REMOVAL    // Odmow usuniecia wskazanych
         , REMOVE_DEAD        // Ususn wskazane martwe kamienie - konczy gre
+        , UPDATE_REMOVAL     // Uaktualnia kamienie do usuniecia
     }
 
     public RoomMsg(Type type) { super(type.name()); this.type = type; }
@@ -62,14 +63,21 @@ public class RoomMsg extends Message {
         public String toString() { return "Add event " + event.getName() + " " + event.getTime() + " " + event.turnNumber; }
     }
 
-    static public class ProposeRemoval extends RoomMsg {
+    static private class GenericRemovalMsg extends RoomMsg {
         public Set<Pair<Integer, Integer>> toRemove;
-        public ProposeRemoval(Set<Pair<Integer, Integer>> toRemove) { super(Type.PROPOSE_REMOVAL); this.toRemove = toRemove; }
+        public GenericRemovalMsg(RoomMsg.Type type, Set<Pair<Integer, Integer>> toRemove) { super(type); this.toRemove = toRemove; }
     }
 
-    static public class RemoveDead extends RoomMsg {
-        public Set<Pair<Integer, Integer>> toRemove;
-        public RemoveDead(Set<Pair<Integer, Integer>> toRemove) { super(Type.REMOVE_DEAD); this.toRemove = toRemove; }
+    static public class ProposeRemoval extends GenericRemovalMsg {
+        public ProposeRemoval(Set<Pair<Integer, Integer>> toRemove) { super(Type.PROPOSE_REMOVAL, toRemove); }
+    }
+
+    static public class RemoveDead extends GenericRemovalMsg {
+        public RemoveDead(Set<Pair<Integer, Integer>> toRemove) { super(Type.REMOVE_DEAD, toRemove); }
+    }
+
+    static public class UpdateRemoval extends  GenericRemovalMsg {
+        public UpdateRemoval(Set<Pair<Integer, Integer>> toRemove) { super(Type.UPDATE_REMOVAL, toRemove); }
     }
 
     @Override

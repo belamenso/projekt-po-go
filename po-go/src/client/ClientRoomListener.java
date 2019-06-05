@@ -183,9 +183,14 @@ public class ClientRoomListener implements ClientListener {
 
             case PROPOSE_REMOVAL:
                 System.out.println("Proposed removal");
-                removalStones.addAll(((RoomMsg.ProposeRemoval) roomMsg).toRemove);
+                removalStones = ((RoomMsg.ProposeRemoval) roomMsg).toRemove;
                 isAcceptance = true;
                 Platform.runLater(rg::showAcceptanceButtons);
+                break;
+
+            case UPDATE_REMOVAL:
+                System.out.println("Updating stones to remove");
+                removalStones = ((RoomMsg.UpdateRemoval) roomMsg).toRemove;
                 break;
 
             case REMOVE_DEAD:
@@ -277,6 +282,8 @@ public class ClientRoomListener implements ClientListener {
         } else {
             removalStones.addAll(stones);
         }
+
+        client.sendMessage(new RoomMsg.UpdateRemoval(removalStones));
 
         Platform.runLater(rg::renderBoard);
     }

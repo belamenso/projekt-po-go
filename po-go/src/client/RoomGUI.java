@@ -200,9 +200,7 @@ public class RoomGUI implements Initializable {
 
         ArrayList<GameLogic.Territory> ts = gameLogic.capturedTerritories(crl.getBoard());
         for (GameLogic.Territory t : ts) {
-            System.out.println("Territory: ");
             for (Pair<Integer, Integer> pos : t.territory) {
-                System.out.println(pos.x + " " + pos.y);
                 Platform.runLater(() -> {
                     board.colorStone(pos.x, pos.y, board.colorToTerritoryClass(t.captor.get())); // TODO zmienić to optional tam
                 });
