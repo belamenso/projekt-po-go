@@ -1,7 +1,0 @@
-{
-  "sounds" : {
-    "stone" : [ "stone1.mp3", "stone2.mp3", "stone3.mp3" ],
-    "dingdong" : [ "dingdingding.mp3" ],
-    "pass" : [ "pass.mp3" ]
-  }
-}
