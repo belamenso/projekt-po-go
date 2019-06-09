@@ -26,7 +26,7 @@ public class RoomScene implements Initializable {
     private ClientRoomListener crl;
 
     @FXML private Pane boardPane;
-    private GoBoardGUI board;
+    private GoBoard board;
 
     @FXML private Button passButton;
 
@@ -61,7 +61,7 @@ public class RoomScene implements Initializable {
             infoLabel.setText("You are spectating");
         }
 
-        board = new GoBoardGUI(boardPane, crl.getBoard());
+        board = new GoBoard(boardPane, crl.getBoard());
         boardPane.setMinHeight(300);
         boardPane.setMinWidth(300);
         boardPane.prefHeightProperty().bind(boardPane.prefWidthProperty());
@@ -340,6 +340,6 @@ public class RoomScene implements Initializable {
         messageTable.setPlaceholder(new Label("No messages"));
 
 
-        nameColumn.prefWidthProperty().bind(messageTable.widthProperty().subtract(54));
+        //nameColumn.prefWidthProperty().bind(messageTable.widthProperty().subtract(54));
     }
 }

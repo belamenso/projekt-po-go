@@ -5,7 +5,7 @@ import shared.Message;
 import java.io.*;
 import java.net.*;
 
-public class Client {
+class Client {
     private Socket socket;
     private ObjectInputStream inputStream;
     private ObjectOutputStream outputStream;
@@ -39,7 +39,7 @@ public class Client {
                         Message msg = null;
                         try {
                             msg = (Message) inputStream.readObject();
-                        } catch (ClassNotFoundException e) { e.printStackTrace(); } // Powinno byc niemożliwe
+                        } catch (ClassNotFoundException e) { e.printStackTrace(); }
 
                         if (msg == null) { throw new IOException(); }
 
@@ -81,10 +81,6 @@ public class Client {
         inputStream = null;
         outputStream = null;
      }
-
-    /*void sendMessage(String msg) {
-        sendMessage(new Message(msg));
-    }*/
 
     void sendMessage(Message msg) {
         if(open) try {
