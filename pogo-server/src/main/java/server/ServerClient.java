@@ -1,6 +1,5 @@
 package server;
 
-import shared.LobbyMsg;
 import shared.Message;
 
 import java.io.IOException;
@@ -86,11 +85,11 @@ public class ServerClient {
 
     void close() {
         try {
-            outputStream.close();
-
             if (!socket.isClosed()) {
                 socket.shutdownOutput();
                 socket.close();
+
+                outputStream.close();
             }
         } catch (IOException e) {
             e.printStackTrace();

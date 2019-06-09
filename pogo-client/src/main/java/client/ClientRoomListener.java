@@ -37,34 +37,21 @@ public class ClientRoomListener implements ClientListener {
     private Set<Pair<Integer, Integer>> removalStones;
 
     private final boolean spectator;
+    private boolean forkSent = false;
+    private String forkName = "";
 
     /**
-     * Tworzy listener dla gracza
+     * Tworzy listener
      */
-    ClientRoomListener(RoomScene rg, Client client, Stone color, Board.BoardSize size) {
-        System.out.println("### Listener for player");
-        spectator = false;
+    ClientRoomListener(RoomScene rg, Client client, Stone color, Board.BoardSize size, List<GameplayManager.Move> moves, List<RoomEvent> events)  {
+        System.out.println("### Listener for spectator");
+        spectator = color == null;
         this.rg = rg;
-        this.client = client;
-        client.setListener(this);
+        this.client = client; client.setListener(this);
         this.myColor = color;
         manager = new GameplayManager(size, 6.5);
-    }
 
-    /**
-     * Tworzy listener dla spectatora
-     */
-    ClientRoomListener(RoomScene rg, Client client, Board.BoardSize size, List<GameplayManager.Move> moves, List<RoomEvent> events)  {
-        System.out.println("### Listener for spectator");
-        spectator = true;
-        this.rg = rg;
-        this.client = client;
-        client.setListener(this);
-        this.myColor = null;
-        manager = new GameplayManager(size, 6.5);
         moves.forEach(manager::registerMove);
-        System.out.println("Spectator joined: " + moves.size() + " " + events.size());
-        moves.forEach(System.out::println);
         Platform.runLater(() -> events.forEach(rg::addMessage));
     }
 
@@ -75,6 +62,8 @@ public class ClientRoomListener implements ClientListener {
     synchronized Stone getColor() { return myColor; }
 
     synchronized Board getBoard() { return manager.getBoard(); }
+
+    synchronized boolean isGameStarted() { return gameStarted; }
 
     synchronized boolean myTurn() {
         return gameStarted && !gameInterrupted && manager.inProgress() && manager.nextTurn().equals(myColor);
@@ -97,14 +86,36 @@ public class ClientRoomListener implements ClientListener {
     public synchronized void receivedInput(Message message) {
         String msg = message.msg;
 
-        if(!(message instanceof RoomMsg)) {
-            if(message instanceof LobbyMsg && ((LobbyMsg) message).type == LobbyMsg.Type.LOBBY_JOINED) {
-                rg.returnToLobby();
-            } else {
-                System.out.println("Unrecognized message " + message.msg);
+        if(message instanceof LobbyMsg) {
+            LobbyMsg lobbyMsg = (LobbyMsg) message;
+            switch(lobbyMsg.type) {
+                case LOBBY_JOINED:
+                    rg.returnToLobby();
+                    break;
+
+                case NAME_TAKEN:
+                    Platform.runLater(rg::displayForkError);
+                    break;
+
+                case ROOM_CREATED:
+                    Platform.runLater(rg::displayForkCreated);
+                    break;
+
+                case CONNECTED:
+                    Stone                       color = ((LobbyMsg.Connected) lobbyMsg).color;
+                    Board.BoardSize              size = ((LobbyMsg.Connected) lobbyMsg).size;
+                    List<GameplayManager.Move>  moves = ((LobbyMsg.Connected) lobbyMsg).moves;
+                    List<RoomEvent>            events = ((LobbyMsg.Connected) lobbyMsg).events;
+
+                    rg.moveToAnotherRoom(color, size, moves, events);
+                    break;
+
+                default:
+                    System.out.println("Unrecognized lobby message: " + message);
             }
-            return;
         }
+
+        if(!(message instanceof RoomMsg)) return;
 
         RoomMsg roomMsg = (RoomMsg) message;
 
@@ -112,7 +123,7 @@ public class ClientRoomListener implements ClientListener {
             case GAME_BEGINS:
                 gameStarted = true;
 
-                if(!spectator) Platform.runLater(() -> rg.addMessage(new RoomEvent("You are " + myColor.pictogram, "", 0)));
+                if(!spectator) Platform.runLater(() -> rg.addMessage(new RoomEvent("You are " + myColor.pictogram, "", manager.getHistorySize())));
 
                 Sounds.playSound("dingdong");
                 break;
@@ -286,6 +297,28 @@ public class ClientRoomListener implements ClientListener {
         client.sendMessage(new RoomMsg.UpdateRemoval(removalStones));
 
         Platform.runLater(rg::renderBoard);
+    }
+
+    synchronized void joinFork(Stone color) {
+        assert spectator;
+        if(!forkSent) return;
+        client.sendMessage(new LobbyMsg.Join(forkName, color));
+        forkSent = false;
+    }
+
+    synchronized void createFork(String name, int turn) {
+        assert spectator;
+        if(forkSent) return;
+        if(turn == 0 || (turn == manager.getHistorySize() && manager.finished())) return;
+        client.sendMessage(new RoomMsg.CreateFork(name, turn));
+        forkName = name;
+        forkSent = true;
+    }
+
+    synchronized void confirm() {
+        assert spectator;
+        forkSent = false;
+        forkName = "";
     }
 
     /**

@@ -36,18 +36,12 @@ public class ClientLobbyListener implements ClientListener {
 
         switch (lobbyMsg.type) {
             case CONNECTED:
-                Stone           color = ((LobbyMsg.Connected) lobbyMsg).color;
-                Board.BoardSize size  = ((LobbyMsg.Connected) lobbyMsg).size;
+                Stone                       color = ((LobbyMsg.Connected) lobbyMsg).color;
+                Board.BoardSize              size = ((LobbyMsg.Connected) lobbyMsg).size;
+                List<GameplayManager.Move>  moves = ((LobbyMsg.Connected) lobbyMsg).moves;
+                List<RoomEvent>            events = ((LobbyMsg.Connected) lobbyMsg).events;
 
-                ls.moveToRoom(color, size);
-                break;
-
-            case CONNECTED_SPECTATOR:
-                Board.BoardSize             bsize = ((LobbyMsg.ConnectedSpectator) lobbyMsg).size;
-                List<GameplayManager.Move>  moves = ((LobbyMsg.ConnectedSpectator) lobbyMsg).moves;
-                List<RoomEvent>            events = ((LobbyMsg.ConnectedSpectator) lobbyMsg).events;
-
-                ls.moveToRoomSpectator(bsize, moves, events);
+                ls.moveToRoom(color, size, moves, events);
                 break;
 
             case LISTING:
@@ -57,15 +51,15 @@ public class ClientLobbyListener implements ClientListener {
                 break;
 
             case CONNECTION_REFUSED:
-                Platform.runLater(() -> ls.setMessage("Nie udało się połączyć z pokojem"));
+                Platform.runLater(() -> ls.setMessage("Couldn't join the room"));
                 break;
 
             case NAME_TAKEN:
-                Platform.runLater(() -> ls.setMessage("Nazwa zajęta"));
+                Platform.runLater(() -> ls.setMessage("Name taken"));
                 break;
 
             case ROOM_NOT_FOUND:
-                Platform.runLater(() -> ls.setMessage("Nie znalezino pokoju"));
+                Platform.runLater(() -> ls.setMessage("Room not found"));
                 break;
 
             default:

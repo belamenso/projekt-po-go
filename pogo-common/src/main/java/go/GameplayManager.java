@@ -284,6 +284,11 @@ public class GameplayManager {
         return count > 0 && count % 2 == 0;
     }
 
+    public boolean hadPlacementBeforeDoublePass() {
+        if(moves.size() <= 2) return false;
+        return moves.get(moves.size() - 3) instanceof StonePlacement;
+    }
+
     /**
      * Wynik gry, remisy są niemożliwe
      * TODO czy ta klasa na pewno powinna być tutaj?

@@ -26,6 +26,7 @@ public class RoomMsg extends Message {
         , DECLINE_REMOVAL    // Odmow usuniecia wskazanych
         , REMOVE_DEAD        // Ususn wskazane martwe kamienie - konczy gre
         , UPDATE_REMOVAL     // Uaktualnia kamienie do usuniecia
+        , CREATE_FORK
     }
 
     public RoomMsg(Type type) { super(type.name()); this.type = type; }
@@ -78,6 +79,12 @@ public class RoomMsg extends Message {
 
     static public class UpdateRemoval extends  GenericRemovalMsg {
         public UpdateRemoval(Set<Pair<Integer, Integer>> toRemove) { super(Type.UPDATE_REMOVAL, toRemove); }
+    }
+
+    static public class CreateFork extends RoomMsg {
+        public String name;
+        public int turns;
+        public CreateFork(String name, int turns) { super(Type.CREATE_FORK); this.name = name; this.turns = turns; }
     }
 
     @Override

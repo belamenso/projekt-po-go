@@ -14,14 +14,12 @@ import java.util.*;
 
 /**
  * Listener obsugujacy pojedynczy pokoj
- * na ta chwile jedyne co robi to wysyla otrzymane wiadomosci do obywdu graczy
- * w finalnej wersji te wiadomosci beda ruchami graczy
  */
 public class RoomListener implements ServerListener {
-    private List<ServerClient> clients;
-    private ServerClient blackPlayer;
-    private ServerClient whitePlayer;
-    private List<ServerClient> spectators;
+    private List<ServerClient> clients = new LinkedList<>();
+    private ServerClient blackPlayer = null;
+    private ServerClient whitePlayer = null;
+    private List<ServerClient> spectators = new LinkedList<>();
     private String name;
     private LobbyListener lobby;
 
@@ -30,21 +28,27 @@ public class RoomListener implements ServerListener {
 
     private boolean removingDeadTerritories = false;
     private Set<Pair<Integer, Integer>> stonesToRemove = null;
-    private int placementsSinceLastDoublePass = 0;
 
-    private List<RoomEvent> events;
-    private Date start;
+    private List<RoomEvent> events = new LinkedList<>();
+    private Date start = null;
 
     RoomListener(String name, Board.BoardSize size, LobbyListener lobby) {
         this.name = name;
         this.lobby = lobby;
-        start = null;
-        events = new LinkedList<>();
-        clients = new LinkedList<>();
-        spectators = new LinkedList<>();
         manager = new GameplayManager(size, 6.5);
-        whitePlayer = null;
-        blackPlayer = null;
+    }
+
+    RoomListener(String name, RoomListener forked, int turns, LobbyListener lobby) {
+        this.name = name;
+        this.lobby = lobby;
+        manager = forked.manager.fork(turns-1);
+        events = new LinkedList<>();
+        for(RoomEvent e : forked.events) {
+            if(e.turnNumber <= turns) {
+                events.add(e);
+            }
+        }
+        registerEvent("Fork is created");
     }
 
     /**
@@ -135,7 +139,7 @@ public class RoomListener implements ServerListener {
         client.setListener(this);
         clients.add(client);
 
-        client.sendMessage(new LobbyMsg.Connected(color, manager.getSize())); // -> ClientLobbyListener
+        client.sendMessage(new LobbyMsg.Connected(color, manager.getSize(), manager.getMoveHistory(), events)); // -> ClientLobbyListener
 
         registerEvent(color.pictogram + " joined the game");
 
@@ -159,7 +163,7 @@ public class RoomListener implements ServerListener {
                 manager.getMoveHistory().size() + " of " + manager.getHistorySize() + " movess, and " +
                 events.size() + " events");
 
-        client.sendMessage(new LobbyMsg.ConnectedSpectator(manager.getMoveHistory(), events, manager.getSize()));
+        client.sendMessage(new LobbyMsg.Connected(null, manager.getSize(), manager.getMoveHistory(), events));
 
         lobby.broadcastRoomUpdate();
     }
@@ -191,7 +195,23 @@ public class RoomListener implements ServerListener {
 
     @Override
     public synchronized void receivedInput(ServerClient client, Message message) {
-        if(!(message instanceof RoomMsg)) { System.out.println("Unrecognized message in " + this); return; }
+        if(!(message instanceof RoomMsg)) {
+            if(message instanceof LobbyMsg) {
+                LobbyMsg lobbyMsg = (LobbyMsg) message;
+                if(lobbyMsg.type == LobbyMsg.Type.JOIN) {
+                    String toJoin = ((LobbyMsg.Join) message).roomName;
+                    Stone   color = ((LobbyMsg.Join) message).color;
+                    if(lobby.joinRoom(toJoin, color, client)) {
+                        spectators.remove(client);
+                        lobby.broadcastRoomUpdate();
+                    }
+                    return;
+                }
+            }
+
+            System.out.println("Unrecognized message in " + this);
+            return;
+        }
 
         RoomMsg roomMsg = (RoomMsg) message;
 
@@ -225,7 +245,6 @@ public class RoomListener implements ServerListener {
                     if(move instanceof GameplayManager.Pass) {
                         registerEvent(move.player.pictogram + " has passed their turn");
                     } else {
-                        ++ placementsSinceLastDoublePass;
 
                         Pair<Integer, Integer> pos = ((GameplayManager.StonePlacement) move).position;
                         registerEvent(move.player.pictogram + " places stone at " +
@@ -233,10 +252,9 @@ public class RoomListener implements ServerListener {
                     }
 
                     if(manager.hadTwoPasses()) {
-                        if(placementsSinceLastDoublePass == 0) {
+                        if(!manager.hadPlacementBeforeDoublePass()) {
                             finishTheGame();
                         } else {
-                            placementsSinceLastDoublePass = 0;
                             beginRemoval();
                         }
                     }
@@ -274,6 +292,14 @@ public class RoomListener implements ServerListener {
             case CHAT:
                 RoomMsg.Chat msg = (RoomMsg.Chat) message;
                 registerEvent("(" + msg.player.pictogram + "): " + msg.msg);
+                break;
+
+            case CREATE_FORK:
+                String name = ((RoomMsg.CreateFork) message).name;
+                int   turns = ((RoomMsg.CreateFork) message).turns;
+
+                lobby.createForkRoom(name, turns, this, client);
+                break;
 
             default:
                 System.out.println("Unrecognized message: " + message.msg);

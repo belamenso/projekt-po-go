@@ -59,28 +59,13 @@ class SceneManager {
         }
     }
 
-    static void loadRoomScreen(Stone color, Board.BoardSize size) {
+    static void loadRoomScreen(Stone color, Board.BoardSize size, List<GameplayManager.Move> moves, List<RoomEvent> events) {
         try {
             FXMLLoader loader = loadFXML("RoomScene");
             Parent root = loader.load();
             RoomScene controller = loader.getController();
 
-            ClientRoomListener crl = new ClientRoomListener(controller, client, color, size);
-            controller.setup(crl);
-
-            Platform.runLater(() -> scene.setRoot(root));
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-    }
-
-    static void loadRoomScreenAsSpectator(Board.BoardSize size, List<GameplayManager.Move> moves, List<RoomEvent> events) {
-        try {
-            FXMLLoader loader = loadFXML("RoomScene");
-            Parent root = loader.load();
-            RoomScene controller = loader.getController();
-
-            ClientRoomListener crl = new ClientRoomListener(controller, client, size, moves, events);
+            ClientRoomListener crl = new ClientRoomListener(controller, client, color, size, moves, events);
             controller.setup(crl);
 
             Platform.runLater(() -> scene.setRoot(root));

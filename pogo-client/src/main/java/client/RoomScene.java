@@ -53,6 +53,12 @@ public class RoomScene implements Initializable {
     @FXML private Button noButton;
     @FXML private Button doneButton;
 
+    @FXML private TextField forkNameField;
+    @FXML private Button joinWhiteButton;
+    @FXML private Button joinBlackButton;
+    @FXML private Button confirmButton;
+    @FXML private Button createForkButton;
+
     private Optional<GameplayManager.Result> cachedGameResult = Optional.empty();
 
     void setup(ClientRoomListener clientRoomListener) {
@@ -91,8 +97,21 @@ public class RoomScene implements Initializable {
                 isPlayer.not()
         ));
 
+        passButton.visibleProperty().bind(isPlayer);
+        passButton.managedProperty().bind(passButton.visibleProperty());
+
         chatField.disableProperty().bind(isPlayer.not());
         sendButton.disableProperty().bind(isPlayer.not());
+
+        createForkButton.visibleProperty().bind(isPlayer.not());
+        createForkButton.managedProperty().bind(isPlayer.not());
+        forkNameField.visibleProperty().bind(isPlayer.not());
+        forkNameField.managedProperty().bind(isPlayer.not());
+
+        chatField.visibleProperty().bind(isPlayer);
+        chatField.managedProperty().bind(isPlayer);
+        sendButton.visibleProperty().bind(isPlayer);
+        sendButton.managedProperty().bind(isPlayer);
 
         captureLabelA.setText(isPlayer.get() ? "Captured:" : "Black:");
         captureLabelB.setText(isPlayer.get() ? "Lost:" : "White:");
@@ -219,7 +238,9 @@ public class RoomScene implements Initializable {
 
         infoLabel.setTextFill(Color.BLACK);
 
-        if (crl.myTurn()) {
+        if(!crl.isGameStarted()) {
+            infoLabel.setText("Waiting for the game to start");
+        } else if (crl.myTurn()) {
             infoLabel.setText("Your move");
         } else if (crl.wasInterruped()) {
             infoLabel.setText("Opponent has left the game");
@@ -313,15 +334,62 @@ public class RoomScene implements Initializable {
             crl.sendChat(msg);
     }
 
+    @FXML
+    public void joinWhite() {
+        crl.joinFork(Stone.White);
+        hideButton(joinWhiteButton);
+        hideButton(joinBlackButton);
+        infoLabel.setText("You are spectating");
+    }
+
+    @FXML
+    public void joinBlack() {
+        crl.joinFork(Stone.Black);
+        hideButton(joinWhiteButton);
+        hideButton(joinBlackButton);
+        infoLabel.setText("You are spectating");
+    }
+
+    @FXML
+    public void confirm() {
+        crl.confirm();
+        hideButton(confirmButton);
+        infoLabel.setText("You are spectating");
+    }
+
+    @FXML
+    public void createFork() {
+        String name = forkNameField.getText();
+        crl.createFork(name, (int) Math.round(historySlider.getValue()));
+    }
+
+    void displayForkError() {
+        infoLabel.setText("Fork couldn't be created");
+        showButton(confirmButton);
+    }
+
+    void displayForkCreated() {
+        infoLabel.setText("Fork created");
+        showButton(joinWhiteButton);
+        showButton(joinBlackButton);
+    }
+
     void returnToLobby() {
         SceneManager.loadLobbyScreen();
     }
 
+    void moveToAnotherRoom(Stone color, Board.BoardSize size, List<GameplayManager.Move> moves, List<RoomEvent> events) {
+        SceneManager.loadRoomScreen(color, size, moves, events);
+    }
+
     @Override
     public void initialize(URL url, ResourceBundle resourceBundle) {
-        yesButton .setManaged(false);
-        noButton  .setManaged(false);
-        doneButton.setManaged(false);
+        hideButton(yesButton);
+        hideButton(noButton);
+        hideButton(doneButton);
+        hideButton(joinBlackButton);
+        hideButton(joinWhiteButton);
+        hideButton(confirmButton);
 
         TableColumn<RoomEvent, String> nameColumn = new TableColumn<>("Messages");
         nameColumn.setCellValueFactory(new PropertyValueFactory<>("name"));

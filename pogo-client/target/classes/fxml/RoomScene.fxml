@@ -29,6 +29,8 @@
                <children>
                   <TextField fx:id="chatField" onAction="#sendChat" />
                   <Button fx:id="sendButton" minWidth="50.0" mnemonicParsing="false" onAction="#sendChat" prefWidth="50.0" text="Send" />
+                  <TextField fx:id="forkNameField" onAction="#createFork" />
+                  <Button fx:id="createForkButton" minWidth="50.0" mnemonicParsing="false" onAction="#createFork" prefWidth="50.0" text="Fork" />
                </children>
                <padding>
                   <Insets top="10.0" />
@@ -57,6 +59,9 @@
             <Button fx:id="yesButton" mnemonicParsing="false" onAction="#accept" text="Yes" visible="false" />
             <Button fx:id="noButton" mnemonicParsing="false" onAction="#decline" text="No" visible="false" />
             <Button fx:id="doneButton" mnemonicParsing="false" onAction="#doneNominating" text="Done" visible="false" />
+            <Button fx:id="joinWhiteButton" mnemonicParsing="false" onAction="#joinWhite" text="Join as White" visible="false" />
+            <Button fx:id="joinBlackButton" mnemonicParsing="false" onAction="#joinBlack" text="Join as Black" visible="false" />
+            <Button fx:id="confirmButton" mnemonicParsing="false" onAction="#confirm" text="OK" visible="false" />
             <Region HBox.hgrow="ALWAYS" />
             <Label fx:id="captureLabelA" alignment="TOP_RIGHT" text="Captured:" />
             <Label fx:id="capturedLabel" text="0" />

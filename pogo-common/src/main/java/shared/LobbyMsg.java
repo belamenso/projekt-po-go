@@ -19,7 +19,8 @@ public class LobbyMsg extends Message {
         , REMOVE               // Room        -> Lobby
         , CONNECTION_REFUSED   // Room        -> ClientLobby
         , CONNECTED            // Room        -> ClientLobby
-        , CONNECTED_SPECTATOR  // Room        -> ClientLobby
+        //, CONNECTED_SPECTATOR  // Room        -> ClientLobby
+        , ROOM_CREATED         // Lobby       -> ClientLobby / ClientRoom
     }
 
     public Type type;
@@ -59,17 +60,13 @@ public class LobbyMsg extends Message {
     static public class Connected extends LobbyMsg {
         public Stone color;
         public Board.BoardSize size;
-        public Connected(Stone color, Board.BoardSize size) { super(Type.CONNECTED); this.color = color; this.size = size; }
-    }
-
-    static public class ConnectedSpectator extends LobbyMsg {
         public List<GameplayManager.Move> moves;
         public List<RoomEvent> events;
-        public Board.BoardSize size;
-        public ConnectedSpectator(List<GameplayManager.Move> moves, List<RoomEvent> events, Board.BoardSize size)
-                { super(Type.CONNECTED_SPECTATOR); this.moves = moves; this.events = events; this.size = size;
-                 System.out.println("Created spectate request " + moves.size() + " " + events.size()); }
+        public Connected(Stone color, Board.BoardSize size, List<GameplayManager.Move> moves, List<RoomEvent> events) {
+            super(Type.CONNECTED); this.color = color; this.size = size; this.moves = moves; this.events = events;
+        }
     }
+
 
     private static final long serialVersionUID = 6L;
 }

@@ -30,7 +30,7 @@ public class ConnectionScene implements Initializable {
 
         } catch(RuntimeException ex) {
             ex.printStackTrace();
-            messageLabel.setText("Port musi być liczbą");
+            messageLabel.setText("Port must be a number");
             messageLabel.setTextFill(Color.CRIMSON);
         }
     }

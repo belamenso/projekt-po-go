@@ -135,11 +135,7 @@ public class LobbyScene implements Initializable {
         SceneManager.loadConnectionScreen();
     }
 
-    void moveToRoom(Stone color, Board.BoardSize size) {
-        SceneManager.loadRoomScreen(color, size);
-    }
-
-    void moveToRoomSpectator(Board.BoardSize size, List<GameplayManager.Move> moves, List<RoomEvent> events) {
-        SceneManager.loadRoomScreenAsSpectator(size, moves, events);
+    void moveToRoom(Stone color, Board.BoardSize size, List<GameplayManager.Move> moves, List<RoomEvent> events) {
+        SceneManager.loadRoomScreen(color, size, moves, events);
     }
 }

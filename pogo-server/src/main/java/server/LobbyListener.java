@@ -77,32 +77,17 @@ public class LobbyListener implements ServerListener {
                 String          toCreate = ((LobbyMsg.Create) lobbyMessage).roomName;
                 Board.BoardSize size     = ((LobbyMsg.Create) lobbyMessage).size;
 
-                for(RoomListener room : rooms) {
-                    if(room.getName().equals(toCreate)) {
-                        client.sendMessage(new LobbyMsg(LobbyMsg.Type.NAME_TAKEN));
-                        return;
-                    }
-                }
+                createRoom(toCreate, size, client);
 
-                System.out.println("Adding room " + toCreate);
-                rooms.add(new RoomListener(toCreate, size, this));
-
-                broadcastRoomUpdate();
                 break;
 
             case JOIN:
                 String toJoin = ((LobbyMsg.Join) lobbyMessage).roomName;
                 Stone   color = ((LobbyMsg.Join) lobbyMessage).color;
 
-                for(RoomListener room : rooms) {
-                    if(room.getName().equals(toJoin)) {
-                        if(room.joinPlayer(client, color))
-                            clients.remove(client);
-                        return;
-                    }
-                }
+                if(joinRoom(toJoin, color, client))
+                    clients.remove(client);
 
-                client.sendMessage(new LobbyMsg(LobbyMsg.Type.ROOM_NOT_FOUND));
                 break;
 
             case SPECTATE:
@@ -129,6 +114,49 @@ public class LobbyListener implements ServerListener {
             default:
                 System.out.println("Unsopported lobby message " + lobbyMessage.type.name());
         }
+    }
+
+    boolean checkRoomAvailabe(String name, ServerClient client) {
+        for(RoomListener room : rooms) {
+            if(room.getName().equals(name)) {
+                client.sendMessage(new LobbyMsg(LobbyMsg.Type.NAME_TAKEN));
+                return false;
+            }
+        }
+        return true;
+    }
+
+    synchronized void createRoom(String name, Board.BoardSize size, ServerClient client) {
+        if(!checkRoomAvailabe(name, client)) return;
+
+        System.out.println("Adding room " + name);
+        rooms.add(new RoomListener(name, size, this));
+        client.sendMessage(new LobbyMsg(LobbyMsg.Type.ROOM_CREATED));
+
+        broadcastRoomUpdate();
+    }
+
+    synchronized void createForkRoom(String name, int turns, RoomListener room, ServerClient client) {
+        if(!checkRoomAvailabe(name, client)) return;
+
+        System.out.println("Creating fork of " + room + " after " + turns + " turns");
+        rooms.add(new RoomListener(name, room, turns, this));
+        client.sendMessage(new LobbyMsg(LobbyMsg.Type.ROOM_CREATED));
+
+        broadcastRoomUpdate();
+    }
+
+    synchronized boolean joinRoom(String toJoin, Stone color, ServerClient client) {
+        for(RoomListener room : rooms) {
+            if(room.getName().equals(toJoin)) {
+                if(room.joinPlayer(client, color))
+                    return true;
+                return false;
+            }
+        }
+
+        client.sendMessage(new LobbyMsg(LobbyMsg.Type.ROOM_NOT_FOUND));
+        return false;
     }
 
     @Override
