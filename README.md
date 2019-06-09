@@ -2,38 +2,26 @@
 
 Autorzy: Bartosz Białas, Rafał Kilar
 
-## Co już działa
-* Prawie cała logika gry (nie obsługujemy usuwania martwych kamieni przed zliczaniem punktów)
-* Serwer trzymający pełną historię stanów dla każdej rozgrywki w pamięci (później będą z tego historia gry i forki)
-* Możliwość gry od początku do końca z innym graczem przez sieć (tworzenie pokoju, wchodzenie, gra, wynik gry)
-* Niedozwolone ruchy nie są dopuszczalne
-* Podgląd kamieni usuwanych z planszy prze ruch
+## Uruchomienie
+Klient - plik pogo-client/shade/pogo-client.jar
+Serwer - plik pogo-client/shade/pogo-server.jar - uruchomiany z linii poleceń
+
+Serwer uruchamia się na porcie 33107 i wypisuje ip potrzebne do połączenia z nim.
+
+## Funkcjonalności
+* Obsługa wielu pokojów w lobby
+* Możliwość gry w Go w pokoju zgodnie z zasadami gry
+* Podgląd kamieni usuwanych z planszy przed ruchem
 * Podgląd zajętych terytoriów pod koniec gry
 * Prosty chat między graczami
 * Skrypt z rozgrywki z czasami zdarzeń
-* GUI, które umożliwia grę online od początku do końca
-* lepsze GUI (eg. wyświetlanie liczby pojmanych kamieni, estetyczny resize)
-* dodanie obsługi plansz różnej wielkości do GUI
-* dodanie podglądu historii rozgrywki do GUI + animacja gry
-* dźwięki
-
-## Plany na kolejne spotkanie
-* usuwanie martwych kamieni przed zliczeniem punktów
-* dodanie możliwości oglądania rozgrywek, bez uczestniczenia w nich
-* możliwość forkowania rozgrywki od dowolnego punktu
-* highscore
-* przechowywanie zakończonych rozgrywek
-
-## Możliwe kierunki
-* usuwanie martwych kamieni przed zliczeniem punktów
-* dodanie możliwości oglądania rozgrywek, bez uczestniczenia w nich
-* dodanie importu i eksportu plików SGF - integracja z innymi programami do gry w go
-* bardziej zorganizowany chat
-* możliwość forkowania rozgrywki od dowolnego punktu
-* gra offline (dwóch graczy przed jednym komputerem)
-* dodanie prostego GUI do serwera
-
-
+* Obsługa plansz różnej wielkości
+* Obsługa wyboru koloru
+* Podgląd historii rozgrywki
+* Forkowanie rozgrywki
+* Spectatowanie gier
+* Usuwanie martwych kamienii
+* Dźwięki
 
 ----
 
