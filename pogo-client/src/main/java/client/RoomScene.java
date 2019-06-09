@@ -9,12 +9,15 @@ import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
+import javafx.geometry.Orientation;
+import javafx.scene.Node;
 import javafx.scene.control.*;
 import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Pane;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.Rectangle;
+import javafx.scene.text.Text;
 import shared.RoomEvent;
 import util.Pair;
 import java.net.URL;
@@ -339,7 +342,25 @@ public class RoomScene implements Initializable {
         messageTable.getColumns().addAll(timeColumn, nameColumn);
         messageTable.setPlaceholder(new Label("No messages"));
 
+        nameColumn.setCellFactory(tc -> {
+            TableCell<RoomEvent, String> cell = new TableCell<>();
+            Text text = new Text();
+            cell.setGraphic(text);
+            cell.setPrefHeight(Control.USE_COMPUTED_SIZE);
+            text.wrappingWidthProperty().bind(nameColumn.widthProperty());
+            text.textProperty().bind(cell.itemProperty());
+            return cell;
+        });
 
-        //nameColumn.prefWidthProperty().bind(messageTable.widthProperty().subtract(54));
+        messageTable.widthProperty().addListener((value) -> {
+            ScrollBar scrollBar = (ScrollBar) messageTable.lookup(".scroll-bar:vertical");
+            if(scrollBar == null) return;
+            System.out.println("asdf");
+            nameColumn.prefWidthProperty().bind(Bindings.when(scrollBar.visibleProperty())
+                        .then(messageTable.widthProperty().subtract(54).subtract(scrollBar.widthProperty()))
+                        .otherwise(messageTable.widthProperty().subtract(54)));
+        });
+
+        nameColumn.prefWidthProperty().bind(messageTable.widthProperty().subtract(80));
     }
 }
