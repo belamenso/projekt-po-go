@@ -3,10 +3,11 @@
 Autorzy: Bartosz Białas, Rafał Kilar
 
 ## Uruchomienie
-Klient - plik pogo-client/shade/pogo-client.jar
-Serwer - plik pogo-client/shade/pogo-server.jar - uruchomiany z linii poleceń
+Klient - plik `pogo-client/shade/pogo-client.jar`
 
-Serwer uruchamia się na porcie 33107 i wypisuje ip potrzebne do połączenia z nim.
+Serwer - plik `pogo-client/shade/pogo-server.jar` - uruchomiany z linii poleceń
+
+Serwer uruchamia się na porcie 33107 i wypisuje adres IP potrzebny do połączenia z nim.
 
 ## Funkcjonalności
 * Obsługa wielu pokojów w lobby
