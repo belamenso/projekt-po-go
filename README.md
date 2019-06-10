@@ -5,7 +5,7 @@ Autorzy: Bartosz Białas, Rafał Kilar
 ## Uruchomienie
 Klient - plik `pogo-client/shade/pogo-client.jar`
 
-Wymaga najnowszej wersjii Javy.
+Wymaga najnowszej wersji Javy.
 
 Serwer - plik `pogo-client/shade/pogo-server.jar` - uruchamiany z linii poleceń `java -jar pogo-server.jar <numer portu - domyślnie 33107>`
 
