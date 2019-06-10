@@ -28,6 +28,8 @@ class Sounds {
                     variants.add(mediaPlayer);
                 } catch (URISyntaxException e) {
                     e.printStackTrace();
+                } catch (RuntimeException e) {
+                    System.out.println("Media couldn't be loaded. Your system may be missing appropriate software.");
                 }
             }
         }
@@ -47,8 +49,8 @@ class Sounds {
         Settings settings = Settings.readSettings();
         if(!settings.soundOn) return;
         Sound s = sounds.get(name);
-        System.out.println("playing sound: " + name);
         if(s != null) {
+            System.out.println("playing sound: " + name);
             s.play();
         }
     }

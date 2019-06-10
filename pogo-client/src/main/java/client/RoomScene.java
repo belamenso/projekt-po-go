@@ -423,7 +423,7 @@ public class RoomScene implements Initializable {
         messageTable.widthProperty().addListener((value) -> {
             ScrollBar scrollBar = (ScrollBar) messageTable.lookup(".scroll-bar:vertical");
             if(scrollBar == null) return;
-            System.out.println("asdf");
+            //System.out.println("asdf");
             nameColumn.prefWidthProperty().bind(Bindings.when(scrollBar.visibleProperty())
                         .then(messageTable.widthProperty().subtract(54).subtract(scrollBar.widthProperty()))
                         .otherwise(messageTable.widthProperty().subtract(54)));

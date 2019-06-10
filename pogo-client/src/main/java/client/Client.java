@@ -71,9 +71,9 @@ class Client {
         if(open) {
             open = false;
 
-            try { if(      socket != null)       socket.close(); } catch (IOException e) { e.printStackTrace(); }
-            try { if( inputStream != null)  inputStream.close(); } catch (IOException e) { e.printStackTrace(); }
-            try { if(outputStream != null) outputStream.close(); } catch (IOException e) { e.printStackTrace(); }
+            try { if(      socket != null)       socket.close(); } catch (IOException e) { /*e.printStackTrace();*/ }
+            try { if( inputStream != null)  inputStream.close(); } catch (IOException e) { /*e.printStackTrace();*/ }
+            try { if(outputStream != null) outputStream.close(); } catch (IOException e) { /*e.printStackTrace();*/ }
 
             if(listener != null) listener.disconnected();
         }
@@ -88,7 +88,7 @@ class Client {
             outputStream.writeObject(msg);
             outputStream.flush();
         } catch (IOException e) {
-            e.printStackTrace();
+            //e.printStackTrace();
             close();
         }
     }

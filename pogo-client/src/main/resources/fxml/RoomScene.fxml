@@ -28,9 +28,9 @@
             <HBox prefWidth="240.0" spacing="10.0" BorderPane.alignment="CENTER">
                <children>
                   <TextField fx:id="chatField" onAction="#sendChat" />
-                  <Button fx:id="sendButton" minWidth="50.0" mnemonicParsing="false" onAction="#sendChat" prefWidth="50.0" text="Send" />
+                  <Button fx:id="sendButton" minWidth="60.0" mnemonicParsing="false" onAction="#sendChat" prefWidth="60.0" text="Send" />
                   <TextField fx:id="forkNameField" onAction="#createFork" />
-                  <Button fx:id="createForkButton" minWidth="50.0" mnemonicParsing="false" onAction="#createFork" prefWidth="50.0" text="Fork" />
+                  <Button fx:id="createForkButton" minWidth="60.0" mnemonicParsing="false" onAction="#createFork" prefWidth="60.0" text="Fork" />
                </children>
                <padding>
                   <Insets top="10.0" />

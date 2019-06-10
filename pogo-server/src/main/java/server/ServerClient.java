@@ -95,7 +95,7 @@ public class ServerClient {
             e.printStackTrace();
         }
 
-        server.clients.remove(this);
+        try { server.clients.remove(this); } catch(Exception e) {}
     }
 
     void setListener(ServerListener listener) {

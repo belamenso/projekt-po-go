@@ -59,12 +59,13 @@ public class Server {
             st.setName("Server thread");
             st.start();
 
-        } catch(IOException e){ e.printStackTrace(); }
+        } catch(IOException e){ /*.printStackTrace();*/ }
     }
 
     private void close() {
+        if(!open) return;
         open = false;
-        try{ serverSocket.close(); } catch(IOException e){ e.printStackTrace(); }
+        try{ serverSocket.close(); } catch(IOException e){ /*e.printStackTrace();*/ }
 
         for(ServerClient s : clients) s.close();
 
