@@ -2,9 +2,9 @@ package client;
 
 import javafx.scene.media.Media;
 import javafx.scene.media.MediaPlayer;
-import java.io.File;
-import java.io.FileReader;
-import java.io.IOException;
+
+import java.io.*;
+import java.net.URISyntaxException;
 import java.util.*;
 
 import org.json.simple.JSONArray;
@@ -20,14 +20,20 @@ class Sounds {
         Sound(JSONArray files) {
             variants = new ArrayList<>();
             for(Object o : files) {
-                //System.out.println("po-go/resources/sounds/" + o.toString());
-                Media sound = new Media(new File("po-go/resources/sounds/" + o.toString()).toURI().toString());
-                MediaPlayer mediaPlayer = new MediaPlayer(sound);
-                variants.add(mediaPlayer);
+                Media sound = null;
+                try {
+                    System.out.println(Sounds.class.getResource("/sounds/" + o.toString()).toURI().toString());
+                    sound = new Media(Sounds.class.getResource("/sounds/" + o.toString()).toURI().toString());
+                    MediaPlayer mediaPlayer = new MediaPlayer(sound);
+                    variants.add(mediaPlayer);
+                } catch (URISyntaxException e) {
+                    e.printStackTrace();
+                }
             }
         }
 
         void play() {
+            if(variants.size() == 0) return;
             MediaPlayer sound = variants.get(RNG.nextInt(variants.size()));
             sound.stop();
             sound.play();
@@ -52,11 +58,11 @@ class Sounds {
 
         Object obj = null;
         try {
-            File f = new File(Sounds.class.getResource("/sounds/sounds.json").toString());
-            System.out.println(f.exists());
-            obj = new JSONParser().parse(f.toURI().toString());
+            obj = new JSONParser().parse(new InputStreamReader(Sounds.class.getResourceAsStream("/sounds/sounds.json")));
         } catch (ParseException e) {
             System.out.println("Problem parsing sounds.json");
+            e.printStackTrace();
+        } catch (IOException e) {
             e.printStackTrace();
         }
 

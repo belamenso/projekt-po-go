@@ -31,7 +31,7 @@ public class Main extends Application {
         SceneManager.setup(scene, client);
         SceneManager.loadConnectionScreen();
 
-        //Sounds.loadSounds();
+        Sounds.loadSounds();
 
         window.setScene(scene);
 
