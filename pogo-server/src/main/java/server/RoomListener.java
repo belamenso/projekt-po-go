@@ -159,9 +159,9 @@ public class RoomListener implements ServerListener {
         client.setListener(this);
         spectators.add(client);
 
-        System.out.println(client + " joined " + this + " sending " +
+        /*System.out.println(client + " joined " + this + " sending " +
                 manager.getMoveHistory().size() + " of " + manager.getHistorySize() + " movess, and " +
-                events.size() + " events");
+                events.size() + " events");*/
 
         client.sendMessage(new LobbyMsg.Connected(null, manager.getSize(), manager.getMoveHistory(), events));
 
@@ -209,7 +209,7 @@ public class RoomListener implements ServerListener {
                 }
             }
 
-            System.out.println("Unrecognized message in " + this);
+            System.out.println("Unrecognized message " + message + " in " + this);
             return;
         }
 
@@ -263,28 +263,28 @@ public class RoomListener implements ServerListener {
 
             case PROPOSE_REMOVAL:
                 assert removingDeadTerritories;
-                System.out.println("Player " + getPlayerColor(client) + " proposes removal");
+                //System.out.println("Player " + getPlayerColor(client) + " proposes removal");
                 getPlayer(getPlayerColor(client).opposite).sendMessage(roomMsg);
                 stonesToRemove = ((RoomMsg.ProposeRemoval) roomMsg).toRemove;
                 break;
 
             case ACCEPT_REMOVAL:
-                System.out.println("Player " + getPlayerColor(client) + " accepts removal");
+                //System.out.println("Player " + getPlayerColor(client) + " accepts removal");
                 if(getPlayerColor(client) == manager.nextTurn()) {
                     finishTheGame();
                 } else {
                     getPlayer(manager.nextTurn().opposite).sendMessage(new RoomMsg(RoomMsg.Type.NOMINATE_TO_REMOVE));
-                    System.out.println("Nominating player " + manager.nextTurn().opposite + " " + this);
+                    //System.out.println("Nominating player " + manager.nextTurn().opposite + " " + this);
                 }
                 break;
 
             case DECLINE_REMOVAL:
-                System.out.println("Player " + getPlayerColor(client) + " declines removal");
+                //System.out.println("Player " + getPlayerColor(client) + " declines removal");
                 cancelRemoval();
                 break;
 
             case UPDATE_REMOVAL:
-                System.out.println("Player " + getPlayerColor(client) + " updates stones to be removed");
+                //System.out.println("Player " + getPlayerColor(client) + " updates stones to be removed");
                 stonesToRemove = ((RoomMsg.UpdateRemoval) roomMsg).toRemove;
                 sendToPlayersExcept(message, client);
                 break;
@@ -302,12 +302,12 @@ public class RoomListener implements ServerListener {
                 break;
 
             default:
-                System.out.println("Unrecognized message: " + message.msg);
+                System.out.println("Unrecognized message: " + message.msg + " in " + this);
         }
     }
 
     private void beginRemoval() {
-        System.out.println("Begin removal " + this);
+        //System.out.println("Begin removal " + this);
 
         removingDeadTerritories = true;
         stonesToRemove = new HashSet<>();
@@ -315,11 +315,11 @@ public class RoomListener implements ServerListener {
         try { Thread.sleep(200); } catch (InterruptedException e) { e.printStackTrace(); }
         getPlayer(manager.nextTurn()).sendMessage(new RoomMsg(RoomMsg.Type.NOMINATE_TO_REMOVE));
 
-        System.out.println("Nominating player " + manager.nextTurn() + " " + this);
+        //System.out.println("Nominating player " + manager.nextTurn() + " " + this);
     }
 
     private void cancelRemoval() {
-        System.out.println("Cancel removal " + this);
+        //System.out.println("Cancel removal " + this);
 
         removingDeadTerritories = false;
         stonesToRemove = null;
@@ -328,7 +328,7 @@ public class RoomListener implements ServerListener {
     }
 
     private void finishTheGame() {
-        System.out.println("Finish the game " + this);
+        //System.out.println("Finish the game " + this);
 
         manager.registerMove(new GameplayManager.DeadStonesRemoval(stonesToRemove));
         sendToAll(new RoomMsg.RemoveDead(stonesToRemove));
@@ -365,7 +365,7 @@ public class RoomListener implements ServerListener {
 
     @Override
     public synchronized void serverClosed() {
-        System.out.println("server closed");
+        //System.out.println("server closed");
     }
 
     @Override

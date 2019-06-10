@@ -15,7 +15,13 @@ import java.util.Scanner;
  */
 public class Server {
     public static void main(String[] args) {
-        Server s = new Server(33107, new LobbyListener());
+        int port = 33107;
+        if(args.length > 0) {
+            try {
+                port = Integer.parseInt(args[0]);
+            } catch(NumberFormatException e) { System.out.println("Argument is not a number"); }
+        }
+        Server s = new Server(port, new LobbyListener());
         System.out.println("The server started at " + s.ip + " : " + s.port);
         System.out.println("Type 'close' to close the server");
 
@@ -62,7 +68,7 @@ public class Server {
         } catch(IOException e){ /*.printStackTrace();*/ }
     }
 
-    private void close() {
+    synchronized private void close() {
         if(!open) return;
         open = false;
         try{ serverSocket.close(); } catch(IOException e){ /*e.printStackTrace();*/ }

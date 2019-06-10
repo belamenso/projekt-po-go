@@ -223,9 +223,7 @@ public class RoomScene implements Initializable {
         ArrayList<GameLogic.Territory> ts = gameLogic.capturedTerritories(crl.getBoard());
         for (GameLogic.Territory t : ts) {
             for (Pair<Integer, Integer> pos : t.territory) {
-                Platform.runLater(() -> {
-                    board.colorStone(pos.x, pos.y, board.colorToTerritoryClass(t.captor.get())); // TODO zmienić to optional tam
-                });
+                board.colorStone(pos.x, pos.y, board.colorToTerritoryClass(t.captor.get())); // TODO zmienić to optional tam
             }
         }
     }

@@ -50,11 +50,8 @@ public class LobbyListener implements ServerListener {
     public void broadcastRoomUpdate() {
         Message msg = roomListing();
         for (ServerClient c : clients) {
-            if (c == null) {
-                System.out.println("dlaczego null tutaj?");
-            } else {
+            if (c != null)
                 c.sendMessage(msg);
-            }
         }
     }
 
@@ -62,9 +59,9 @@ public class LobbyListener implements ServerListener {
     public synchronized void receivedInput(ServerClient client, Message message) {
         String msg = message.msg;
 
-        System.out.println("Lobby received " + msg + " from " + client);
+        //System.out.println("Lobby received " + msg + " from " + client);
 
-        if(!(message instanceof LobbyMsg)) { System.out.println("Lobby received incorrect message"); return; }
+        if(!(message instanceof LobbyMsg)) { System.out.println("Unrecognied message " + message + " in " + this); return; }
 
         LobbyMsg lobbyMessage = (LobbyMsg) message;
 
@@ -112,7 +109,7 @@ public class LobbyListener implements ServerListener {
                 break;
 
             default:
-                System.out.println("Unsopported lobby message " + lobbyMessage.type.name());
+                System.out.println("Unsopported lobby message " + lobbyMessage.type.name() + " in " + this);
         }
     }
 
@@ -148,10 +145,8 @@ public class LobbyListener implements ServerListener {
 
     synchronized boolean joinRoom(String toJoin, Stone color, ServerClient client) {
         for(RoomListener room : rooms) {
-            if(room.getName().equals(toJoin)) {
-                if(room.joinPlayer(client, color))
-                    return true;
-                return false;
+            if (room.getName().equals(toJoin)) {
+                return room.joinPlayer(client, color);
             }
         }
 
@@ -161,9 +156,9 @@ public class LobbyListener implements ServerListener {
 
     @Override
     public synchronized void serverClosed() {
-        System.out.println("Server closed for lobby");
+        //System.out.println("Server closed for lobby");
     }
 
     @Override
-    public String toString() { return "LOBBY"; }
+    public String toString() { return "[LOBBY]"; }
 }
