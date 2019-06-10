@@ -9,7 +9,7 @@ Wymaga najnowszej wersjii Javy.
 
 Serwer - plik `pogo-client/shade/pogo-server.jar` - uruchamiany z linii poleceń `java -jar pogo-server.jar <numer portu - domyślnie 33107>`
 
-Serwer uruchamia się na podanym i wypisuje adres IP potrzebny do połączenia z nim.
+Serwer uruchamia się na podanym i wypisuje adres IP potrzebny do połączenia z nim. Zatrzymany przez wpisanie 'close'.
 
 ## Obsługa
 * Łączenie z serwerem przez wypisane IP i port
